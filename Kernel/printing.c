@@ -1,5 +1,5 @@
 #include <printing.h>
-
+#include <scheduler.h>
 
 static uint8_t *const video = (uint8_t *) 0xB8000;
 static const uint32_t width = 80;
@@ -116,7 +116,7 @@ char *print(const char *string, const struct format_t *format)
     {
         int error = printChar(string[i], format);
         if (error)
-            return string + i;
+            return (char*)string + i;
     }
     return NULL;
 }

@@ -154,5 +154,6 @@ void divZero(uint8_t argc, void **argv)
     int b = 1;
     b--;
     int c = a / b;
+    c++;
 }
 

@@ -242,10 +242,10 @@ struct timezone_t
 
 void sys_exit();
 
-int16_t sys_add_task(const void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
+int16_t sys_add_task(void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
                      const struct point_t *bottomRight, uint8_t homeTask, uint8_t argc, void **argv);
 
-int16_t sys_add_task_with_shared_screen(const void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId,
+int16_t sys_add_task_with_shared_screen(void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId,
                                         uint8_t homeTask, uint8_t argc, void **argv);
 
 void sys_activate_task(uint16_t taskId);

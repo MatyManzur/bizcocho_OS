@@ -11,7 +11,7 @@
 //implementados en libasm.asm
 void swapTasks(const uint64_t newStackPointer);
 
-void initializeTask(uint8_t argc, void **argv, const void (*newTaskFunction)(uint8_t argc, void **argv),
+void initializeTask(uint8_t argc, void **argv, void (*newTaskFunction)(uint8_t argc, void **argv),
                     const uint64_t newStackPointer);
 
 void saveStackPointer(uint64_t *oldStackPointer);
@@ -26,11 +26,11 @@ void followingTask();
 //syscalls
 void exit();
 
-int16_t addTask(const void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
+int16_t addTask(void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
                 const struct point_t *bottomRight, uint8_t homeTask, uint8_t argc, void **argv);
 
 int16_t
-addTaskWithSharedScreen(const void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId, uint8_t homeTask,
+addTaskWithSharedScreen(void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId, uint8_t homeTask,
                         uint8_t argc, void **argv);
 
 void activateTask(uint16_t taskId);

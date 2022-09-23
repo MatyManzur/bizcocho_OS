@@ -144,9 +144,9 @@ void bizcocho(uint8_t argc, void **argv)
 
         //en promptBuffer está todo lo que lee del prompt cuando se apreto enter
 
-        char pipeTokens[2][MAX_LONG_TOKEN_LENGTH] = {0};
+        char pipeTokens[2][MAX_LONG_TOKEN_LENGTH] = {{0}};
 
-        int pipeTokensCount = parser(promptBuffer, &pipeTokens, '|', 2, MAX_LONG_TOKEN_LENGTH);
+        int pipeTokensCount = parser(promptBuffer, (char**)pipeTokens, '|', 2, MAX_LONG_TOKEN_LENGTH);
 
         //en pipeTokens[0] está lo que esté a la izquierda del '|', o todo el string en caso de que no haya '|'
         //en pipeTokens[1] está lo que esté a la derecha del '|' en caso de que haya pipe
@@ -159,8 +159,8 @@ void bizcocho(uint8_t argc, void **argv)
         int argc1, argc2;
         char *argv1[MAX_ARG_COUNT] = {NULL};
         char *argv2[MAX_ARG_COUNT] = {NULL};
-        char firstTokens[MAX_ARG_COUNT][MAX_TOKEN_LENGTH] = {0};
-        char secondTokens[MAX_ARG_COUNT][MAX_TOKEN_LENGTH] = {0};
+        char firstTokens[MAX_ARG_COUNT][MAX_TOKEN_LENGTH] = {{0}};
+        char secondTokens[MAX_ARG_COUNT][MAX_TOKEN_LENGTH] = {{0}};
 
         //buscamos comando en pipeTokens[0]
         for (int i = 0; i < COMMAND_COUNT && !foundFlag; i++)
@@ -175,7 +175,7 @@ void bizcocho(uint8_t argc, void **argv)
         //si reconocemos un comando, nos guardamos los argumentos que haya pasado
         if (foundFlag)
         {
-            argc1 = parser(argString1, &firstTokens, ' ', MAX_ARG_COUNT, MAX_TOKEN_LENGTH);
+            argc1 = parser(argString1, (char**)firstTokens, ' ', MAX_ARG_COUNT, MAX_TOKEN_LENGTH);
             for (int i = 0; i < argc1; i++)
             {
                 argv1[i] = firstTokens[i];
@@ -196,7 +196,7 @@ void bizcocho(uint8_t argc, void **argv)
 
             if (foundFlag == 2)
             {
-                argc2 = parser(argString2, &secondTokens, ' ', MAX_ARG_COUNT, MAX_TOKEN_LENGTH);
+                argc2 = parser(argString2, (char**)secondTokens, ' ', MAX_ARG_COUNT, MAX_TOKEN_LENGTH);
                 for (int i = 0; i < argc2; i++)
                 {
                     argv2[i] = secondTokens[i];
@@ -247,7 +247,7 @@ void bizcocho(uint8_t argc, void **argv)
                     sys_add_task_with_shared_screen(runner, bizcochoId, 0, 3, args);
                 } else    //si corre solo, sin el runner
                 {
-                    sys_add_task_with_shared_screen(commands[index1].programFunction, bizcochoId, 0, argc1, argv1);
+                    sys_add_task_with_shared_screen(commands[index1].programFunction, bizcochoId, 0, argc1, (void**)argv1);
                 }
             } else //hay pipe
             {

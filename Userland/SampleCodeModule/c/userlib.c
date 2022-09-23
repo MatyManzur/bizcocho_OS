@@ -53,7 +53,7 @@ uint8_t strPrefix(const char *prefix, const char *str, char **afterPrefix)
         }
     }
     if (afterPrefix != NULL)
-        *afterPrefix = (!prefix[j]) ? str + i : NULL;
+        *afterPrefix = (!prefix[j]) ? (char*) str + i : NULL;
     return !prefix[j];  //en el caso de que prefix no haya terminado y str sí, devuelve 0, sino devuelve 1
 }
 
@@ -80,7 +80,7 @@ void newLine()
 }
 
 void
-printString(char *str)   //imprime un string, si pisa una zona en la que no puede escribir, hace un scroll up
+printString(const char *str)   //imprime un string, si pisa una zona en la que no puede escribir, hace un scroll up
 {                                       // utiliza el color del format
     char *overload = NULL;
     overload = sys_print(str, &format);
@@ -104,7 +104,7 @@ void putChar(char c)   //idem anterior, pero con un char
     }
 }
 
-void printStringColor(char *str, color_t backgroundColor,
+void printStringColor(const char *str, color_t backgroundColor,
                       color_t characterColor) //idem printString, pero se le pasa el color
 {
     struct format_t format = {.backgroundColor = backgroundColor % 16, .characterColor = characterColor % 16};

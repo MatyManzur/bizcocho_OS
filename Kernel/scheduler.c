@@ -7,7 +7,7 @@ typedef struct task_t //struct de info de cada task
     uint8_t active;        //si esta desactivado, se saca temporalmente de la cola de tasks a llamar (se pausa)
     uint8_t homeTask;        //si es una homeTask, cuando ya no queden mas tasks activas se reactiva automaticamente
     uint64_t stackPointer;        //valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
-    const void (*initTask)(uint8_t argc, void **argv);    //puntero a funcion de la funcion que debe llamar la primera vez
+    void (*initTask)(uint8_t argc, void **argv);    //puntero a funcion de la funcion que debe llamar la primera vez
     uint8_t argc;            //cantidad de argumentos que recibe la funcion a llamar
     void **argv;            //array de punteros a los argumentos que recibe la funcion
 } task_t;
@@ -104,7 +104,7 @@ int8_t getCurrentTaskId()
 
 //Función auxiliar que agrega la task al array
 static int16_t
-addTaskToArray(const void (*initTask)(uint8_t argc, void **argv), uint8_t screenId, uint8_t homeTask, uint8_t argc,
+addTaskToArray(void (*initTask)(uint8_t argc, void **argv), uint8_t screenId, uint8_t homeTask, uint8_t argc,
                void **argv)
 {
     if (currentTaskCount >= MAX_TASK_COUNT)
@@ -119,7 +119,7 @@ addTaskToArray(const void (*initTask)(uint8_t argc, void **argv), uint8_t screen
 }
 
 //Agrega una task al array con una nueva screen, devuelve -1 si no se pudo agregar
-int16_t addTask(const void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
+int16_t addTask(void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
                 const struct point_t *bottomRight, uint8_t homeTask, uint8_t argc, void **argv)
 {
     int8_t screenId = addScreenState(topLeft->row, topLeft->column, bottomRight->row, bottomRight->column);
@@ -130,7 +130,7 @@ int16_t addTask(const void (*initTask)(uint8_t argc, void **argv), const struct 
 
 //Agrega una task al array con una screen compartida con otra task ya existente. Si no existe esa otra task, devuelve -1 y no la agrega al array
 int16_t
-addTaskWithSharedScreen(const void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId, uint8_t homeTask,
+addTaskWithSharedScreen(void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId, uint8_t homeTask,
                         uint8_t argc, void **argv)
 {
     int8_t otherTaskIndex = getTaskArrayIndex(otherTaskId);

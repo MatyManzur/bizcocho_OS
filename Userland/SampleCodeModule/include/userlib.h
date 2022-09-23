@@ -15,9 +15,9 @@ int strCmp(const char *str1, const char *str2);
 
 void setColor(color_t backgroundColor, color_t characterColor);
 
-void printString(char *str);
+void printString(const char *str);
 
-void printStringColor(char *str, color_t backgroundColor, color_t characterColor);
+void printStringColor(const char *str, color_t backgroundColor, color_t characterColor);
 
 void putChar(char c);
 

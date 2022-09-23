@@ -10,7 +10,7 @@ static void printRegAux(uint64_t *registers, uint8_t index, format_t *registerfo
 
 void saveRegisters()
 {
-    getRegisters(&registers);
+    getRegisters(&(registers.rax));
 }
 
 void getLastRegisters(struct registers_t *registersCopy)

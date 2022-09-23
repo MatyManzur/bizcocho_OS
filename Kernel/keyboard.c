@@ -1,5 +1,23 @@
 #include <keyboard.h>
 
+static char printableKeys[2][128] =    //mapa de caracteres printeables para cada tecla no especial de la distribucion US en su versión normal y shifteada
+        {//Default US keys
+                {
+                        0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+                        '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0,
+                        'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z',
+                        'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '-',
+                        0, 0, 0, '+', 0
+                },//Shifted US Keys
+                {
+                        0, 0, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
+                        '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,
+                        'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\"', '~', 0, '|',  'Z',
+                        'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, '*', 0, ' ', 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '-',
+                        0, 0, 0, '+', 0
+                }};
 
 static kbEvent_t buffer[BUFFER_DIM];    //tenemos un buffer de structs guardando las acciones con las teclas
 static uint32_t readingIndex;    //indice del buffer que apunta al proximo a leer

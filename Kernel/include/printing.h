@@ -2,9 +2,8 @@
 #define PRINTING_H
 
 #include <stdint.h>
-#include <scheduler.h>
+#include <stddef.h>
 
-#define NULL 0
 #define MAX_SCREEN_COUNT 16
 
 //colores
