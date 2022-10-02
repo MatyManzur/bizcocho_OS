@@ -51,15 +51,17 @@ static pointerPCBNODE_t findNextProcess()
     {
         return head;
     }
-    for(uint8_t i=schedule.nowRunning->process->priority; i<PRIORITY_COUNT; i++)
+    uint8_t index = schedule.nowRunning->process->priority;
+    for(uint8_t i=0; i<PRIORITY_COUNT; i++)
     {
-        head = schedule.processes[i];
+        head = schedule.processes[(index+i)%PRIORITY_COUNT];
         if(head!=NULL)
         {
+            schedule.nowRunning = head;
             return head;
         }
     }
-    
+    return head; // solo hay un proceso
 }
 
 
@@ -80,8 +82,14 @@ uint8_t startParentProcess(char* name, uint8_t argc, char** argv, void (*process
     processPCB->priority = priority;
 
     //Agregar a las listas este PCB creado
+    pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
+    pnode->process=processPCB;
+    pnode->children=NULL;
+    pnode->remainingQuantum = PRIORITY_COUNT - priority;
+    pnode->next = schedule.processes[priority];
+    schedule.processes[priority] = pnode;
 
-    return processPCB->pid;
+    return pid;
 }
 
 //Hacer un startChild (equivalente a un fork exec)
@@ -92,11 +100,19 @@ uint8_t startChildProcess(char* name, uint8_t argc, char** argv, void (*processC
 
 void scheduler()
 {
-    /*if(schedule.nowRunning!=NULL && schedule.nowRunning->process->state==READY && schedule.nowRunning->remainingQuantum>0)
+    if(schedule.nowRunning==NULL)
     {
-        schedule.nowRunning->remainingQuantum += (schedule.nowRunning->remainingQuantum==0)? PRIORITY_COUNT - schedule.nowRunning->process->priority : 0
+        // Inicializar con algun proceso en particular?
+    }
+    uint8_t canContinue = (schedule.nowRunning->remainingQuantum>0);
+    if(schedule.nowRunning->process->state==READY && canContinue)
+    {
+        schedule.nowRunning->remainingQuantum--;
         return;
-    }*/
+    }
+    // se quedó sin quantum, se lo actualizamos pero vamos al siguiente proceso
+    schedule.nowRunning->remainingQuantum += (canContinue)? 0 : PRIORITY_COUNT - schedule.nowRunning->process->priority;
+
     pointerPCBNODE_t nextProcess = findNextProcess();
     if(nextProcess == NULL)
         return;
