@@ -292,4 +292,7 @@ unsigned long sys_seconds_elapsed();
 
 void sys_sleep(uint64_t sleepTicks);
 
+void *sys_mem_alloc(uint32_t nbytes);
+
+void sys_mem_free(void *ptr );
 #endif

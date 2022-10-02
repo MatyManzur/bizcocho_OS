@@ -23,6 +23,8 @@ GLOBAL sys_set_time_zone
 GLOBAL sys_ticks_elapsed
 GLOBAL sys_seconds_elapsed
 GLOBAL sys_sleep
+GLOBAL sys_mem_alloc
+GLOBAL sys_mem_free
 
 SECTION .text
 
@@ -112,6 +114,12 @@ sys_seconds_elapsed:
 	
 sys_sleep:
 	make_syscall 34
+
+sys_mem_alloc:
+	make_syscall 35
+
+sys_mem_free:
+	make_syscall 36
 
 
 	

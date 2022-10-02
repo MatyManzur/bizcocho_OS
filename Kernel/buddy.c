@@ -82,4 +82,5 @@ void * memalloc(uint32_t nbytes)
             return buddyp->start + buddyp->baseSize - ((buddyp->baseSize)/pow2(index+1))*i;
         }
     }
+    return NULL; // No more memory on that level
 }

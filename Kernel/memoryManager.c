@@ -85,12 +85,16 @@ void memfree(void * ap){
     }
     else if(insertp < freep)
     {
-        if((insertp + insertp->s.size) == freep){
+        if((insertp + insertp->s.size) == freep)
+        {
             insertp->s.size+=freep->s.size;
             insertp->s.next=freep->s.next;
-        }else{
-            
         }
+        else
+        {
+            insertp->s.next=freep;
+        }
+        freep = insertp;
     }
     else
     {

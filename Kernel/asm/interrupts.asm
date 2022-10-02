@@ -50,6 +50,9 @@ EXTERN ticks_elapsed
 EXTERN seconds_elapsed
 EXTERN sleep
 
+EXTERN memalloc
+EXTERN memfree
+
 SECTION .text
 
 %macro pushState 0
@@ -229,6 +232,8 @@ _syscallHandler:
 	caseSyscall 32, .C32
 	caseSyscall 33, .C33
 	caseSyscall 34, .C34
+	caseSyscall 35, .C35
+	caseSyscall 36, .C36
 	jmp .end	;default: it does nothing
 .C0:
 	call exit
@@ -306,7 +311,13 @@ _syscallHandler:
 .C34:
 	call sleep
 	jmp .end
-
+.C35:
+	call memalloc
+	jmp .end
+.C36:
+	call memfree
+	jmp .end
+	
 .end:
 	push rax ;; asi no pierdo la salida de rax
 	; signal pic EOI (End of Interrupt)
