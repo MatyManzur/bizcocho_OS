@@ -22,6 +22,7 @@ typedef struct PCB_t
     void **argv;
     void (*processCodeStart)(uint8_t argc, void **argv);
     void *processMemStart;
+    uint8_t cockatoo;      // un canary medio trucho que ponemos al final de la memoria para ver que no se pase (pero podría saltarlo tranquilamente)
     uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
     State_t state;
     int8_t statusCode;
@@ -87,6 +88,11 @@ static pointerPCBNODE_t findNextProcess()
     */
 }
 
+static uint8_t getCockatoo(uint8_t pid)
+{
+    return (pid * ticks_elapsed()) % 256;
+}
+
 uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority)
 {
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
@@ -96,8 +102,11 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*process
     processPCB->argc = argc;
     processPCB->argv = argv;
     processPCB->processCodeStart = processCodeStart;
-    processPCB->processMemStart = memalloc(PROCESS_MEM_SIZE) + PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
-    processPCB->stackPointer = 0;                                                    // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
+    processPCB->processMemStart = memalloc(PROCESS_MEM_SIZE);
+    processPCB->cockatoo = getCockatoo(processPCB->pid);
+    *(processPCB->processMemStart) = processPCB->cockatoo;
+    processPCB->processMemStart += PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
+    processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
     processPCB->statusCode = -1;
     processPCB->fds = {0, 1, 2};
@@ -131,6 +140,11 @@ void scheduler()
         startParentProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1);
         schedule.nowRunning = findNextProcess();
         return;
+    }
+    // chequeamos si se piso el cockatoo
+    if (*(schedule.nowRunning->process->processMemStart - PROCESS_MEM_SIZE + 1) != schedule.nowRunning->process->cockatoo)
+    {
+        // perdiste capo -> tirar algun tipo de error y matar el proceso?
     }
     uint8_t canContinue = (schedule.nowRunning->remainingQuantum > 0);
     if (schedule.nowRunning->process->state == READY && canContinue)
@@ -194,19 +208,55 @@ static pointerPCBNODE_t findByPid(uint8_t pid)
     return foundPointer;
 }
 
-uint8_t killProcess(uint8_t pid)
+void exit(int8_t statusCode)
+{
+    schedule.nowRunning->process->statusCode = statusCode;
+    killProcess(schedule.nowRunning->process->pid);
+}
+
+/*
+Notas para cuando lo hagamos (borrar dps):
+
+! - no es lo mismo borrarlo de la lista que no borrarlo y ponerlo como FINISHED
+Situación 1) Padre se va a borrar:
+    - le pasa los hijos al abuelo, estén vivos o sean zombies
+Situación 2) Hijo se va a matar:
+    2a) el padre está esperando por él:
+        - le aviso que no me espere más
+        - le doy el statusCode
+        - me borro de la lista => situación 1) => le paso los hijos
+    2b) el padre no está esperando por él (está vivo o está zombie, no importa):
+        - dejo el statusCode en el struct
+        - me paso a FINISHED
+        - no me borro de la lista
+Situación 3) Padre va a esperar a un hijo: wait(pid)
+    3a) el hijo está vivo:
+        - marcamos como que está bloqueado por esperar a este hijo (o uno en general con un 0 ponele)
+        - cómo devuelve el wait() el statusCode cuando este termine ??
+            que al ponerlo en blocked llame a scheduler() y se va a ir
+            cuando retome, retoma desde justo después de la llamada a scheduler() ? creo que si
+    3b) el hijo está FINISHED:
+        - agarro el statusCode
+        - lo borro de la lista
+        - devuelvo el statusCode
+*/
+
+uint8_t killProcess(uint8_t pid) // todo bien con lo de los hijos
 {
     pointerPCBNODE_t head = findByPid(pid);
-    if (head != NULL)
+    if (head != NULL) // si lo encontró
     {
+        pointerPCBNODE_t parentHead = findByPid(head->process->ppid);
+
         if (head->previous != NULL)
             head->previous->next = head->next;
         if (head->next != NULL)
             head->next->previous = head->previous;
+
         freeNode(head);
     }
     scheduler();
-    return head != NULL;
+    return head != NULL; // devuelve si lo encontró y lo mató
 }
 
 uint8_t blockProcess(uint8_t pid)
@@ -258,6 +308,6 @@ static void initProcess(int argc, void **argv)
 {
     while (1)
     {
-        // chequea si heredó hijos zombies y los mata
+        // todo : chequea si heredó hijos zombies y los mata
     }
 }
