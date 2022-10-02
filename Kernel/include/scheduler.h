@@ -1,42 +1,27 @@
-#ifndef SCHEDULER_H
-#define SCHEDULER_H
+#ifndef SCHEDULER_H_
+#define SCHEDULER_H_
 
 #include <printing.h>
 #include <lib.h>
+#include <string.h>
 
-#define MAX_TASK_COUNT 16
-#define TASK_STACK_SIZE 0x1000
-#define TASKS_STACK_BASE 0x300000
+//SYSCALLS
+uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority);
 
-//implementados en libasm.asm
-void swapTasks(const uint64_t newStackPointer);
+uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **));
 
-void initializeTask(uint8_t argc, void **argv, void (*newTaskFunction)(uint8_t argc, void **argv),
-                    const uint64_t newStackPointer);
+uint8_t getPid();
 
-void saveStackPointer(uint64_t *oldStackPointer);
+void exit(int8_t statusCode);
 
-//funciones para que llamen otros desde Kernel, no son syscalls
-int8_t getCurrentScreenId();
+uint8_t killProcess(uint8_t pid);
 
-int8_t getCurrentTaskId();
+uint8_t blockProcess(uint8_t pid);
 
-void followingTask();
+uint8_t unblockProcess(uint8_t pid);
 
-//syscalls
-void exit();
+uint8_t changePriority(uint8_t pid, uint8_t newPriority);
 
-int16_t addTask(void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
-                const struct point_t *bottomRight, uint8_t homeTask, uint8_t argc, void **argv);
-
-int16_t
-addTaskWithSharedScreen(void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId, uint8_t homeTask,
-                        uint8_t argc, void **argv);
-
-void activateTask(uint16_t taskId);
-
-void deactivateTask(uint16_t taskId);
-
-void killTask(uint16_t taskId);
-
+//KERNEL ONLY
+void scheduler();
 #endif

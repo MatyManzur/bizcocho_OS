@@ -1,188 +1,313 @@
 #include <scheduler.h>
 
-typedef struct task_t //struct de info de cada task
+#define MAX_FD_COUNT 64
+#define PRIORITY_COUNT 5
+#define NAME_MAX 64
+#define PROCESS_MEM_SIZE 4096
+enum state
 {
-    uint16_t taskId;        //identificador unico de cada task
-    uint8_t screenId;        //identificador de la screen que está usando. Dos tasks pueden compartir la misma screen
-    uint8_t active;        //si esta desactivado, se saca temporalmente de la cola de tasks a llamar (se pausa)
-    uint8_t homeTask;        //si es una homeTask, cuando ya no queden mas tasks activas se reactiva automaticamente
-    uint64_t stackPointer;        //valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
-    void (*initTask)(uint8_t argc, void **argv);    //puntero a funcion de la funcion que debe llamar la primera vez
-    uint8_t argc;            //cantidad de argumentos que recibe la funcion a llamar
-    void **argv;            //array de punteros a los argumentos que recibe la funcion
-} task_t;
+    BLOCKED,
+    READY,
+    FINISHED
+};
+typedef enum state State_t;
 
-//Tenemos un array de tasks
-static task_t taskArray[MAX_TASK_COUNT];
-static uint8_t currentTaskCount = 0;
-
-//taskIds a asignar. Arranca en 1 porque el 0 se usa para ver si el slot del array esta vacío
-static uint16_t nextTaskId = 1;
-
-//currentTaskIndex es el indice del array de la task actual. Arranca en -1 porque inicialmente no hay tasks
-static int8_t currentTaskIndex = -1; //index es la posicion del array, id es el numero que se le da al usuario
-
-//Funcion auxiliar que recibe el taskId y devuelve donde esta en el array de tasks, si no lo encuentra devuelve -1
-static int8_t getTaskArrayIndex(uint16_t taskId)
+typedef struct PCB_t
 {
-    for (int i = 0; i < MAX_TASK_COUNT; i++)
+    uint8_t pid;
+    uint8_t ppid;
+    char name[NAME_MAX];
+    uint8_t argc;
+    void **argv;
+    void (*processCodeStart)(uint8_t argc, void **argv);
+    void *processMemStart;
+    uint8_t cockatoo;      // un canary medio trucho que ponemos al final de la memoria para ver que no se pase (pero podría saltarlo tranquilamente)
+    uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
+    State_t state;
+    int8_t statusCode;
+    int8_t fds[MAX_FD_COUNT];
+    uint8_t priority;
+} PCB_t;
+
+typedef struct nodePCB_t *pointerPCBNODE_t;
+
+typedef struct nodePCB_t
+{
+    pointerPCBNODE_t previous;
+    struct PCB_t *process;
+    pointerPCBNODE_t next;
+    pointerPCBNODE_t *children;
+    int8_t remainingQuantum;
+} nodePCB_t;
+
+typedef struct pbrr_t
+{
+    pointerPCBNODE_t processes[PRIORITY_COUNT];
+    pointerPCBNODE_t nowRunning;
+} pbrr_t;
+
+static pbrr_t schedule = {0};
+static int pidToGive = 1;
+
+static pointerPCBNODE_t findNextProcess()
+{
+    uint8_t currentPriority = schedule.nowRunning->process->priority;
+    pointerPCBNODE_t head = schedule.nowRunning->next;
+    while (head == NULL || head->process->state != READY)
     {
-        if (taskArray[i].taskId == taskId)
-            return i;
-    }
-    return -1;
-}
-
-//Funcion auxiliar que activa todas las tasks que son homeTasks
-static void activateHomeTasks()
-{
-    for (int i = 0; i < MAX_TASK_COUNT; i++)
-    {
-        if (taskArray[i].homeTask)
+        if (head == NULL)
         {
-            taskArray[i].active = 1;
-            currentTaskIndex = i;
+            currentPriority = (currentPriority + 1) % PRIORITY_COUNT;
+            head = schedule.processes[currentPriority];
+        }
+        else
+        {
+            head = head->next;
         }
     }
-}
+    return head;
 
-//llamada por el timer_tick para que pase a la sgte task
-void followingTask()
-{
-    if (currentTaskCount == 0)        //si no hay nada para correr, no hace nada
-        return;
-    uint8_t lastTaskIndex = currentTaskIndex; //se guarda en qué task estabamos anteriormente
-    if (currentTaskIndex < 0)            //si nunca hubo una task devolvió -1, entonces que intente con la 0
-        currentTaskIndex = 0;
-    int i = 0;                //para ver si se dio una vuelta y no encontro nada activo
-    //nos movemos hasta encontrar la proxima task que deberia correr
-    do
+    /* //esto creo que estaba mal pero no lo borre xlas
+    pointerPCBNODE_t head = schedule.nowRunning->next;
+    if(head!=NULL)
     {
-        i++;
-        currentTaskIndex++;
-        if (currentTaskIndex >=
-            MAX_TASK_COUNT) //si nos pasamos de MAX_TASK_COUNT nos movemos al principio y seguimos incrementando
-            currentTaskIndex = 0;
-    } while (i <= MAX_TASK_COUNT &&
-             (taskArray[currentTaskIndex].taskId == 0 || taskArray[currentTaskIndex].active == 0));
-    if (i > MAX_TASK_COUNT) //si dio una vuelta y no había nada activo
-    {
-        activateHomeTasks(); //activa todos los hometask y mueve el currentTaskIndex a un homeTask
+        return head;
     }
-
-    //Ahora taskArray[currentTaskIndex] es la proxima task a ejecutar
-
-    if (lastTaskIndex >= 0) //si hubo una task previa
-        saveStackPointer(&taskArray[lastTaskIndex].stackPointer); //deja en el puntero del argumento el rsp viejo
-
-    if (taskArray[currentTaskIndex].stackPointer == 0) //si nunca se inicio esta task
+    uint8_t index = schedule.nowRunning->process->priority;
+    for(uint8_t i=0; i<PRIORITY_COUNT; i++)
     {
-        initializeTask(taskArray[currentTaskIndex].argc, taskArray[currentTaskIndex].argv,
-                       taskArray[currentTaskIndex].initTask,
-                       TASKS_STACK_BASE - (currentTaskIndex + 1) * TASK_STACK_SIZE);
-        //mueve el rsp a donde indica el 4to parametro, hace el EOI para el pic, y llama la funcion del 3er parametro con los primeros dos argumentos
+        head = schedule.processes[(index+i)%PRIORITY_COUNT];
+        if(head!=NULL)
+        {
+            schedule.nowRunning = head;
+            return head;
+        }
+    }
+    return head; // solo hay un proceso
+    */
+}
+
+static uint8_t getCockatoo(uint8_t pid)
+{
+    return (pid * ticks_elapsed()) % 256;
+}
+
+uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority)
+{
+    PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
+    processPCB->pid = pidToGive++;
+    processPCB->ppid = 1; // el init
+    strncpy(processPCB->name, name, NAME_MAX);
+    processPCB->argc = argc;
+    processPCB->argv = argv;
+    processPCB->processCodeStart = processCodeStart;
+    processPCB->processMemStart = memalloc(PROCESS_MEM_SIZE);
+    processPCB->cockatoo = getCockatoo(processPCB->pid);
+    *(uint8_t *)(processPCB->processMemStart) = processPCB->cockatoo;
+    processPCB->processMemStart += PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
+    processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
+    processPCB->state = READY;
+    processPCB->statusCode = -1;
+    for (int i = 0; i < MAX_FD_COUNT; i++)
+    {
+        processPCB->fds[i] = (i<3)? i:-1;
+    }
+    processPCB->priority = priority;
+
+    // Agrega a las listas este PCB creado
+    pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
+    pnode->process = processPCB;
+    pnode->children = NULL;
+    pnode->remainingQuantum = PRIORITY_COUNT - priority;
+    pnode->next = schedule.processes[priority];
+    schedule.processes[priority] = pnode;
+
+    return processPCB->pid;
+}
+
+// Hacer un startChild (equivalente a un fork exec)
+uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **))
+{
+    // todo -> modularizar para no repetir el codigo de startParent
+}
+
+void scheduler()
+{
+    if (schedule.nowRunning == NULL)
+    {
+        startParentProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1);
+        schedule.nowRunning = findNextProcess();
         return;
     }
-    swapTasks(taskArray[currentTaskIndex].stackPointer); //cambia el rsp al que le paso en el parametro
-}
-
-//Devuelve el screenId del task actual
-int8_t getCurrentScreenId()
-{
-    if (currentTaskIndex < 0)
-        return -1;
-    return taskArray[currentTaskIndex].screenId;
-}
-
-//Devuelve el taskId del task actual
-int8_t getCurrentTaskId()
-{
-    if (currentTaskIndex < 0)
-        return -1;
-    return taskArray[currentTaskIndex].taskId;
-}
-
-//Función auxiliar que agrega la task al array
-static int16_t
-addTaskToArray(void (*initTask)(uint8_t argc, void **argv), uint8_t screenId, uint8_t homeTask, uint8_t argc,
-               void **argv)
-{
-    if (currentTaskCount >= MAX_TASK_COUNT)
-        return -1;
-    int i = 0;
-    currentTaskCount++;
-    while (taskArray[i].taskId != 0) //nos movemos hasta encontrar un lugar vacio
-        i++;
-    taskArray[i] = (task_t) {.taskId = nextTaskId, .screenId = screenId, .active = 1, .homeTask = homeTask, .stackPointer = 0, .initTask = initTask, .argc = argc, .argv = argv};
-
-    return nextTaskId++;
-}
-
-//Agrega una task al array con una nueva screen, devuelve -1 si no se pudo agregar
-int16_t addTask(void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
-                const struct point_t *bottomRight, uint8_t homeTask, uint8_t argc, void **argv)
-{
-    int8_t screenId = addScreenState(topLeft->row, topLeft->column, bottomRight->row, bottomRight->column);
-    if (screenId < 0) //no hay mas screens disponibles
-        return -1;
-    return addTaskToArray(initTask, screenId, homeTask, argc, argv);
-}
-
-//Agrega una task al array con una screen compartida con otra task ya existente. Si no existe esa otra task, devuelve -1 y no la agrega al array
-int16_t
-addTaskWithSharedScreen(void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId, uint8_t homeTask,
-                        uint8_t argc, void **argv)
-{
-    int8_t otherTaskIndex = getTaskArrayIndex(otherTaskId);
-    if (otherTaskIndex < 0) //no existe esa other task
-        return -1;
-    return addTaskToArray(initTask, taskArray[otherTaskIndex].screenId, homeTask, argc, argv);
-}
-
-//activa la task con el taskId indicado, si no existia no hace nada
-void activateTask(uint16_t taskId)
-{
-    int8_t taskIndex = getTaskArrayIndex(taskId);
-    if (taskIndex < 0) //no existe esa task
-        return;
-    taskArray[taskIndex].active = 1;
-}
-
-//desactiva la task con el taskId indicado, si no existia no hace nada
-void deactivateTask(uint16_t taskId)
-{
-    int8_t taskIndex = getTaskArrayIndex(taskId);
-    if (taskIndex < 0) //no existe esa task
-        return;
-    taskArray[taskIndex].active = 0;
-    followingTask();
-}
-
-//borra a la task indicada del taskArray
-void killTask(uint16_t taskId)
-{
-    int8_t taskIndex = getTaskArrayIndex(taskId);
-    if (taskIndex < 0) //no existe esa task
-        return;
-    currentTaskCount--;
-    //buscamos si habían otras tasks con la misma screen
-    int otherTasksWithSameScreen = 0;
-    for (int i = 0; i < MAX_TASK_COUNT; i++)
+    // chequeamos si se piso el cockatoo
+    if (*(uint8_t *)(schedule.nowRunning->process->processMemStart - PROCESS_MEM_SIZE + 1) != schedule.nowRunning->process->cockatoo)
     {
-        if (i != taskIndex && taskArray[i].screenId == taskArray[taskIndex].screenId)
-            otherTasksWithSameScreen++;
+        // perdiste capo -> tirar algun tipo de error y matar el proceso?
     }
-    if (otherTasksWithSameScreen == 0)
+    uint8_t canContinue = (schedule.nowRunning->remainingQuantum > 0);
+    if (schedule.nowRunning->process->state == READY && canContinue)
     {
-        deleteScreenState(taskArray[taskIndex].screenId);
+        schedule.nowRunning->remainingQuantum--;
+        return;
     }
-    taskArray[taskIndex] = (task_t) {0};
-    followingTask();
+    // se quedó sin quantum, se lo actualizamos pero vamos al siguiente proceso
+    schedule.nowRunning->remainingQuantum += (canContinue) ? 0 : PRIORITY_COUNT - schedule.nowRunning->process->priority;
+
+    pointerPCBNODE_t nextProcess = findNextProcess();
+    if (nextProcess == NULL)
+        return;
+
+    if (schedule.nowRunning != NULL)                                     // si hubo un proceso anterior
+        saveStackPointer(&(schedule.nowRunning->process->stackPointer)); // deja en el puntero del argumento el rbp viejo
+
+    schedule.nowRunning = nextProcess;
+
+    if (schedule.nowRunning->process->stackPointer == 0) // si nunca se inicio esta task
+    {
+        initializeTask(schedule.nowRunning->process->argc, schedule.nowRunning->process->argv,
+                       schedule.nowRunning->process->processCodeStart,
+                       schedule.nowRunning->process->processMemStart);
+        // mueve el rsp a donde indica el 4to parametro, hace el EOI para el pic, y llama la funcion del 3er parametro con los primeros dos argumentos
+        return;
+    }
+    swapTasks(schedule.nowRunning->process->stackPointer); // cambia el rsp al que le paso en el parametro
 }
 
-//borra la task actual del taskArray
-void exit()
+uint8_t getPid()
 {
-    killTask(getCurrentTaskId());
+    return schedule.nowRunning->process->pid;
 }
 
+static void freeNode(pointerPCBNODE_t head)
+{
+    char *name = head->process->name;
+    if (name != NULL)
+        memfree(name);
+    memfree(head->process);
+    memfree(head);
+}
+
+static pointerPCBNODE_t findByPidRec(uint8_t pid, pointerPCBNODE_t head)
+{
+    if (head == NULL)
+        return NULL;
+    if (head->process->pid == pid)
+        return head;
+    return findByPidRec(pid, head->next);
+}
+
+static pointerPCBNODE_t findByPid(uint8_t pid)
+{
+    pointerPCBNODE_t foundPointer = NULL;
+    for (int i = 0; i < PRIORITY_COUNT && foundPointer == NULL; i++)
+    {
+        foundPointer = findByPidRec(pid, schedule.processes[i]);
+    }
+    return foundPointer;
+}
+
+void exit(int8_t statusCode)
+{
+    schedule.nowRunning->process->statusCode = statusCode;
+    killProcess(schedule.nowRunning->process->pid);
+}
+
+/*
+Notas para cuando lo hagamos (borrar dps):
+
+! - no es lo mismo borrarlo de la lista que no borrarlo y ponerlo como FINISHED
+Situación 1) Padre se va a borrar:
+    - le pasa los hijos al abuelo, estén vivos o sean zombies
+Situación 2) Hijo se va a matar:
+    2a) el padre está esperando por él:
+        - le aviso que no me espere más
+        - le doy el statusCode
+        - me borro de la lista => situación 1) => le paso los hijos
+    2b) el padre no está esperando por él (está vivo o está zombie, no importa):
+        - dejo el statusCode en el struct
+        - me paso a FINISHED
+        - no me borro de la lista
+Situación 3) Padre va a esperar a un hijo: wait(pid)
+    3a) el hijo está vivo:
+        - marcamos como que está bloqueado por esperar a este hijo (o uno en general con un 0 ponele)
+        - cómo devuelve el wait() el statusCode cuando este termine ??
+            que al ponerlo en blocked llame a scheduler() y se va a ir
+            cuando retome, retoma desde justo después de la llamada a scheduler() ? creo que si
+    3b) el hijo está FINISHED:
+        - agarro el statusCode
+        - lo borro de la lista
+        - devuelvo el statusCode
+*/
+
+uint8_t killProcess(uint8_t pid) // todo bien con lo de los hijos
+{
+    pointerPCBNODE_t head = findByPid(pid);
+    if (head != NULL) // si lo encontró
+    {
+        pointerPCBNODE_t parentHead = findByPid(head->process->ppid);
+
+        if (head->previous != NULL)
+            head->previous->next = head->next;
+        if (head->next != NULL)
+            head->next->previous = head->previous;
+
+        freeNode(head);
+    }
+    scheduler();
+    return head != NULL; // devuelve si lo encontró y lo mató
+}
+
+uint8_t blockProcess(uint8_t pid)
+{
+    pointerPCBNODE_t head = findByPid(pid);
+    if (head != NULL)
+    {
+        head->process->state = BLOCKED;
+    }
+    scheduler();
+    return head != NULL;
+}
+
+uint8_t unblockProcess(uint8_t pid)
+{
+    pointerPCBNODE_t head = findByPid(pid);
+    if (head != NULL)
+    {
+        head->process->state = READY;
+    }
+    return head != NULL;
+}
+
+uint8_t changePriority(uint8_t pid, uint8_t newPriority)
+{
+    if (0 < newPriority || newPriority >= PRIORITY_COUNT)
+        return 0;
+    pointerPCBNODE_t head = findByPid(pid);
+    if (head != NULL)
+    {
+        if (head->previous != NULL)
+            head->previous->next = head->next;
+        if (head->next != NULL)
+            head->next->previous = head->previous;
+        head->process->priority = newPriority;
+
+        head->remainingQuantum = PRIORITY_COUNT - newPriority;
+
+        if (schedule.processes[newPriority] != NULL)
+        {
+            schedule.processes[newPriority]->previous = head;
+        }
+        head->next=schedule.processes[newPriority];
+        head->previous=NULL;
+        schedule.processes[newPriority] = head;
+    }
+    return head != NULL;
+}
+
+static void initProcess(int argc, void **argv)
+{
+    while (1)
+    {
+        // todo : chequea si heredó hijos zombies y los mata
+    }
+}

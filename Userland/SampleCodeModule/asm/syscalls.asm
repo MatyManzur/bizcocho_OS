@@ -1,10 +1,11 @@
 GLOBAL sys_exit
-GLOBAL sys_add_task
-GLOBAL sys_add_task_with_shared_screen
-GLOBAL sys_activate_task
-GLOBAL sys_deactivate_task
-GLOBAL sys_kill_task
-GLOBAL sys_get_task_id
+GLOBAL sys_start_parent_process
+GLOBAL sys_start_child_process
+GLOBAL sys_unblock_process
+GLOBAL sys_block_process
+GLOBAL sys_kill_process
+GLOBAL sys_get_pid
+GLOBAL sys_change_priority
 GLOBAL sys_print_char
 GLOBAL sys_print
 GLOBAL sys_new_line
@@ -43,23 +44,26 @@ SECTION .text
 sys_exit: 
 	make_syscall 0
 
-sys_add_task:
+sys_start_parent_process:
 	make_syscall 1
 
-sys_add_task_with_shared_screen:
+sys_start_child_process:
 	make_syscall 2
 	
-sys_activate_task:
+sys_unblock_process:
 	make_syscall 3
 	
-sys_deactivate_task:
+sys_block_process:
 	make_syscall 4
 
-sys_kill_task:
+sys_kill_process:
 	make_syscall 5
 
-sys_get_task_id:
+sys_get_pid:
 	make_syscall 6
+
+sys_change_priority:
+	make_syscall 7
 	
 sys_print_char:
 	make_syscall 10

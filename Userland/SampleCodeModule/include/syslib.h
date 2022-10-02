@@ -240,21 +240,21 @@ struct timezone_t
     int8_t minutes;
 };
 
-void sys_exit();
+void sys_exit(int8_t statusCode);
 
-int16_t sys_add_task(void (*initTask)(uint8_t argc, void **argv), const struct point_t *topLeft,
-                     const struct point_t *bottomRight, uint8_t homeTask, uint8_t argc, void **argv);
+uint8_t sys_start_parent_process(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority);
 
-int16_t sys_add_task_with_shared_screen(void (*initTask)(uint8_t argc, void **argv), uint16_t otherTaskId,
-                                        uint8_t homeTask, uint8_t argc, void **argv);
+int8_t sys_start_child_process(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **));
 
-void sys_activate_task(uint16_t taskId);
+uint8_t sys_unblock_process(uint8_t pid);
 
-void sys_deactivate_task(uint16_t taskId);
+uint8_t sys_block_process(uint8_t pid);
 
-void sys_kill_task(uint16_t taskId);
+uint8_t sys_kill_process(uint8_t pid);
 
-uint8_t sys_get_task_id();
+uint8_t sys_get_pid();
+
+uint8_t sys_change_priority(uint8_t pid, uint8_t newPriority);
 
 uint8_t sys_print_char(char character, const struct format_t *format);
 

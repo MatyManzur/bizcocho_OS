@@ -20,14 +20,14 @@ GLOBAL _exception6Handler
 EXTERN irqDispatcher
 EXTERN exceptionDispatcher
 
-
-EXTERN killTask
-EXTERN addTask
-EXTERN addTaskWithSharedScreen
-EXTERN activateTask
-EXTERN deactivateTask
+EXTERN killProcess
+EXTERN startParentProcess
+EXTERN startChildProcess
+EXTERN getPid
+EXTERN blockProcess
+EXTERN unblockProcess
+EXTERN changePriority
 EXTERN exit
-EXTERN getCurrentTaskId
 
 EXTERN printChar
 EXTERN print
@@ -214,6 +214,7 @@ _syscallHandler:
 	caseSyscall 4,	.C4
 	caseSyscall 5,	.C5
 	caseSyscall 6,	.C6
+	caseSyscall 7, 	.C7
 	caseSyscall 10, .C10
 	caseSyscall 11, .C11
 	caseSyscall 12, .C12
@@ -239,22 +240,25 @@ _syscallHandler:
 	call exit
 	jmp .end	
 .C1:
-	call addTask
+	call startParentProcess
 	jmp .end
 .C2:
-	call addTaskWithSharedScreen
+	call startChildProcess
 	jmp .end
 .C3:
-	call activateTask
+	call unblockProcess
 	jmp .end
 .C4:
-	call deactivateTask
+	call blockProcess
 	jmp .end
 .C5:
-	call killTask
+	call killProcess
 	jmp .end
 .C6:
-	call getCurrentTaskId
+	call getPid
+	jmp .end
+.C7:
+	call changePriority
 	jmp .end
 .C10:
 	call printChar

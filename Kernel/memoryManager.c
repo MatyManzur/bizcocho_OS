@@ -1,6 +1,5 @@
 
-#include <stdint.h>
-#include <stdlib.h>
+#include "memoryManager.h"
 #define BLOCK_SIZE sizeof(Header)
 #define BLOCK_AMOUNT (baseSize/BLOCK_SIZE);
 typedef uint64_t Align;
