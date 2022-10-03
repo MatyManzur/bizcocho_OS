@@ -12,6 +12,22 @@ enum state
 };
 typedef enum state State_t;
 
+enum blockedSource
+{
+    NO_BLOCK,
+    ASKED_TO,
+    PIPE_READ,
+    WAIT_CHILD,
+    WAIT_SEM
+};
+typedef enum blockedSource BlockedSource_t;
+
+typedef struct BlockReason_t
+{
+    BlockedSource_t source;
+    uint8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
+} BlockedReason_t;
+
 typedef struct PCB_t
 {
     uint8_t pid;
@@ -27,6 +43,7 @@ typedef struct PCB_t
     int8_t statusCode;
     int8_t fds[MAX_FD_COUNT];
     uint8_t priority;
+    BlockedReason_t blockedReason;
 } PCB_t;
 
 typedef struct nodePCB_t *pointerPCBNODE_t;
@@ -37,6 +54,7 @@ typedef struct nodePCB_t
     struct PCB_t *process;
     pointerPCBNODE_t next;
     pointerPCBNODE_t *children;
+    uint8_t childrenCount;
     int8_t remainingQuantum;
 } nodePCB_t;
 
@@ -66,25 +84,6 @@ static pointerPCBNODE_t findNextProcess()
         }
     }
     return head;
-
-    /* //esto creo que estaba mal pero no lo borre xlas
-    pointerPCBNODE_t head = schedule.nowRunning->next;
-    if(head!=NULL)
-    {
-        return head;
-    }
-    uint8_t index = schedule.nowRunning->process->priority;
-    for(uint8_t i=0; i<PRIORITY_COUNT; i++)
-    {
-        head = schedule.processes[(index+i)%PRIORITY_COUNT];
-        if(head!=NULL)
-        {
-            schedule.nowRunning = head;
-            return head;
-        }
-    }
-    return head; // solo hay un proceso
-    */
 }
 
 static uint8_t getCockatoo(uint8_t pid)
@@ -110,14 +109,17 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*process
     processPCB->statusCode = -1;
     for (int i = 0; i < MAX_FD_COUNT; i++)
     {
-        processPCB->fds[i] = (i<3)? i:-1;
+        processPCB->fds[i] = (i < 3) ? i : -1;
     }
     processPCB->priority = priority;
+    processPCB->blockedReason.source = NO_BLOCK;
+    processPCB->blockedReason.id = 0;
 
     // Agrega a las listas este PCB creado
     pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
     pnode->process = processPCB;
     pnode->children = NULL;
+    pnode->childrenCount = 0;
     pnode->remainingQuantum = PRIORITY_COUNT - priority;
     pnode->next = schedule.processes[priority];
     schedule.processes[priority] = pnode;
@@ -142,7 +144,7 @@ void scheduler()
     // chequeamos si se piso el cockatoo
     if (*(uint8_t *)(schedule.nowRunning->process->processMemStart - PROCESS_MEM_SIZE + 1) != schedule.nowRunning->process->cockatoo)
     {
-        // perdiste capo -> tirar algun tipo de error y matar el proceso?
+        // perdiste capo -> tirar algun tipo de error y matar el proceso? todo
     }
     uint8_t canContinue = (schedule.nowRunning->remainingQuantum > 0);
     if (schedule.nowRunning->process->state == READY && canContinue)
@@ -221,12 +223,11 @@ Situación 1) Padre se va a borrar:
 Situación 2) Hijo se va a matar:
     2a) el padre está esperando por él:
         - le aviso que no me espere más
-        - le doy el statusCode
-        - me borro de la lista => situación 1) => le paso los hijos
+        - => caso 2b)
     2b) el padre no está esperando por él (está vivo o está zombie, no importa):
         - dejo el statusCode en el struct
         - me paso a FINISHED
-        - no me borro de la lista
+        - no me borro de la lista, ya me va a borrar el wait()
 Situación 3) Padre va a esperar a un hijo: wait(pid)
     3a) el hijo está vivo:
         - marcamos como que está bloqueado por esperar a este hijo (o uno en general con un 0 ponele)
@@ -239,43 +240,135 @@ Situación 3) Padre va a esperar a un hijo: wait(pid)
         - devuelvo el statusCode
 */
 
-uint8_t killProcess(uint8_t pid) // todo bien con lo de los hijos
+static inline void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo)
+{
+    // todo: copiar al final de childrenListTo, los que estén en childrenListFrom. Puse un childrenCount en el node para poder hacer el realloc
+    // las childrenLists son arrays dinamicos de punteros a PCBNode y terminado en NULL, hacer con lo de #define BLOCK 10
+}
+
+static inline void removeFromList(pointerPCBNODE_t node, pointerPCBNODE_t parentNode)
+{
+    if (node->previous != NULL)
+    {
+        node->previous->next = node->next;
+    }
+    else
+    {
+        for (int i = 0; i < PRIORITY_COUNT; i++)
+        {
+            if (schedule.processes[i] == node)
+            {
+                schedule.processes[i] = node->next;
+            }
+        }
+    }
+    if (node->next != NULL)
+    {
+        node->next->previous = node->previous;
+    }
+    inheritChildren(node->children, parentNode->children);
+    freeNode(head);
+}
+
+static inline void setProcessReady(PCB_t *process)
+{
+    process->state = READY;
+    process->blockedReason.source = NO_BLOCK;
+    process->blockedReason.id = 0;
+}
+
+uint8_t killProcess(uint8_t pid)
 {
     pointerPCBNODE_t head = findByPid(pid);
     if (head != NULL) // si lo encontró
     {
         pointerPCBNODE_t parentHead = findByPid(head->process->ppid);
-
-        if (head->previous != NULL)
-            head->previous->next = head->next;
-        if (head->next != NULL)
-            head->next->previous = head->previous;
-
-        freeNode(head);
+        if (parentHead == NULL) // no debería, porque si no está el padre, a lo sumo tiene que ser el init, y el init está siempre
+            return 0;
+        // si el padre estaba esperando por él (en específico o por cualquier hijo)
+        if (parentHead->process->blockedReason.source == WAIT_CHILD && (parentHead->process->blockedReason.id == pid || parentHead->process->blockedReason.id == 0))
+        {
+            setProcessReady(parentHead->process);
+            // le decimos que no espere más, el statusCode lo puede agarrar de nuestro struct
+        }
+        head->process->state = FINISHED;
     }
     scheduler();
     return head != NULL; // devuelve si lo encontró y lo mató
 }
 
-uint8_t blockProcess(uint8_t pid)
+int8_t waitchild(uint8_t childpid)
+{
+    pointerPCBNODE_t head = schedule.nowRunning->children;
+    if (head == NULL) // No tiene hijos
+    {
+        return -2;
+    }
+    pointerPCBNODE_t child = childpid == 0 ? head : NULL;
+    while (child == NULL && head != NULL)
+    {
+        if (head->process->pid == childpid)
+            child = head;
+        head = head->next;
+    }
+    if (child == NULL)
+    {
+        return -2; // No tiene ese hijo, o ya había esperado por él y ya había muerto
+    }
+    if (child->process->state != FINISHED)
+    {
+        BlockedReason_t reason;
+        reason.source = WAIT_CHILD;
+        reason.id = childpid;
+        blockProcessWithReason(schedule.nowRunning->process->pid, reason); //-> llama a scheduler()
+        // cuando vuelva acá es porque ahora sí está FINISHED
+    }
+    int8_t statusCode = child->process->statusCode;
+    removeFromList(child);
+    return statusCode;
+}
+
+// Para uso del kernel, no es syscall
+uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
-    if (head != NULL)
+    uint8_t found = head != NULL && head->process->state != BLOCKED;
+    if (found)
     {
         head->process->state = BLOCKED;
+        head->process->blockedReason = blockReason;
     }
     scheduler();
-    return head != NULL;
+    return found;
+}
+
+// Para uso del kernel, no es syscall
+uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
+{
+    pointerPCBNODE_t head = findByPid(pid);
+    uint8_t found = head != NULL && head->process->blockedReason == blockReason;
+    if (found)
+    {
+        setProcessReady(head->process);
+    }
+    return found;
+}
+
+// estas sí son syscalls
+uint8_t blockProcess(uint8_t pid)
+{
+    BlockedReason_t reason;
+    reason.source = ASKED_TO;
+    reason.id = 0;
+    return blockProcessWithReason(pid, reason);
 }
 
 uint8_t unblockProcess(uint8_t pid)
 {
-    pointerPCBNODE_t head = findByPid(pid);
-    if (head != NULL)
-    {
-        head->process->state = READY;
-    }
-    return head != NULL;
+    BlockedReason_t reason;
+    reason.source = ASKED_TO;
+    reason.id = 0;
+    return unblockProcessWithReason(pid, reason);
 }
 
 uint8_t changePriority(uint8_t pid, uint8_t newPriority)
@@ -297,8 +390,8 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority)
         {
             schedule.processes[newPriority]->previous = head;
         }
-        head->next=schedule.processes[newPriority];
-        head->previous=NULL;
+        head->next = schedule.processes[newPriority];
+        head->previous = NULL;
         schedule.processes[newPriority] = head;
     }
     return head != NULL;
@@ -308,6 +401,6 @@ static void initProcess(int argc, void **argv)
 {
     while (1)
     {
-        // todo : chequea si heredó hijos zombies y los mata
+        waitchild(0); // si no tenia hijos zombies devuelve -2 pero no nos importa
     }
 }
