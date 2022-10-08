@@ -28,6 +28,7 @@ EXTERN blockProcess
 EXTERN unblockProcess
 EXTERN changePriority
 EXTERN exit
+EXTERN yield
 
 EXTERN printChar
 EXTERN print
@@ -215,6 +216,7 @@ _syscallHandler:
 	caseSyscall 5,	.C5
 	caseSyscall 6,	.C6
 	caseSyscall 7, 	.C7
+	caseSyscall 8, 	.C8
 	caseSyscall 10, .C10
 	caseSyscall 11, .C11
 	caseSyscall 12, .C12
@@ -259,6 +261,9 @@ _syscallHandler:
 	jmp .end
 .C7:
 	call changePriority
+	jmp .end
+.C8:
+	call yield
 	jmp .end
 .C10:
 	call printChar
@@ -344,7 +349,9 @@ haltcpu:
 	hlt
 	ret
 
-
+_int20:
+	int 20h
+	ret
 
 SECTION .bss
 	aux resq 1

@@ -6,6 +6,7 @@ GLOBAL sys_block_process
 GLOBAL sys_kill_process
 GLOBAL sys_get_pid
 GLOBAL sys_change_priority
+GLOBAL sys_yield
 GLOBAL sys_print_char
 GLOBAL sys_print
 GLOBAL sys_new_line
@@ -64,6 +65,9 @@ sys_get_pid:
 
 sys_change_priority:
 	make_syscall 7
+
+sys_yield:
+	make_syscall 8
 	
 sys_print_char:
 	make_syscall 10

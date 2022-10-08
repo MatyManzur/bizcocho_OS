@@ -2,7 +2,7 @@
 
 static unsigned long ticks = 0; //cantidad total de ticks desde la primera interrupcion del timer tick
 
-static struct timezone_t timezone = {0, 0}; //time zone actual con horas y minutos
+static struct timezone_t timezone = {0,0}; //time zone actual con horas y minutos
 static int monthdays[2][12] = {{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
                                {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}}; //dias de cada mes en años bisiestos y no bisiestos
 
@@ -12,7 +12,7 @@ static int isLeapYear(int year);
 void timer_handler()
 {
     ticks++;
-    followingTask();
+    scheduler();
 }
 
 //devuelve la cantidad total de ticks desde la primera interrupcion del timer tick

@@ -256,6 +256,8 @@ uint8_t sys_get_pid();
 
 uint8_t sys_change_priority(uint8_t pid, uint8_t newPriority);
 
+void sys_yield();
+
 uint8_t sys_print_char(char character, const struct format_t *format);
 
 char *sys_print(const char *string, const struct format_t *format);

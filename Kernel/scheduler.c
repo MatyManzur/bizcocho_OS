@@ -337,7 +337,7 @@ uint8_t killProcess(uint8_t pid)
         }
         head->process->state = FINISHED;
     }
-    scheduler();
+    _int20();
     return head != NULL; // devuelve si lo encontró y lo mató
 }
 
@@ -394,7 +394,7 @@ uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
         head->process->state = BLOCKED;
         head->process->blockedReason = blockReason;
     }
-    scheduler();
+    _int20();
     return found;
 }
 
@@ -464,4 +464,9 @@ static void initProcess(int argc, void **argv)
         while(waitchild(0) >= 0); // si no tenia hijos zombies devuelve -2
         //halt
     }
+}
+
+void yield(){
+    schedule.nowRunning->remainingQuantum=0;
+    _int20();
 }

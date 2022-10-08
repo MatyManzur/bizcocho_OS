@@ -34,6 +34,8 @@ void _cli(void);
 void _sti(void);
 
 void _hlt(void);
+//Fuerza una llamada al timertick
+void _int20(void);
 
 void picMasterMask(uint8_t mask);
 
