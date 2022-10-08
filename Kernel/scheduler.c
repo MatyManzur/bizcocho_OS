@@ -53,8 +53,9 @@ typedef struct nodePCB_t
     pointerPCBNODE_t previous;
     struct PCB_t *process;
     pointerPCBNODE_t next;
-    pointerPCBNODE_t *children;
-    uint8_t childrenCount;
+    pointerPCBNODE_t children;
+    pointerPCBNODE_t prevSibling;
+    pointerPCBNODE_t nextSibling;
     int8_t remainingQuantum;
 } nodePCB_t;
 
@@ -119,7 +120,8 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*process
     pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
     pnode->process = processPCB;
     pnode->children = NULL;
-    pnode->childrenCount = 0;
+    pnode->prevSibling = NULL;
+    pnode->nextSibling = NULL;
     pnode->remainingQuantum = PRIORITY_COUNT - priority;
     pnode->next = schedule.processes[priority];
     schedule.processes[priority] = pnode;
@@ -240,19 +242,25 @@ Situación 3) Padre va a esperar a un hijo: wait(pid)
         - devuelvo el statusCode
 */
 
-static inline void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo)
+static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo)
 {
-    // todo: copiar al final de childrenListTo, los que estén en childrenListFrom. Puse un childrenCount en el node para poder hacer el realloc
-    // las childrenLists son arrays dinamicos de punteros a PCBNode y terminado en NULL, hacer con lo de #define BLOCK 10
+    pointerPCBNODE_t lastChild = NULL;
+    while(*childrenListTo != NULL)
+    {
+        lastChild = *childrenListTo;
+        childrenListTo = &((*childrenListTo)->nextSibling);
+    }
+    *childrenListTo = *childrenListFrom;
+    (*childrenListFrom)->prevSibling = lastChild;
 }
 
-static inline void removeFromList(pointerPCBNODE_t node, pointerPCBNODE_t parentNode)
+static void removeFromList(pointerPCBNODE_t node, pointerPCBNODE_t parentNode)
 {
     if (node->previous != NULL)
     {
         node->previous->next = node->next;
     }
-    else
+    else //era el primero
     {
         for (int i = 0; i < PRIORITY_COUNT; i++)
         {
@@ -266,8 +274,8 @@ static inline void removeFromList(pointerPCBNODE_t node, pointerPCBNODE_t parent
     {
         node->next->previous = node->previous;
     }
-    inheritChildren(node->children, parentNode->children);
-    freeNode(head);
+    inheritChildren(&node->children, &parentNode->children);
+    freeNode(node);
 }
 
 static inline void setProcessReady(PCB_t *process)
@@ -304,12 +312,12 @@ int8_t waitchild(uint8_t childpid)
     {
         return -2;
     }
-    pointerPCBNODE_t child = childpid == 0 ? head : NULL;
+    pointerPCBNODE_t child = (childpid == 0)? head : NULL;
     while (child == NULL && head != NULL)
     {
         if (head->process->pid == childpid)
             child = head;
-        head = head->next;
+        head = head->nextSibling;
     }
     if (child == NULL)
     {
@@ -324,7 +332,19 @@ int8_t waitchild(uint8_t childpid)
         // cuando vuelva acá es porque ahora sí está FINISHED
     }
     int8_t statusCode = child->process->statusCode;
-    removeFromList(child);
+    if(child->prevSibling!=NULL)
+    {
+        child->prevSibling->nextSibling = child->nextSibling;
+    }
+    else //era el primero
+    {
+        schedule.nowRunning->children = child->nextSibling;
+    }
+    if(child->nextSibling!=NULL)
+    {
+        child->nextSibling->prevSibling = child->prevSibling;
+    }
+    removeFromList(child, schedule.nowRunning);
     return statusCode;
 }
 
@@ -346,7 +366,7 @@ uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
 uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
-    uint8_t found = head != NULL && head->process->blockedReason == blockReason;
+    uint8_t found = (head != NULL) && (head->process->blockedReason.source == blockReason.source) && (head->process->blockedReason.id == blockReason.id);
     if (found)
     {
         setProcessReady(head->process);
