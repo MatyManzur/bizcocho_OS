@@ -20,6 +20,7 @@ static Header* freep=NULL; // Inicamos la lista en nada
 
 void memInitialize(void * memBase,uint32_t memSize)
 {
+    base=(Header*) memBase; // Es necesario para tener la direccion base del memoryManager y saber si se pasa o no
     baseSize = memSize;
     freep = (Header*) memBase;
     freep->s.next = NULL;

@@ -70,7 +70,10 @@ initializeTask:
 	mov rax, ss
 	push rax
 	push rcx 	; en rcx tenemos cuanto tiene que valer el nuevo rsp
-	pushfq
+
+	mov rax, 0x202		; pusheamos los flags
+	push rax	; si no anda volver a cambiar por 'pushfq'
+
 	mov rax, cs
 	push rax
 	push rdx	; en rdx tenemos cuanto tiene que valer el nuevo rip

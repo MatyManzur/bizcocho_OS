@@ -453,10 +453,15 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority)
     return head != NULL;
 }
 
+//yield -> fuerza un int 20h (la del timertick)
+//en vez de llamar a scheduler() cuando se hace un bloqueo o algo, llamamos a yield()
+
 static void initProcess(int argc, void **argv)
 {
     while (1)
     {
-        waitchild(0); // si no tenia hijos zombies devuelve -2 pero no nos importa
+        //no, el waitchild lo bloquea
+        while(waitchild(0) >= 0); // si no tenia hijos zombies devuelve -2
+        //halt
     }
 }
