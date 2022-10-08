@@ -67,6 +67,7 @@ typedef struct pbrr_t
 
 static pbrr_t schedule = {0};
 static int pidToGive = 1;
+static pointerPCBNODE_t init;
 
 static pointerPCBNODE_t findNextProcess()
 {
@@ -92,11 +93,11 @@ static uint8_t getCockatoo(uint8_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
-uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority)
-{
+static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,int8_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
+
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;
-    processPCB->ppid = 1; // el init
+    processPCB->ppid = ppid; //El parent provisto
     strncpy(processPCB->name, name, NAME_MAX);
     processPCB->argc = argc;
     processPCB->argv = argv;
@@ -108,14 +109,21 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*process
     processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
     processPCB->statusCode = -1;
-    for (int i = 0; i < MAX_FD_COUNT; i++)
-    {
-        processPCB->fds[i] = (i < 3) ? i : -1;
+    if(fds==NULL){
+        for (int i = 0; i < MAX_FD_COUNT; i++)
+        {
+            processPCB->fds[i] = (i < 3) ? i : -1;
+        }
+    }else{
+        for (int i = 0; i < MAX_FD_COUNT; i++)
+        {
+            processPCB->fds[i] = fds[i];
+        }
     }
     processPCB->priority = priority;
     processPCB->blockedReason.source = NO_BLOCK;
     processPCB->blockedReason.id = 0;
-
+    
     // Agrega a las listas este PCB creado
     pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
     pnode->process = processPCB;
@@ -124,22 +132,50 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*process
     pnode->nextSibling = NULL;
     pnode->remainingQuantum = PRIORITY_COUNT - priority;
     pnode->next = schedule.processes[priority];
+    schedule.processes[priority]->previous = pnode;
     schedule.processes[priority] = pnode;
+    //Agregamos el child a la lista del padre
 
-    return processPCB->pid;
+    pointerPCBNODE_t aux;
+    if(parent->children==NULL){
+        parent->children=pnode;
+    }else{
+        aux=parent->children;
+        while(aux->nextSibling!=NULL)
+        {
+            aux=aux->nextSibling;
+        }
+        aux->nextSibling=pnode;
+        pnode->prevSibling=aux;
+    }
+
+    return pnode;
 }
+
+uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority)
+{
+    pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,NULL,init);
+    
+    return pnode->process->pid;
+}
+
 
 // Hacer un startChild (equivalente a un fork exec)
 uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **))
 {
-    // todo -> modularizar para no repetir el codigo de startParent
+    uint8_t priority = schedule.nowRunning->process->priority;
+    pointerPCBNODE_t parent= schedule.nowRunning;
+
+    pointerPCBNODE_t pnode= startProcess(name,argc,argv,processCodeStart,priority,schedule.nowRunning->process->pid,schedule.nowRunning->process->fds,parent);
+
+    return pnode->process->pid;
 }
 
 void scheduler()
 {
     if (schedule.nowRunning == NULL)
     {
-        startParentProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1);
+        init= startParentProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1);
         schedule.nowRunning = findNextProcess();
         return;
     }
