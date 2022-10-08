@@ -3,6 +3,7 @@
 
 #include <lib.h>
 #include <registers.h>
+#include <scheduler.h>
 
 #define BUFFER_DIM 128
 
@@ -176,7 +177,7 @@ typedef struct kbEvent_t    //struct de un evento del teclado, almacena que tecl
 void keyboard_handler();
 
 //syscalls
-void readPrintables(char *bufferString, uint8_t count);
+uint8_t readPrintables(char *bufferString, uint8_t count);
 
 void getNextKey(struct kbEvent_t *kbEvent);
 

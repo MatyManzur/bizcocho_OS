@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.asm": "nasm",
+        "printing.h": "c",
+        "files.h": "c",
+        "scheduler.h": "c",
+        "lib.h": "c",
+        "string.h": "c",
+        "interrupts.h": "c"
+    }
+}

@@ -29,12 +29,12 @@ static uint8_t *pointToCursor(point_t point)
 uint8_t printChar(char character, color_t backgroundColor, color_t characterColor)
 {
     //si se pasó dentro de la linea, sigue al principio de la línea siguiente
-    if (cursor.column > WIDTH)
+    if (cursor.column >= WIDTH)
     {
         cursor.column = 0;
         cursor.row++;
     }
-    if (cursor.row > HEIGHT)
+    if (cursor.row >= HEIGHT)
     {
         return 1; //se paso de su pantalla
     }
@@ -76,9 +76,9 @@ format_t changeColor(color_t backgroundColor, color_t characterColor)
     fmt.characterColor = currentFormat.characterColor;
     currentFormat.backgroundColor = backgroundColor;
     currentFormat.characterColor = characterColor;
-    for (int i = 0; i <= WIDTH; i++)
+    for (int i = 0; i < WIDTH; i++)
     {
-        for (int j = 0; j <= HEIGHT; j++)
+        for (int j = 0; j < HEIGHT; j++)
         {
             point_t currentPoint = {.row = j, .column = i};
             uint8_t *cursorPointer = pointToCursor(currentPoint);
@@ -108,7 +108,7 @@ format_t changeColor(color_t backgroundColor, color_t characterColor)
 //borra los caracteres que queden en la línea y setea el fondo al color indicado
 uint8_t newLine(color_t backgroundColor)
 {
-    while (cursor.column <= WIDTH)
+    while (cursor.column < WIDTH)
     {
         int error = printChar(' ', backgroundColor, DEFAULT);    //hacemos esto hasta que lleguemos al fin de la línea
         if (error)
@@ -125,9 +125,9 @@ uint8_t newLine(color_t backgroundColor)
 //deja el cursor al principio de todo
 void clearScreen()
 {
-    for (int i = 0; i <= WIDTH; i++)
+    for (int i = 0; i < WIDTH; i++)
     {
-        for (int j = 0; j <= HEIGHT; j++)
+        for (int j = 0; j < HEIGHT; j++)
         {
             point_t currentPoint = {.row = j, .column = i};
             uint8_t *cursorPointer = pointToCursor(currentPoint);
@@ -145,9 +145,9 @@ void clearScreen()
 void scrollUp(uint8_t rows)
 {
     int j;
-    for (j = 0; j <= HEIGHT - rows; j++)
+    for (j = 0; j < HEIGHT - rows; j++)
     {
-        for (int i = 0; i <= WIDTH; i++)
+        for (int i = 0; i < WIDTH; i++)
         {
             point_t currentPoint = {.row = j + rows, .column = i};
             point_t newPoint = {.row = j, .column = i};
@@ -157,9 +157,9 @@ void scrollUp(uint8_t rows)
         }
     }
     //borra los caracteres de las úlimas "rows" líneas
-    for (; j <= HEIGHT; j++)
+    for (; j < HEIGHT; j++)
     {
-        for (int i = 0; i <= WIDTH; i++)
+        for (int i = 0; i < WIDTH; i++)
         {
             point_t currentPoint = {.row = i, .column = j};
             uint8_t *cursorPointer = pointToCursor(currentPoint);
@@ -168,4 +168,6 @@ void scrollUp(uint8_t rows)
             charsWithSpecialFormat[currentPoint.column][currentPoint.row] = NONE;
         }
     }
+    cursor.column = 0;
+    cursor.row = HEIGHT - rows;
 }

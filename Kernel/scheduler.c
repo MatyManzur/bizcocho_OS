@@ -1,51 +1,5 @@
 #include <scheduler.h>
 
-#define MAX_FD_COUNT 64
-#define PRIORITY_COUNT 5
-#define NAME_MAX 64
-#define PROCESS_MEM_SIZE 4096
-enum state
-{
-    BLOCKED,
-    READY,
-    FINISHED
-};
-typedef enum state State_t;
-
-enum blockedSource
-{
-    NO_BLOCK,
-    ASKED_TO,
-    PIPE_READ,
-    WAIT_CHILD,
-    WAIT_SEM
-};
-typedef enum blockedSource BlockedSource_t;
-
-typedef struct BlockReason_t
-{
-    BlockedSource_t source;
-    uint8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
-} BlockedReason_t;
-
-typedef struct PCB_t
-{
-    uint8_t pid;
-    uint8_t ppid;
-    char name[NAME_MAX];
-    uint8_t argc;
-    void **argv;
-    void (*processCodeStart)(uint8_t argc, void **argv);
-    void *processMemStart;
-    uint8_t cockatoo;      // un canary medio trucho que ponemos al final de la memoria para ver que no se pase (pero podría saltarlo tranquilamente)
-    uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
-    State_t state;
-    int8_t statusCode;
-    int8_t fds[MAX_FD_COUNT];
-    uint8_t priority;
-    BlockedReason_t blockedReason;
-} PCB_t;
-
 typedef struct nodePCB_t *pointerPCBNODE_t;
 
 typedef struct nodePCB_t
@@ -135,18 +89,23 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void
     schedule.processes[priority]->previous = pnode;
     schedule.processes[priority] = pnode;
     //Agregamos el child a la lista del padre
-
-    pointerPCBNODE_t aux;
-    if(parent->children==NULL){
-        parent->children=pnode;
-    }else{
-        aux=parent->children;
-        while(aux->nextSibling!=NULL)
+    if(parent!=NULL)
+    {
+        pointerPCBNODE_t aux;
+        if(parent->children==NULL)
         {
-            aux=aux->nextSibling;
+            parent->children=pnode;
         }
-        aux->nextSibling=pnode;
-        pnode->prevSibling=aux;
+        else
+        {
+            aux=parent->children;
+            while(aux->nextSibling!=NULL)
+            {
+                aux=aux->nextSibling;
+            }
+            aux->nextSibling=pnode;
+            pnode->prevSibling=aux;
+        }
     }
 
     return pnode;
@@ -175,7 +134,7 @@ void scheduler()
 {
     if (schedule.nowRunning == NULL)
     {
-        init= startParentProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1);
+        init= startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL);
         schedule.nowRunning = findNextProcess();
         return;
     }
@@ -238,6 +197,8 @@ static pointerPCBNODE_t findByPidRec(uint8_t pid, pointerPCBNODE_t head)
 
 static pointerPCBNODE_t findByPid(uint8_t pid)
 {
+    if(pid == schedule.nowRunning->process->pid)
+        return schedule.nowRunning;
     pointerPCBNODE_t foundPointer = NULL;
     for (int i = 0; i < PRIORITY_COUNT && foundPointer == NULL; i++)
     {
@@ -453,16 +414,21 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority)
     return head != NULL;
 }
 
-//yield -> fuerza un int 20h (la del timertick)
-//en vez de llamar a scheduler() cuando se hace un bloqueo o algo, llamamos a yield()
-
 static void initProcess(int argc, void **argv)
 {
     while (1)
     {
-        //no, el waitchild lo bloquea
-        while(waitchild(0) >= 0); // si no tenia hijos zombies devuelve -2
-        //halt
+        pointerPCBNODE_t child = init->children;
+        while(child != NULL)
+        {
+            pointerPCBNODE_t nextChild = child->nextSibling;
+            if(child->process->state == FINISHED)
+            {
+                waitchild(child->process->pid);
+            }
+            child = nextChild;
+        }
+        _hlt();
     }
 }
 

@@ -1,5 +1,72 @@
+#include <files.h>
 //estas sí serían syscalls, no como las de printing.c
 
+static void printToScreen(char* s,format_t* format){
+    while(s!=NULL && *s != '\0'){
+            s=print(s,format);
+            if(s!=NULL){
+                scrollUp(1);
+            }
+        }
+}
+
+int write(int fd,char* s)
+{   
+    format_t format;
+    format.backgroundColor=DEFAULT;
+    format.characterColor=DEFAULT;
+    switch (fd)
+    {
+        case 0:
+            //no se puede, el keyboard.c tiene el buffer
+            return -1;
+            break;
+
+        case 1:
+            printToScreen(s,&format);
+            break;
+
+        case 2:
+            format.characterColor = WHITE;
+            format.backgroundColor = RED;
+            printToScreen(s,&format);
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+uint8_t read(int fd, char* buf, uint8_t n)
+{
+    switch (fd)
+    {
+        case 0:
+            int totalChars = 0;
+            while(totalChars < n)
+            {
+                totalChars += readPrintables(buf, n - totalChars);
+                if(totalChars < n)
+                {
+                    BlockedReason_t block;
+                    block.id=0;
+                    block.source=PIPE_READ;
+                    blockProcessWithReason(getPid(),block);
+                }
+                
+            }
+            break;
+        case 1:
+        case 2:
+            
+            //No se puede
+            return -1;
+        break;
+        
+        default:
+            break;
+    }
+}
 /*
 write(int fd, char* s)
 - escribe hasta que encuentra un \0

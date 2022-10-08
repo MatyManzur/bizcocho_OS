@@ -70,8 +70,13 @@ void keyboard_handler()
            BUFFER_DIM] = kbEvent;    //guardamos el struct en el buffer en la posicion indicada por writingIndex%BUFFER_DIM y lo incrementamos
 }
 
-//lee del buffer "count" caracteres PRINTEABLES (omite teclas no printeables) y los guarda en el buffer pasado por parametro. Empieza a leer del teclado en cuanto se llama a esta funcion y espera a que se hayan leído la cantidad deseada de caracteres, ya transforma las mayúsculas y las pone como un caracter en el buffer pasado por parametro.
-void readPrintables(char *bufferString, uint8_t count)
+/*
+Intenta leer del buffer "count" caracteres PRINTEABLES (omite teclas no printeables) 
+y los guarda en el buffer pasado por parametro. 
+ya transforma las mayúsculas y las pone como un caracter en el buffer pasado por parametro.
+Devuelve los caracteres que alcanzó a leer.
+*/
+uint8_t readPrintables(char *bufferString, uint8_t count)
 {
     cleanBuffer(); //omitimos lo que haya quedado en el buffer de antes
     int i = 0; //contamos caracteres enteros leidos
@@ -103,9 +108,10 @@ void readPrintables(char *bufferString, uint8_t count)
             }
         } else    //si todavía no hay nada para leer
         {
-            _hlt();    //esperamos a la próxima interrupción
+            return i;
         }
     }
+    return i;
 }
 
 //Lee la próxima tecla del buffer en la posición indicada por readingIndex, y lo incrementa siempre que haya habido algo para leer. Lee teclas printeables y no printeables.
