@@ -40,11 +40,12 @@ typedef struct PCB_t
 
 enum blockedSource
 {
-    NO_BLOCK,//Poner ID en 0
+    NO_BLOCK = 0,//Poner ID en 0
     ASKED_TO,//Igual con este
     PIPE_READ,
     WAIT_CHILD,
-    WAIT_SEM
+    WAIT_SEM,
+    BLOCK_REASON_COUNT
 };
 typedef enum blockedSource BlockedSource_t;
 
@@ -79,4 +80,6 @@ void scheduler();
 uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 
 uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
+
+void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
 #endif

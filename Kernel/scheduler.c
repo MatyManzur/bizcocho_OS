@@ -1,4 +1,5 @@
 #include <scheduler.h>
+#include <ddlADT.h>
 
 typedef struct nodePCB_t *pointerPCBNODE_t;
 
@@ -22,6 +23,8 @@ typedef struct pbrr_t
 static pbrr_t schedule = {0};
 static int pidToGive = 1;
 static pointerPCBNODE_t init;
+
+static ddlADT blockedProcesses[BLOCK_REASON_COUNT];
 
 static pointerPCBNODE_t findNextProcess()
 {
@@ -132,9 +135,13 @@ uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processC
 
 void scheduler()
 {
-    if (schedule.nowRunning == NULL)
+    if (schedule.nowRunning == NULL) //primera vez
     {
-        init= startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL);
+        for(int i = 0; i< BLOCK_REASON_COUNT; i++)
+        {
+            blockedProcesses[i] = newList();
+        }
+        init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL);
         schedule.nowRunning = findNextProcess();
         return;
     }
@@ -354,8 +361,9 @@ uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
     {
         head->process->state = BLOCKED;
         head->process->blockedReason = blockReason;
+        add(blockedProcesses[blockReason.source], head->process);
+        _int20();
     }
-    _int20();
     return found;
 }
 
@@ -367,8 +375,32 @@ uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
     if (found)
     {
         setProcessReady(head->process);
+        toBegin(blockedProcesses[blockReason.source]);
+        while(hasNext(blockedProcesses[blockReason.source]))
+        {
+            PCB_t * current = (PCB_t*) next(blockedProcesses[blockReason.source]);
+            if(current->pid == head->process->pid)
+            {
+                remove(blockedProcesses[blockReason.source]);
+                return found;
+            }
+        }
     }
     return found;
+}
+
+void unblockAllProcessesBecauseReason(BlockedReason_t blockReason)
+{
+    toBegin(blockedProcesses[blockReason.source]);
+    while(hasNext(blockedProcesses[blockReason.source]))
+    {
+        PCB_t * current = (PCB_t*) next(blockedProcesses[blockReason.source]);
+        if(current->blockedReason.id == blockReason.id)
+        {
+            setProcessReady(current);
+            remove(blockedProcesses[blockReason.source]);
+        }
+    }
 }
 
 // estas sí son syscalls

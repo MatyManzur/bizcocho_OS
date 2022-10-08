@@ -37,32 +37,35 @@ int write(int fd,char* s)
     return 0;
 }
 
+//lee hasta un \n o hasta leer n chars. devuelve cuantos leyó
 uint8_t read(int fd, char* buf, uint8_t n)
 {
     switch (fd)
     {
         case 0:
-            int totalChars = 0;
+            uint8_t totalChars = 0;
             while(totalChars < n)
             {
                 totalChars += readPrintables(buf, n - totalChars);
+                if(totalChars > 0 && buf[totalChars-1]=='\n')
+                {
+                    return totalChars;
+                }
                 if(totalChars < n)
                 {
                     BlockedReason_t block;
-                    block.id=0;
-                    block.source=PIPE_READ;
-                    blockProcessWithReason(getPid(),block);
+                    block.id = 0;
+                    block.source = PIPE_READ;
+                    blockProcessWithReason(getPid(), block);
                 }
-                
             }
+            return totalChars;
             break;
         case 1:
         case 2:
-            
             //No se puede
-            return -1;
+            return 0;
         break;
-        
         default:
             break;
     }

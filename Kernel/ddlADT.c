@@ -59,13 +59,24 @@ elemType next(ddlADT list)
 
 void remove(ddlADT list)
 {
-    if(hasNext(list) && list->nextCalled)
+    if(hasNext(list) && list->nextCalled) //si llamaron a next es porque list->current->prev != NULL porque es el ultimo devuelto
     {
         list->nextCalled = 0;
-        if(list->current->prev==NULL)
+        TList aborrar = list->current->prev;
+        if(aborrar->prev==NULL) // es el primero
         {
-            TList 
+            list->first = aborrar->next; 
         }
+        else
+        {
+            aborrar->prev->next = aborrar->next;
+        }
+        
+        if(aborrar->next!=NULL)
+        {
+            aborrar->next->prev = aborrar->prev;
+        }
+        free(aborrar);
     }
 }
 

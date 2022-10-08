@@ -66,13 +66,18 @@ void keyboard_handler()
     {
         saveRegisters();
     }
-    buffer[(writingIndex++) %
-           BUFFER_DIM] = kbEvent;    //guardamos el struct en el buffer en la posicion indicada por writingIndex%BUFFER_DIM y lo incrementamos
+    buffer[(writingIndex++) % BUFFER_DIM] = kbEvent;    //guardamos el struct en el buffer en la posicion indicada por writingIndex%BUFFER_DIM y lo incrementamos
+    
+    BlockedReason_t block;
+    block.id=0;
+    block.source=PIPE_READ;
+    unblockAllProcessesBecauseReason(block);
 }
 
 /*
 Intenta leer del buffer "count" caracteres PRINTEABLES (omite teclas no printeables) 
 y los guarda en el buffer pasado por parametro. 
+Corta si encuentra un \n
 ya transforma las mayúsculas y las pone como un caracter en el buffer pasado por parametro.
 Devuelve los caracteres que alcanzó a leer.
 */
@@ -103,8 +108,10 @@ uint8_t readPrintables(char *bufferString, uint8_t count)
                 char printableChar = printableKeys[shifted][kbEvent.key];
                 //si esa tecla tenía un caracter printeable, lo ponemos en el string e i++
                 if (printableChar != 0)
-                    bufferString[i++] = printableChar;
+                    bufferString[i] = printableChar;
                 //si no era un caracter printeable, no hacemos nada y no incrementamos i
+                if(bufferString[i++] == '\n')
+                    return i;
             }
         } else    //si todavía no hay nada para leer
         {
