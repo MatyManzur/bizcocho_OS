@@ -6,6 +6,10 @@
 #include <printing.h>
 #include <keyboard.h>
 #include <scheduler.h>
+#include <memoryManager.h>
+
+#define MEMBASE 900000
+#define MEMSIZE 6400000
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -101,6 +105,9 @@ int main()
     ncPrintHex((uint64_t) sampleDataModuleAddress);
     ncNewline();
     ncPrint("  Sample data module contents: ");
+
+    memInitialize(MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
+    
     ncPrint((char *) sampleDataModuleAddress);
     ncNewline();
 

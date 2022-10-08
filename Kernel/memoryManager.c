@@ -20,11 +20,10 @@ static Header* freep=NULL; // Inicamos la lista en nada
 
 void memInitialize(void * memBase,uint32_t memSize)
 {
-    base= (Header*) memBase;
-    baseSize=memSize;
-    freep=base;
-    freep->s.next=NULL;
-    freep->s.size=BLOCK_AMOUNT;//Iniciamos con el total del heap en cantidad de bloques
+    baseSize = memSize;
+    freep = (Header*) memBase;
+    freep->s.next = NULL;
+    freep->s.size = BLOCK_AMOUNT;   //Iniciamos con el total del heap en cantidad de bloques
 }
 
 void* memalloc(uint32_t nbytes)
