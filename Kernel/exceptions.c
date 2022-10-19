@@ -1,3 +1,4 @@
+/*
 #include <printing.h>
 #include <registers.h>
 #include <scheduler.h>
@@ -50,3 +51,4 @@ static void invalid_opcode(uint64_t *registers)
         return;
     killTask(currentTaskId);
 }
+*/

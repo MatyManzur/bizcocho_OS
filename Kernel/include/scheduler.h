@@ -20,6 +20,23 @@ enum state
 };
 typedef enum state State_t;
 
+enum blockedSource
+{
+    NO_BLOCK = 0,//Poner ID en 0
+    ASKED_TO,//Igual con este
+    PIPE_READ,
+    WAIT_CHILD,
+    WAIT_SEM,
+    BLOCK_REASON_COUNT
+};
+typedef enum blockedSource BlockedSource_t;
+
+typedef struct BlockReason_t
+{
+    BlockedSource_t source;
+    uint8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
+} BlockedReason_t;
+
 typedef struct PCB_t
 {
     uint8_t pid;
@@ -37,23 +54,6 @@ typedef struct PCB_t
     uint8_t priority;
     BlockedReason_t blockedReason;
 } PCB_t;
-
-enum blockedSource
-{
-    NO_BLOCK = 0,//Poner ID en 0
-    ASKED_TO,//Igual con este
-    PIPE_READ,
-    WAIT_CHILD,
-    WAIT_SEM,
-    BLOCK_REASON_COUNT
-};
-typedef enum blockedSource BlockedSource_t;
-
-typedef struct BlockReason_t
-{
-    BlockedSource_t source;
-    uint8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
-} BlockedReason_t;
 
 //SYSCALLS
 uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority);

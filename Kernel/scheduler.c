@@ -1,5 +1,6 @@
 #include <scheduler.h>
 #include <ddlADT.h>
+#include <time.h>
 
 typedef struct nodePCB_t *pointerPCBNODE_t;
 
@@ -20,11 +21,13 @@ typedef struct pbrr_t
     pointerPCBNODE_t nowRunning;
 } pbrr_t;
 static int schedulerRunning=0;
-static pbrr_t schedule = {0};
+static pbrr_t schedule = {{0}};
 static int pidToGive = 1;
 static pointerPCBNODE_t init;
 
 static ddlADT blockedProcesses[BLOCK_REASON_COUNT];
+
+static void initProcess(uint8_t argc, void **argv);
 
 static pointerPCBNODE_t findNextProcess()
 {
@@ -55,9 +58,9 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;
     processPCB->ppid = ppid; //El parent provisto
-    strncpy(processPCB->name, name, NAME_MAX);
+    // strncpy(processPCB->name, name, NAME_MAX); //TODO strncpy
     processPCB->argc = argc;
-    processPCB->argv = argv;
+    processPCB->argv = (void **)argv;
     processPCB->processCodeStart = processCodeStart;
     processPCB->processMemStart = memalloc(PROCESS_MEM_SIZE);
     processPCB->cockatoo = getCockatoo(processPCB->pid);
@@ -450,7 +453,7 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority)
     return head != NULL;
 }
 
-static void initProcess(int argc, void **argv)
+static void initProcess(uint8_t argc, void **argv)
 {
     while (1)
     {

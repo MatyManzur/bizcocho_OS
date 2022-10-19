@@ -1,3 +1,4 @@
+/*
 #include <userlib.h>
 
 #define IS_DIGIT(x) ((x)>='0' && (x)<='9')
@@ -273,7 +274,7 @@ int sqrt(int x)
     } u;
     u.x = x;
     u.i = 0x5f375a86 - (u.i >> 1);
-    /* The next line can be repeated any number of times to increase accuracy */
+    // The next line can be repeated any number of times to increase accuracy 
     u.x = u.x * (1.5f - xhalf * u.x * u.x);
     return ((int) (u.x * x)) +
            2;//Esto es para conseguir la raiz ademas SSE esta deshabilitado entonces truncamos y sumamos uno
@@ -355,4 +356,4 @@ uint8_t strCopy(char *source, char *dest)
     dest[i] = '\0';
     return i;
 }
-
+*/

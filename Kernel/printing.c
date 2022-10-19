@@ -15,7 +15,7 @@ static uint8_t *const video = (uint8_t *) 0xB8000;
 
 format_t currentFormat = {BLACK, L_GRAY};
 
-uint8_t charsWithSpecialFormat[WIDTH][HEIGHT] = {NONE};
+uint8_t charsWithSpecialFormat[WIDTH][HEIGHT] = {{NONE}};
 
 point_t cursor = {0,0};
 

@@ -2,7 +2,7 @@
 #define MEMORYMANAGER_H_
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 void memInitialize(void * memBase,uint32_t memSize);
 

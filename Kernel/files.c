@@ -40,10 +40,10 @@ int write(int fd,char* s)
 //lee hasta un \n o hasta leer n chars. devuelve cuantos leyó
 uint8_t read(int fd, char* buf, uint8_t n)
 {
+    uint8_t totalChars = 0;
     switch (fd)
     {
         case 0:
-            uint8_t totalChars = 0;
             while(totalChars < n)
             {
                 totalChars += readPrintables(buf, n - totalChars);
@@ -64,11 +64,12 @@ uint8_t read(int fd, char* buf, uint8_t n)
         case 1:
         case 2:
             //No se puede
-            return 0;
+            
         break;
         default:
             break;
     }
+    return 0;
 }
 /*
 write(int fd, char* s)

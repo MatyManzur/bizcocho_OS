@@ -1,22 +1,6 @@
 #define NULL 0
 #include <semaphore.h>
 
-typedef struct blockHub
-{
-    int globalid; // se inicializa en 0 al principio de todo, también podría ser un static
-    ddlADT semBlockList;
-} blockHub;
-
-typedef struct semBlock
-{
-    char name[32];
-    int id;
-    int value;
-    ddlADT blockedProcessList;
-    semPointer next;
-} semBlock;
-
-typedef semBlock * semPointer;
 
 static char initialized;
 static blockHub hub; 
@@ -38,13 +22,16 @@ int initializeSemaphore(char * name, int initialValue)
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)
     {
-        if(!strCmp(curr->name, name))
-        {
-            return curr->id;
-        }
+        /*      TODO strncpy
+            if(!strCmp(curr->name, name))
+            {
+                return curr->id;
+            }
+        */
+        
     }
     curr = memalloc(sizeof(struct semBlock));
-    strncpy(curr->name, name, 32);
+    //strncpy(curr->name, name, 32); TODO strncpy
     curr->next = NULL;
     curr->id = hub.globalid++;
     curr->value = initialValue;

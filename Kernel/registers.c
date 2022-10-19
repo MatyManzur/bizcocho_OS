@@ -1,3 +1,4 @@
+/*
 #include <registers.h>
 
 #define REGISTER_COUNT 18
@@ -61,3 +62,4 @@ void printRegisters(uint64_t *registers)
         printRegAux(registers, i, &registerformat, &numberformat, registerNames);
     }
 }
+*/

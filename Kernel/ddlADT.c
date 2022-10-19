@@ -76,7 +76,7 @@ void remove(ddlADT list)
         {
             aborrar->next->prev = aborrar->prev;
         }
-        free(aborrar);
+        memfree(aborrar);
     }
 }
 
@@ -86,8 +86,8 @@ void freeList(ddlADT list)
     while(head != NULL)
     {
         TList aux = head->next;
-        free(head);
+        memfree(head);
         head = aux;
     }
-    free(list);
+    memfree(list);
 }

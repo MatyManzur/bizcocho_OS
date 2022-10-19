@@ -9,6 +9,8 @@ typedef struct blockHub
     ddlADT semBlockList;
 } blockHub;
 
+typedef struct semBlock * semPointer;
+
 typedef struct semBlock
 {
     char name[32];
@@ -17,8 +19,6 @@ typedef struct semBlock
     ddlADT blockedProcessList;
     semPointer next;
 } semBlock;
-
-typedef semBlock * semPointer;
 
 void initSemaphoreHub();
 

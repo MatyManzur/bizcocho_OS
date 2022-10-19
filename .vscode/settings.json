@@ -9,6 +9,22 @@
         "interrupts.h": "c",
         "bizcocho.h": "c",
         "syslib.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "memorymanager.h": "c",
+        "ddladt.h": "c",
+        "cstdlib": "c",
+        "cassert": "c",
+        "cctype": "c",
+        "climits": "c",
+        "cmath": "c",
+        "cstdarg": "c",
+        "cstddef": "c",
+        "cstdio": "c",
+        "type_traits": "c",
+        "limits": "c",
+        "*.tcc": "c",
+        "cstdint": "c",
+        "typeinfo": "c",
+        "registers.h": "c"
     }
 }

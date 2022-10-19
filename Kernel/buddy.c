@@ -1,4 +1,4 @@
-
+/*
 #define DIVISIONS 6
 
 struct buddyNode
@@ -84,3 +84,4 @@ void * memalloc(uint32_t nbytes)
     }
     return NULL; // No more memory on that level
 }
+*/

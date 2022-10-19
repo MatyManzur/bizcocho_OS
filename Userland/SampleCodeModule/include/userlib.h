@@ -1,3 +1,4 @@
+/*
 #ifndef USERLIB_H
 #define USERLIB_H
 
@@ -40,3 +41,4 @@ void newLine();
 int sqrt(int x);
 
 #endif
+*/
