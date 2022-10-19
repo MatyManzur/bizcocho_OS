@@ -75,6 +75,8 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority);
 void yield();
 
 //KERNEL ONLY
+void initializeScheduler();
+
 void scheduler();
 
 uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);

@@ -266,13 +266,7 @@ uint8_t sys_new_line(color_t backgroundColor);
 
 void sys_clear_screen(color_t backgroundColor);
 
-void sys_get_cursor(struct point_t *cursor);
-
-void sys_set_cursor(const struct point_t *cursor);
-
 void sys_scroll_up(uint8_t rows);
-
-void sys_move_cursor(int rows, int columns);
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 

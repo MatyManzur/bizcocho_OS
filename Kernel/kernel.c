@@ -88,33 +88,37 @@ void *initializeKernelBinary()
 }
 
 int main()
-{
+{   _cli();//No queremos interrupciones por ahora mientras setupeamos todo
     load_idt();    //arma la IDT
-
-    ncPrint("[Kernel Main]");
-    ncNewline();
-    ncPrint("  Sample code module at 0x");
-    ncPrintHex((uint64_t) sampleCodeModuleAddress);
-    ncNewline();
-    ncPrint("  Calling the sample code module returned: ");
-    ncPrintHex(((EntryPoint) sampleCodeModuleAddress)());    //llama a que arranque el userland
-    ncNewline();
-    ncNewline();
-
-    ncPrint("  Sample data module at 0x");
-    ncPrintHex((uint64_t) sampleDataModuleAddress);
-    ncNewline();
-    ncPrint("  Sample data module contents: ");
-
     memInitialize(MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
-    
-    ncPrint((char *) sampleDataModuleAddress);
-    ncNewline();
+    initializeScheduler(); //Inicializamos el scheduler
+    startParentProcess("Userland",0,NULL,((EntryPoint) sampleCodeModuleAddress)(),2);
+    _sti();
+    // ncPrint("[Kernel Main]");
+    // ncNewline();
+    // ncPrint("  Sample code module at 0x");
+    // ncPrintHex((uint64_t) sampleCodeModuleAddress);
+    // ncNewline();
+    // ncPrint("  Calling the sample code module returned: ");
+    // ncPrintHex(((EntryPoint) sampleCodeModuleAddress)());    //llama a que arranque el userland
+    // ncNewline();
+    // ncNewline();
 
-    ncPrint("[Finished]");
+    // ncPrint("  Sample data module at 0x");
+    // ncPrintHex((uint64_t) sampleDataModuleAddress);
+    // ncNewline();
+    // ncPrint("  Sample data module contents: ");
+
+
+    // ncPrint((char *) sampleDataModuleAddress);
+    // ncNewline();
+
+    // ncPrint("[Finished]");
 
     while (1)
-    {}
+    {
+        _hlt();
+    }
 
     return 0;
 }

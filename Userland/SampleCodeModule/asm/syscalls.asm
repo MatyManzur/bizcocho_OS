@@ -11,10 +11,7 @@ GLOBAL sys_print_char
 GLOBAL sys_print
 GLOBAL sys_new_line
 GLOBAL sys_clear_screen
-GLOBAL sys_get_cursor
-GLOBAL sys_set_cursor
 GLOBAL sys_scroll_up
-GLOBAL sys_move_cursor
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
 GLOBAL sys_read_printables
@@ -81,23 +78,14 @@ sys_new_line:
 sys_clear_screen:
 	make_syscall 13
 	
-sys_get_cursor:
+sys_scroll_up:
 	make_syscall 14
 	
-sys_set_cursor:
+sys_memory_dump:
 	make_syscall 15
 	
-sys_scroll_up:
-	make_syscall 16
-	
-sys_move_cursor:
-	make_syscall 17
-	
-sys_memory_dump:
-	make_syscall 18
-	
 sys_get_last_registers:
-	make_syscall 19
+	make_syscall 16
 
 sys_read_printables:
 	make_syscall 20

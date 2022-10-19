@@ -5,6 +5,7 @@ GLOBAL picMasterMask
 GLOBAL picSlaveMask
 GLOBAL haltcpu
 GLOBAL _hlt
+GLOBAL _int20
 
 GLOBAL _irq00Handler
 GLOBAL _irq01Handler
@@ -34,10 +35,7 @@ EXTERN printChar
 EXTERN print
 EXTERN newLine
 EXTERN clearScreen
-EXTERN getCursor
-EXTERN setCursor
 EXTERN scrollUp
-EXTERN moveCursor
 EXTERN memdump
 EXTERN getLastRegisters
 
@@ -224,9 +222,6 @@ _syscallHandler:
 	caseSyscall 14, .C14
 	caseSyscall 15, .C15
 	caseSyscall 16, .C16
-	caseSyscall 17, .C17
-	caseSyscall 18, .C18
-	caseSyscall 19, .C19
 	caseSyscall 20, .C20
 	caseSyscall 21, .C21
 	caseSyscall 22, .C22
@@ -278,27 +273,17 @@ _syscallHandler:
 	call clearScreen
 	jmp .end
 .C14:
-	call getCursor
-	jmp .end
-.C15:
-	call setCursor
-	jmp .end
-.C16:
 	call scrollUp
 	jmp .end
-.C17:
-	call moveCursor
-	jmp .end
-.C18:
+.C15:
 	call memdump
 	jmp .end
-.C19:
+.C16:
 	call getLastRegisters
 	jmp .end
 .C20:
 	call readPrintables
 	jmp .end
-	
 .C21:
 	call getNextKey
 	jmp .end

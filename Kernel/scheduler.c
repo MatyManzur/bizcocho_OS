@@ -19,7 +19,7 @@ typedef struct pbrr_t
     pointerPCBNODE_t processes[PRIORITY_COUNT];
     pointerPCBNODE_t nowRunning;
 } pbrr_t;
-
+static int schedulerRunning=0;
 static pbrr_t schedule = {0};
 static int pidToGive = 1;
 static pointerPCBNODE_t init;
@@ -132,17 +132,21 @@ uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processC
 
     return pnode->process->pid;
 }
+void initializeScheduler(){
+    for(int i = 0; i< BLOCK_REASON_COUNT; i++)
+    {
+        blockedProcesses[i] = newList();
+    }
+    init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL);
+    schedule.nowRunning = findNextProcess();
+    schedulerRunning=1;
+    return;
+}
 
 void scheduler()
 {
-    if (schedule.nowRunning == NULL) //primera vez
+    if (!schedulerRunning)//No se inicializo el scheduler
     {
-        for(int i = 0; i< BLOCK_REASON_COUNT; i++)
-        {
-            blockedProcesses[i] = newList();
-        }
-        init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL);
-        schedule.nowRunning = findNextProcess();
         return;
     }
     // chequeamos si se piso el cockatoo

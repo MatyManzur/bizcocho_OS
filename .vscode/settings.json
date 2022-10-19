@@ -6,6 +6,9 @@
         "scheduler.h": "c",
         "lib.h": "c",
         "string.h": "c",
-        "interrupts.h": "c"
+        "interrupts.h": "c",
+        "bizcocho.h": "c",
+        "syslib.h": "c",
+        "stdint.h": "c"
     }
 }
