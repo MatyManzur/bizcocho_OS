@@ -20,7 +20,7 @@ typedef struct pbrr_t
     pointerPCBNODE_t processes[PRIORITY_COUNT];
     pointerPCBNODE_t nowRunning;
 } pbrr_t;
-static int schedulerRunning=0;
+static int schedulerRunning = 0;
 static pbrr_t schedule = {{0}};
 static int pidToGive = 1;
 static pointerPCBNODE_t init;
@@ -120,7 +120,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void
 uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority)
 {
     pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,NULL,init);
-    
+    schedulerRunning = 1;
     return pnode->process->pid;
 }
 
@@ -141,15 +141,22 @@ void initializeScheduler(){
         blockedProcesses[i] = newList();
     }
     init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL);
-    schedule.nowRunning = findNextProcess();
-    schedulerRunning=1;
+    schedule.nowRunning = NULL;
     return;
 }
 
 void scheduler()
 {
-    if (!schedulerRunning)//No se inicializo el scheduler
+    if (!schedulerRunning)  //No se agregó nada aparte del init
     {
+        return;
+    }
+    if(schedule.nowRunning == NULL)
+    {
+        schedule.nowRunning = init;
+        initializeTask(schedule.nowRunning->process->argc, schedule.nowRunning->process->argv,
+                       schedule.nowRunning->process->processCodeStart,
+                       schedule.nowRunning->process->processMemStart);
         return;
     }
     // chequeamos si se piso el cockatoo

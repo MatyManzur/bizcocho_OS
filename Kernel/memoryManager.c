@@ -5,13 +5,13 @@
 typedef uint64_t Align;
 
 union header{
-    struct memoryManager
+    struct
     {
         union header *next;
         uint32_t size;
     } s;
     Align x;
-};
+} header;
 typedef union header Header;
 
 static Header* base;
@@ -20,11 +20,11 @@ static Header* freep=NULL; // Inicamos la lista en nada
 
 void memInitialize(void * memBase,uint32_t memSize)
 {
-    base=(Header*) memBase; // Es necesario para tener la direccion base del memoryManager y saber si se pasa o no
+    base = (Header*) memBase; // Es necesario para tener la direccion base del memoryManager y saber si se pasa o no
     baseSize = memSize;
-    freep = (Header*) memBase;
+    freep = base;
     freep->s.next = NULL;
-    freep->s.size = BLOCK_AMOUNT;   //Iniciamos con el total del heap en cantidad de bloques
+    freep->s.size = BLOCK_AMOUNT;
 }
 
 void* memalloc(uint32_t nbytes)

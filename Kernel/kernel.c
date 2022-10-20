@@ -8,7 +8,7 @@
 #include <scheduler.h>
 #include <memoryManager.h>
 
-#define MEMBASE 900000
+#define MEMBASE 0x900000
 #define MEMSIZE 6400000
 
 extern uint8_t text;
@@ -88,11 +88,12 @@ void *initializeKernelBinary()
 }
 
 int main()
-{   _cli();//No queremos interrupciones por ahora mientras setupeamos todo
+{   
+    _cli();//No queremos interrupciones por ahora mientras setupeamos todo
     load_idt();    //arma la IDT
     memInitialize(MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
     initializeScheduler(); //Inicializamos el scheduler
-    startParentProcess("Userland",0,NULL,((EntryPoint) sampleCodeModuleAddress)(),2);
+    ((EntryPoint) sampleCodeModuleAddress)();
     _sti();
     // ncPrint("[Kernel Main]");
     // ncNewline();

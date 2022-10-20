@@ -12,4 +12,5 @@
 *.elf
 
 .gdbinit
+.gdb_history
 .idea/

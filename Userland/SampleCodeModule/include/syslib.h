@@ -194,6 +194,7 @@ struct kbEvent_t
 
 typedef enum color_t
 {
+    DEFAULT = -1,
     BLACK = 0,
     BLUE,
     GREEN,
