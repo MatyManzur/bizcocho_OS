@@ -83,7 +83,6 @@ Devuelve los caracteres que alcanzó a leer.
 */
 uint8_t readPrintables(char *bufferString, uint8_t count)
 {
-    cleanBuffer(); //omitimos lo que haya quedado en el buffer de antes
     int i = 0; //contamos caracteres enteros leidos
     while (i < count)
     {

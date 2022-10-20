@@ -48,7 +48,7 @@ int hasNext(ddlADT list)
 
 elemType next(ddlADT list)
 {   
-    if(hasNext(list)){
+    if(!hasNext(list)){
         return NULL;
     }
     elemType aux = list->current->elem;

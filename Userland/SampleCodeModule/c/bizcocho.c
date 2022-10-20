@@ -3,9 +3,11 @@
 void bizcocho(uint8_t argc, void** argv)
 {
     char* hola = "Hola Mundo!";
-    struct format_t fmt = {-1, -1};
+    sys_clear_screen();
+    char buf[2] = {0};
     while(1)
     {
-        sys_write(STDOUT,hola);
+        sys_read(STDIN, buf, 1);
+        sys_write(STDOUT, buf);
     }
 }

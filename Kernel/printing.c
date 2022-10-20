@@ -167,7 +167,7 @@ void scrollUp(uint8_t rows)
     {
         for (int i = 0; i < WIDTH; i++)
         {
-            point_t currentPoint = {.row = i, .column = j};
+            point_t currentPoint = {.row = j, .column = i};
             uint8_t *cursorPointer = pointToCursor(currentPoint);
             *(cursorPointer) = 0;
             *(cursorPointer + 1) = currentFormat.backgroundColor << 4 | currentFormat.characterColor;

@@ -46,7 +46,7 @@ uint8_t read(int fd, char* buf, uint8_t n)
         case 0:
             while(totalChars < n)
             {
-                totalChars += readPrintables(buf, n - totalChars);
+                totalChars += readPrintables(buf + totalChars, n - totalChars);
                 if(totalChars > 0 && buf[totalChars-1]=='\n')
                 {
                     return totalChars;
