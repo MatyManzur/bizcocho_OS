@@ -5,6 +5,12 @@
 
 #define NULL 0
 
+#define STDIN 0
+
+#define STDOUT 1
+
+#define STDERR 2
+
 typedef enum key_t
 {
     VK_ESCAPE = 0x1,
@@ -259,15 +265,13 @@ uint8_t sys_change_priority(uint8_t pid, uint8_t newPriority);
 
 void sys_yield();
 
-uint8_t sys_print_char(char character, const struct format_t *format);
+uint8_t sys_read(int fd, char* buf, uint8_t n);
 
-char *sys_print(const char *string, const struct format_t *format);
-
-uint8_t sys_new_line(color_t backgroundColor);
+int sys_write(int fd,char* s);
 
 void sys_clear_screen(color_t backgroundColor);
 
-void sys_scroll_up(uint8_t rows);
+struct format_t sys_change_color(color_t backgroundColor, color_t characterColor);
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 

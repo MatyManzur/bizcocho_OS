@@ -6,6 +6,6 @@ int bizcocho(int argc, void** argv)
     struct format_t fmt = {-1, -1};
     while(1)
     {
-        sys_print(hola, &fmt);
+        sys_write(STDOUT,hola);
     }
 }

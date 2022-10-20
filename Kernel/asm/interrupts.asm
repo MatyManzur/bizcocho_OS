@@ -31,11 +31,10 @@ EXTERN changePriority
 EXTERN exit
 EXTERN yield
 
-EXTERN printChar
-EXTERN print
-EXTERN newLine
+EXTERN read
+EXTERN write
 EXTERN clearScreen
-EXTERN scrollUp
+EXTERN changeColor
 EXTERN memdump
 EXTERN getLastRegisters
 
@@ -219,7 +218,6 @@ _syscallHandler:
 	caseSyscall 11, .C11
 	caseSyscall 12, .C12
 	caseSyscall 13, .C13
-	caseSyscall 14, .C14
 	caseSyscall 15, .C15
 	caseSyscall 16, .C16
 	caseSyscall 20, .C20
@@ -261,19 +259,16 @@ _syscallHandler:
 	call yield
 	jmp .end
 .C10:
-	call printChar
+	call read
 	jmp .end
 .C11:
-	call print
+	call write
 	jmp .end
 .C12:
-	call newLine
-	jmp .end
-.C13:
 	call clearScreen
 	jmp .end
-.C14:
-	call scrollUp
+.C13:
+	call changeColor
 	jmp .end
 .C15:
 	call memdump

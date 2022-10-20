@@ -39,15 +39,18 @@ typedef struct point_t
     uint8_t row;
     uint8_t column;
 } point_t;
-
+//KERNELs
 uint8_t printChar(char character, color_t backgroundColor, color_t characterColor);
 
 char *print(const char *string, const struct format_t *format);
 
 uint8_t newLine(color_t backgroundColor);
 
+void scrollUp(uint8_t rows);
+
+//User
 void clearScreen();
 
-void scrollUp(uint8_t rows);
+format_t changeColor(color_t backgroundColor, color_t characterColor);
 
 #endif

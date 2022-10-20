@@ -7,11 +7,10 @@ GLOBAL sys_kill_process
 GLOBAL sys_get_pid
 GLOBAL sys_change_priority
 GLOBAL sys_yield
-GLOBAL sys_print_char
-GLOBAL sys_print
-GLOBAL sys_new_line
+GLOBAL sys_read
+GLOBAL sys_write
 GLOBAL sys_clear_screen
-GLOBAL sys_scroll_up
+GLOBAL sys_change_color
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
 GLOBAL sys_read_printables
@@ -66,21 +65,18 @@ sys_change_priority:
 sys_yield:
 	make_syscall 8
 	
-sys_print_char:
+sys_read:
 	make_syscall 10
-	
-sys_print:
+
+sys_write:
 	make_syscall 11
 
-sys_new_line:
+sys_clear_screen:
 	make_syscall 12
 
-sys_clear_screen:
+sys_change_color:
 	make_syscall 13
-	
-sys_scroll_up:
-	make_syscall 14
-	
+
 sys_memory_dump:
 	make_syscall 15
 	
