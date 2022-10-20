@@ -71,7 +71,7 @@ void memfree(void * ap){
     Header* insertp;
     insertp=(Header*)ap - 1;//Miramos el header de la direccion provista
     //Si el insertp esta dentro de estos valores permitidos entonces nunca deberiamos no encontrarlo, entonces currp no llegaria a ser NULL
-    if(insertp==NULL||insertp<(void*) base||insertp>=(void*)base+baseSize)
+    if(insertp == NULL || (void*) insertp < (void*) base || (void*) insertp >= (void*) base + baseSize)
     {
         return; // Error en parametros, fuera de rango
     }

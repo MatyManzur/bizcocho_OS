@@ -3,6 +3,6 @@
 
 #include <syslib.h>
 
-int bizcocho(int argc, void** argv);
+void bizcocho(uint8_t argc, void** argv);
 
 #endif 

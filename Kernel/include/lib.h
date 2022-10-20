@@ -17,6 +17,12 @@ void _hlt();
 
 int memdumpasm(uint64_t address, uint8_t buffer[]); //en libasm.asm
 
+void initializeTask(uint8_t argc, void** argv, void (*processCodeStart)(uint8_t, void **), void* processMemStart);
+
+void saveStackPointer(uint64_t* stackPointer);
+
+void swapTasks(uint64_t stackPointer);
+
 //syscall
 int memdump(uint64_t address, uint8_t buffer[]);
 

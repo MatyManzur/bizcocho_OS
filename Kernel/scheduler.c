@@ -1,6 +1,7 @@
 #include <scheduler.h>
 #include <ddlADT.h>
 #include <time.h>
+#include <stringslib.h>
 
 typedef struct nodePCB_t *pointerPCBNODE_t;
 
@@ -58,7 +59,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;
     processPCB->ppid = ppid; //El parent provisto
-    // strncpy(processPCB->name, name, NAME_MAX); //TODO strncpy
+    strncpy(processPCB->name, name, NAME_MAX);
     processPCB->argc = argc;
     processPCB->argv = (void **)argv;
     processPCB->processCodeStart = processCodeStart;

@@ -91,7 +91,7 @@ int main()
 {   
     _cli();//No queremos interrupciones por ahora mientras setupeamos todo
     load_idt();    //arma la IDT
-    memInitialize(MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
+    memInitialize((void*) MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
     initializeScheduler(); //Inicializamos el scheduler
     ((EntryPoint) sampleCodeModuleAddress)();
     _sti();

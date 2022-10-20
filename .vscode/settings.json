@@ -25,6 +25,8 @@
         "*.tcc": "c",
         "cstdint": "c",
         "typeinfo": "c",
-        "registers.h": "c"
+        "registers.h": "c",
+        "stringslib.h": "c",
+        "semaphore.h": "c"
     }
 }

@@ -2,7 +2,7 @@
 #define REGISTERS_H
 
 #include <lib.h>
-#include <printing.h>
+#include <files.h>
 
 typedef struct registers_t
 {

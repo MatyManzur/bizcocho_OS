@@ -1,5 +1,6 @@
 #define NULL 0
 #include <semaphore.h>
+#include <stringslib.h>
 
 
 static char initialized;
@@ -22,16 +23,15 @@ int initializeSemaphore(char * name, int initialValue)
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)
     {
-        /*      TODO strncpy
-            if(!strCmp(curr->name, name))
-            {
-                return curr->id;
-            }
-        */
+        
+        if(!strcmp(curr->name, name))
+        {
+            return curr->id;
+        }
         
     }
     curr = memalloc(sizeof(struct semBlock));
-    //strncpy(curr->name, name, 32); TODO strncpy
+    strncpy(curr->name, name, 32); 
     curr->next = NULL;
     curr->id = hub.globalid++;
     curr->value = initialValue;

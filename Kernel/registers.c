@@ -1,13 +1,13 @@
-/*
+
 #include <registers.h>
+#include <stringslib.h>
 
 #define REGISTER_COUNT 18
 #define HALF 0x100000000
 
 static registers_t registers = {0};
 
-static void printRegAux(uint64_t *registers, uint8_t index, format_t *registerformat, format_t *numberformat,
-                        char *registerNames[]);
+static void printRegAux(uint64_t *registers, uint8_t index, char *registerNames[]);
 
 void saveRegisters()
 {
@@ -37,21 +37,18 @@ void getLastRegisters(struct registers_t *registersCopy)
 
 }
 
-static void printRegAux(uint64_t *registers, uint8_t index, format_t *registerformat, format_t *numberformat,
-                        char *registerNames[])
+static void printRegAux(uint64_t *registers, uint8_t index, char *registerNames[])
 {
-    print(registerNames[index], registerformat);
-    print("=  0x", numberformat);
-    print(convert(registers[index] / HALF, 16, 8), numberformat);
-    print(convert(registers[index] % HALF, 16, 8), numberformat);
-    newLine(BLACK);
+    write(STDERR, registerNames[index]);
+    write(STDERR, "=  0x");
+    write(STDERR, convert(registers[index] / HALF, 16, 8));
+    write(STDERR, convert(registers[index] % HALF, 16, 8));
+    write(STDERR, "\n");
 }
 
 
 void printRegisters(uint64_t *registers)
 {
-    struct format_t registerformat = {BLACK, YELLOW};
-    struct format_t numberformat = {BLACK, WHITE};
 
     char *registerNames[] = {"eflags  ", "rsp  ", "rip  ", "r15  ", "r14  ", "r13  ", "r12  ", "r11  ",
                                       "r10  ", "r9  ", "r8  ", "rsi  ", "rdi  ", "rbp  ", "rdx  ", "rcx  ", "rbx  ",
@@ -59,7 +56,6 @@ void printRegisters(uint64_t *registers)
 
     for (int i = REGISTER_COUNT - 1; i >= 0; i--)
     {
-        printRegAux(registers, i, &registerformat, &numberformat, registerNames);
+        printRegAux(registers, i, registerNames);
     }
 }
-*/

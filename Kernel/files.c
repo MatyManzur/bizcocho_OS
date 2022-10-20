@@ -13,20 +13,20 @@ static void printToScreen(char* s,format_t* format){
 int write(int fd,char* s)
 {   
     format_t format;
-    format.backgroundColor=DEFAULT;
-    format.characterColor=DEFAULT;
     switch (fd)
     {
-        case 0:
+        case STDIN:
             //no se puede, el keyboard.c tiene el buffer
             return -1;
             break;
 
-        case 1:
+        case STDOUT:
+            format.backgroundColor = DEFAULT;
+            format.characterColor = DEFAULT;
             printToScreen(s,&format);
             break;
 
-        case 2:
+        case STDERR:
             format.characterColor = WHITE;
             format.backgroundColor = RED;
             printToScreen(s,&format);

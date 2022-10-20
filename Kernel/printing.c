@@ -43,6 +43,12 @@ uint8_t printChar(char character, color_t backgroundColor, color_t characterColo
     fmt.backgroundColor = backgroundColor == DEFAULT ? currentFormat.backgroundColor : backgroundColor;
     fmt.characterColor = characterColor == DEFAULT ? currentFormat.characterColor : characterColor;
 
+    if(character == '\n')
+    {
+        newLine(fmt.backgroundColor);
+        return 0;
+    }
+
     //escribimos el caracter con los colores indicados en la posicion de la pantalla indicada por el cursor de esta screenState
     uint8_t *cursorPointer = pointToCursor(cursor);
     charsWithSpecialFormat[cursor.column][cursor.row] = (backgroundColor != DEFAULT) << 1 | (characterColor != DEFAULT);

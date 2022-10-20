@@ -5,6 +5,10 @@
 #include <keyboard.h>
 #include <scheduler.h>
 
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
 //SYSCALLS
 int write(int fd,char* s);
 

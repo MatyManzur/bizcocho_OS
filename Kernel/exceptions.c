@@ -1,5 +1,5 @@
-/*
-#include <printing.h>
+
+#include <files.h>
 #include <registers.h>
 #include <scheduler.h>
 
@@ -20,35 +20,18 @@ void exceptionDispatcher(int exception, uint64_t *registers) //llamado desde int
 
 static void zero_division(uint64_t *registers)
 {
-    //imprime un error en rojo, printing.c ya sabe que task fue, y por lo tanto en qué screen imprimirlo
-    char *errorMsg = "An error occurred: division by zero exception!";
-    format_t fmt = {RED, WHITE};
-    clearScreen(BLACK);
-    print(errorMsg, &fmt);
-    newLine(RED);
+    char *errorMsg = "An error occurred: division by zero exception! \n";
+    write(STDERR, errorMsg);
     printRegisters(registers);
 
-    //elimina a esta task del scheduler (getCurrentTaskId me da el id de la task activa justo cuando se genero la excepcion)
-    int8_t currentTaskId = getCurrentTaskId();
-    if (currentTaskId < 0)    //devuelve negativo si el scheduler no tiene ninguna task activa
-        return;
-    killTask(currentTaskId);
+    exit(100 + ZERO_EXCEPTION_ID);
 }
 
 static void invalid_opcode(uint64_t *registers)
 {
-    //imprime un error en rojo, printing.c ya sabe que task fue, y por lo tanto en qué screen imprimirlo
-    char *errorMsg = "An error occurred: invalid opcode exception!";
-    format_t fmt = {RED, WHITE};
-    clearScreen(BLACK);
-    print(errorMsg, &fmt);
-    newLine(RED);
+    char *errorMsg = "An error occurred: invalid opcode exception! \n";
+    write(STDERR, errorMsg);
     printRegisters(registers);
 
-    //elimina a esta task del scheduler (getCurrentTaskId me da el id de la task activa justo cuando se genero la excepcion)
-    int8_t currentTaskId = getCurrentTaskId();
-    if (currentTaskId < 0)    //devuelve negativo si el scheduler no tiene ninguna task activa
-        return;
-    killTask(currentTaskId);
+    exit(100 + INVALID_OPCODE_ID);
 }
-*/

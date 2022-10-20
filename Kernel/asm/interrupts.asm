@@ -122,7 +122,7 @@ SECTION .text
 	pushfq
 	mov rsi,rsp
 	mov rdi, %1 ; pasaje de parametro
-	; call exceptionDispatcher ; TODO el exceptions.c con el printing nuevo
+	call exceptionDispatcher 
 
 	popState
 	iretq
@@ -274,7 +274,7 @@ _syscallHandler:
 	call memdump
 	jmp .end
 .C16:
-	;	call getLastRegisters	; TODO  registers con print nuevo
+	call getLastRegisters	
 	jmp .end
 .C20:
 	call readPrintables
