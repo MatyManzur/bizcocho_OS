@@ -5,6 +5,7 @@ GLOBAL sys_unblock_process
 GLOBAL sys_block_process
 GLOBAL sys_kill_process
 GLOBAL sys_get_pid
+GLOBAL sys_wait_child
 GLOBAL sys_change_priority
 GLOBAL sys_yield
 GLOBAL sys_read
@@ -59,11 +60,14 @@ sys_kill_process:
 sys_get_pid:
 	make_syscall 6
 
-sys_change_priority:
+sys_wait_child:
 	make_syscall 7
 
-sys_yield:
+sys_change_priority:
 	make_syscall 8
+
+sys_yield:
+	make_syscall 9
 	
 sys_read:
 	make_syscall 10

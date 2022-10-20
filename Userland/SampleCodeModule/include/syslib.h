@@ -259,6 +259,8 @@ uint8_t sys_kill_process(uint8_t pid);
 
 uint8_t sys_get_pid();
 
+int8_t sys_wait_child(uint8_t childpid);
+
 uint8_t sys_change_priority(uint8_t pid, uint8_t newPriority);
 
 void sys_yield();

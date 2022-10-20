@@ -25,6 +25,7 @@ EXTERN killProcess
 EXTERN startParentProcess
 EXTERN startChildProcess
 EXTERN getPid
+EXTERN waitchild
 EXTERN blockProcess
 EXTERN unblockProcess
 EXTERN changePriority
@@ -255,9 +256,12 @@ _syscallHandler:
 	call getPid
 	jmp .end
 .C7:
-	call changePriority
+	call waitchild
 	jmp .end
 .C8:
+	call changePriority
+	jmp .end
+.C9:
 	call yield
 	jmp .end
 .C10:

@@ -62,6 +62,8 @@ uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processC
 
 uint8_t getPid();
 
+int8_t waitchild(uint8_t childpid);
+
 void exit(int8_t statusCode);
 
 uint8_t killProcess(uint8_t pid);
