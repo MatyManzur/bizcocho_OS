@@ -219,11 +219,11 @@ typedef enum color_t
     WHITE
 } color_t;
 
-struct format_t
+typedef struct format_t
 {
     color_t backgroundColor;
     color_t characterColor;
-};
+}format_t;
 
 typedef struct point_t
 {
@@ -269,9 +269,11 @@ uint8_t sys_read(int fd, char* buf, uint8_t n);
 
 int sys_write(int fd,char* s);
 
-void sys_clear_screen(color_t backgroundColor);
+void sys_clear_screen();
 
-struct format_t sys_change_color(color_t backgroundColor, color_t characterColor);
+format_t sys_change_color(color_t backgroundColor, color_t characterColor);
+
+int sys_print_to_stdout_color(char* s,format_t fmt);
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 

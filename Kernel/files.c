@@ -71,6 +71,9 @@ uint8_t read(int fd, char* buf, uint8_t n)
     }
     return 0;
 }
+int printToStdoutFormat(char *s, format_t fmt){
+    printToScreen(s,&fmt);
+}
 /*
 write(int fd, char* s)
 - escribe hasta que encuentra un \0

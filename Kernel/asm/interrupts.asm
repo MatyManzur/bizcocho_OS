@@ -35,6 +35,7 @@ EXTERN read
 EXTERN write
 EXTERN clearScreen
 EXTERN changeColor
+EXTERN printToStdoutFormat
 EXTERN memdump
 EXTERN getLastRegisters
 
@@ -218,6 +219,7 @@ _syscallHandler:
 	caseSyscall 11, .C11
 	caseSyscall 12, .C12
 	caseSyscall 13, .C13
+	caseSyscall 14, .C14
 	caseSyscall 15, .C15
 	caseSyscall 16, .C16
 	caseSyscall 20, .C20
@@ -269,6 +271,9 @@ _syscallHandler:
 	jmp .end
 .C13:
 	call changeColor
+	jmp .end
+.C14:
+	call printToStdoutFormat
 	jmp .end
 .C15:
 	call memdump

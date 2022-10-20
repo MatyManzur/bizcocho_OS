@@ -14,4 +14,6 @@ int write(int fd,char* s);
 
 uint8_t read(int fd, char* buf, uint8_t n);
 
+int printToStdoutFormat(char *s, format_t fmt);
+
 #endif

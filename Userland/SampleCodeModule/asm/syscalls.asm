@@ -77,6 +77,8 @@ sys_clear_screen:
 sys_change_color:
 	make_syscall 13
 
+sys_print_to_stdout_color:
+	make_syscall 14 
 sys_memory_dump:
 	make_syscall 15
 	
