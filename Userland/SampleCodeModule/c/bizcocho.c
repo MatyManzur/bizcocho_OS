@@ -9,7 +9,7 @@ void bizcocho(uint8_t argc, void** argv)
     int bizcochito1pid = sys_start_child_process("bizcochito", 1, args, bizcochito);
     sys_change_priority(bizcochito1pid, 4);
     int bizcochito2pid = sys_start_child_process("bizcochito", 2, args, bizcochito);
-    sys_change_priority(bizcochito1pid, 0);
+    sys_change_priority(bizcochito2pid, 0);
     char buf[2] = {0};
     while(1)
     {
@@ -23,14 +23,7 @@ void bizcochito(uint8_t argc, void** argv)
     long i = 0;
     while(1)
     {
-        if(i++ % 500000000 == 0)
-        {
-            sys_write(STDOUT, "\nHola soy Bizcochito! Tengo ");
-            char aaa[2] = {argc + '0', 0};
-            sys_write(STDOUT, &aaa);
-            sys_write(STDOUT, "argumentos. \n");
-            sys_write(STDOUT, (char*) argv[0]);
-            sys_write(STDOUT, "\n");
-        }
+        if(i++ % 0x1000000 == 0)
+            sys_write(argc, "A");
     }
 }

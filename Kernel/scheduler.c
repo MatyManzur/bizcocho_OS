@@ -437,15 +437,24 @@ uint8_t unblockProcess(uint8_t pid)
 
 uint8_t changePriority(uint8_t pid, uint8_t newPriority)
 {
-    if (0 < newPriority || newPriority >= PRIORITY_COUNT)
+    if (0 > newPriority || newPriority >= PRIORITY_COUNT)
         return 0;
     pointerPCBNODE_t head = findByPid(pid);
     if (head != NULL)
     {
         if (head->previous != NULL)
+        {
             head->previous->next = head->next;
+        }
+        else //es el primero
+        {
+            schedule.processes[head->process->priority] = head->next;
+        }
+
         if (head->next != NULL)
+        {
             head->next->previous = head->previous;
+        }
         head->process->priority = newPriority;
 
         head->remainingQuantum = PRIORITY_COUNT - newPriority;
