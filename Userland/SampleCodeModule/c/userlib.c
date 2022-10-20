@@ -1,9 +1,7 @@
-/*
+
 #include <userlib.h>
 
 #define IS_DIGIT(x) ((x)>='0' && (x)<='9')
-
-static struct format_t format = {BLACK, L_GRAY};  // el formato que se utiliza para los colores
 
 int strToNum(const char *str)
 { //Pasa un string a decimal
@@ -27,14 +25,14 @@ int strToNum(const char *str)
     return ans;
 }
 
-char strLength(const char *str)
-{  // strlength
-    int i = 0;
-    while (str[i])
-    {
-        i++;
-    }
-    return i;
+
+//https://codebrowser.dev/linux/linux/lib/string.c.html
+size_t strlen(const char *s)
+{
+	const char *sc;
+	for (sc = s; *sc != '\0'; ++sc)
+		/* nothing */;
+	return sc - s;
 }
 
 // se fija si el primer string está como prefijo del segundo (ignora los espacios al principio del segundo)
@@ -58,83 +56,28 @@ uint8_t strPrefix(const char *prefix, const char *str, char **afterPrefix)
     return !prefix[j];  //en el caso de que prefix no haya terminado y str sí, devuelve 0, sino devuelve 1
 }
 
-int strCmp(const char *str1, const char *str2)
-{    // compara strings, devuelve la diferencia entre el primero en el que difiere
-    while (*str1 != 0 && *str1 == *str2)
-    {
-        str1++;
-        str2++;
-    }
-    return (*str1) - (*str2);
-}
-
-void setColor(color_t backgroundColor,
-              color_t characterColor)  // cambia el format para que se empiece a imprimir con estos colores
+//https://codebrowser.dev/linux/linux/lib/string.c.html
+int strcmp(const char *cs, const char *ct)
 {
-    format.backgroundColor = backgroundColor;
-    format.characterColor = characterColor;
+	unsigned char c1, c2;
+	while (1) {
+		c1 = *cs++;
+		c2 = *ct++;
+		if (c1 != c2)
+			return c1 < c2 ? -1 : 1;
+		if (!c1)
+			break;
+	}
+	return 0;
 }
 
-void newLine()
-{
-    sys_new_line(format.backgroundColor);
-}
-
-void
-printString(const char *str)   //imprime un string, si pisa una zona en la que no puede escribir, hace un scroll up
-{                                       // utiliza el color del format
-    char *overload = NULL;
-    overload = sys_print(str, &format);
-    if (overload != NULL)
-    {
-        sys_scroll_up(2);
-        sys_move_cursor(-2, 0);
-        printString(overload);
-    }
-}
-
-void putChar(char c)   //idem anterior, pero con un char
-{
-    int overload = 0;
-    overload = sys_print_char(c, &format);
-    if (overload)
-    {
-        sys_scroll_up(2);
-        sys_move_cursor(-2, 0);
-        putChar(c);
-    }
-}
-
-void printStringColor(const char *str, color_t backgroundColor,
-                      color_t characterColor) //idem printString, pero se le pasa el color
-{
-    struct format_t format = {.backgroundColor = backgroundColor % 16, .characterColor = characterColor % 16};
-    char *overload = NULL;
-    overload = sys_print(str, &format);
-    if (overload != NULL)
-    {
-        sys_scroll_up(2);
-        sys_move_cursor(-2, 0);
-        printStringColor(overload, backgroundColor, characterColor);
-    }
-}
-
-void putCharColor(char c, color_t backgroundColor, color_t characterColor) // idem anterior, pero para chars
-{
-    struct format_t format = {.backgroundColor = backgroundColor % 16, .characterColor = characterColor % 16};
-    int overload = 0;
-    overload = sys_print_char(c, &format);
-    if (overload)
-    {
-        sys_scroll_up(2);
-        sys_move_cursor(-2, 0);
-        putCharColor(c, backgroundColor, characterColor);
-    }
-}
-
+/*      TODO adaptar con write(STDOUT, ...)
+        que vaya armando un string (con malloc? o con char[MAX]?)
+        y despues haga un write(STDOUT, finalStr) al final
+        asi no hace una syscall por cada char como está haciendo xdxd
 // código sacado de:
 // https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
-void printWithFormat(char *format, ...)
+void printf(char *format, ...)
 {
     char *traverse;
     uint64_t i;
@@ -208,6 +151,8 @@ void printWithFormat(char *format, ...)
     //Closing argument list to necessary clean-up
     va_end(arg);
 }
+
+*/
 
 //Función auxiliar para convertir un numero a string en la base indicada (maximo base 16), minDigitCount es la cantidad minima de digitos del string, si el numero tiene menos digitos entonces completa con 0's
 char *convert(unsigned int num, int base, unsigned int minDigitCount)
@@ -345,15 +290,16 @@ int xtou64(const char *str, uint64_t *ans) //devuelve el numero por parametro po
     return 0;
 }
 
-uint8_t strCopy(char *source, char *dest)
+//https://codebrowser.dev/linux/linux/lib/string.c.html
+char *strncpy(char *dest, const char *src, size_t count)
 {
-    int i = 0;
-    while (source[i])
-    {
-        dest[i] = source[i];
-        i++;
-    }
-    dest[i] = '\0';
-    return i;
+	char *tmp = dest;
+	while (count) {
+		if ((*tmp = *src) != 0)
+			src++;
+		tmp++;
+		count--;
+	}
+	return dest;
 }
-*/
+
