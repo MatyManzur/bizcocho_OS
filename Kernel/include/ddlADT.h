@@ -33,4 +33,6 @@ void remove(ddlADT list);
 /* Libera la memoria reservada por la lista */
 void freeList(ddlADT list);
 
+elemType find(ddlADT list, int (cmpfunction(void * a, void * b)), void * toCmp);
+
 #endif

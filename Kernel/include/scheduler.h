@@ -86,4 +86,5 @@ uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
+
 #endif

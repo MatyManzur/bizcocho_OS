@@ -1,7 +1,9 @@
 
-
 #include <ddlADT.h>
 #include <memoryManager.h>
+#include <scheduler.h>
+
+extern int _xchg(int *lock, int value);
 
 typedef struct blockHub
 {
@@ -24,6 +26,8 @@ void initSemaphoreHub();
 
 int initializeSemaphore(char * name, int initialValue);
 
-int wait(int id);
+int wait_sem(int id);
 
-void post(int id);
+void post_sem(int id);
+
+int close_sem(int id);

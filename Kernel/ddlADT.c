@@ -91,3 +91,14 @@ void freeList(ddlADT list)
     }
     memfree(list);
 }
+
+
+elemType find(ddlADT list, int (cmpfunction(void * a, void * b)), void * toCmp)
+{
+    TList searcher = list->first;
+    while(searcher != NULL)
+        if(cmpfunction(searcher->elem, toCmp))
+            return searcher->elem;
+        searcher = searcher->next;
+    return NULL;
+}
