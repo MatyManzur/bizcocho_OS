@@ -82,12 +82,7 @@ sys_change_color:
 	make_syscall 13
 
 sys_print_to_stdout_color:
-	make_syscall 14 
-sys_memory_dump:
-	make_syscall 15
-	
-sys_get_last_registers:
-	make_syscall 16
+	make_syscall 14
 
 sys_read_printables:
 	make_syscall 20
@@ -118,6 +113,12 @@ sys_mem_alloc:
 
 sys_mem_free:
 	make_syscall 36
+
+sys_memory_dump:
+	make_syscall 37
+	
+sys_get_last_registers:
+	make_syscall 38
 
 
 	

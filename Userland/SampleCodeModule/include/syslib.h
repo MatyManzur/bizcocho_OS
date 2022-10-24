@@ -275,9 +275,13 @@ format_t sys_change_color(color_t backgroundColor, color_t characterColor);
 
 int sys_print_to_stdout_color(char* s,format_t fmt);
 
-int sys_memory_dump(uint64_t address, uint8_t buffer[]);
+int sys_initialize_semaphore(char * name, int initialValue);
 
-void sys_get_last_registers(struct registers_t *registers);
+int sys_wait_sem(int id);
+
+void sys_post_sem(int id);
+
+int sys_close_sem(int id);
 
 void sys_read_printables(char *bufferString, uint8_t count);
 
@@ -298,4 +302,8 @@ void sys_sleep(uint64_t sleepTicks);
 void *sys_mem_alloc(uint32_t nbytes);
 
 void sys_mem_free(void *ptr );
+
+int sys_memory_dump(uint64_t address, uint8_t buffer[]);
+
+void sys_get_last_registers(struct registers_t *registers);
 #endif

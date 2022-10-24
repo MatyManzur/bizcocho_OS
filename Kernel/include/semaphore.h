@@ -24,6 +24,7 @@ typedef struct semBlock
 
 void initSemaphoreHub();
 
+//SYSCALLS
 int initializeSemaphore(char * name, int initialValue);
 
 int wait_sem(int id);
