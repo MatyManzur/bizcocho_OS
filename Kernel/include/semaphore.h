@@ -18,6 +18,7 @@ typedef struct semBlock
     char name[32];
     int id;
     int value;
+    int semLock;
     ddlADT blockedProcessList;
     semPointer next;
 } semBlock;
