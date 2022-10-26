@@ -126,48 +126,45 @@ int close_sem(int id)
     return -1;
 }
 
-static void printNum(int value, format_t * format)
+static void printNum(int value)
 {
     if(!value)
     {
-        print("0", format);
+        write(STDOUT,"0");
     }
-    int ordMag = 0;
     char printable[16];
     printable[15] = 0;
-    int index=15;
+    printable[14] = '\n';
+    int index=14;
     while(value!=0)
     {
         index--;
         printable[index] = value%10 + '0';
         value /= 10;
     }
-    print(printable+index,format);
+    write(STDOUT, printable+index);
 }
 
 void print_all_semaphores()
 {
-    format_t format;
-    format.backgroundColor = DEFAULT;
-    format.characterColor = DEFAULT;
-
     while(_xchg(&lockList,1)!=0);
     toBegin(hub.semBlockList);
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)
     {
-        printNum(curr->id, &format);
-        print(curr->name, &format);
-        printNum(curr->value, &format);
+        printNum(curr->id);
+        write(STDOUT, curr->name);
+        write(STDOUT, "\n");
+        printNum(curr->value);
         while(_xchg(&(curr->semLock),1)!=0);
         toBegin(curr->blockedProcessList);
         int * blockedPid;
-        print("Bloqueados: ", &format);
+        write(STDOUT, "Bloqueados: ");
         while((blockedPid = (int *) next(curr->blockedProcessList))!=NULL)
         {
-            printNum(*blockedPid, &format);
-            print(" ", &format);
+            printNum(*blockedPid);
         }
+        write(STDOUT, "\n");
         _xchg(&(curr->value), 0);
     }
     _xchg(&lockList, 0);

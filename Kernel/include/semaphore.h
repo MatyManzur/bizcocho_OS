@@ -1,7 +1,9 @@
-
+#ifndef SEMAPHORE_H_
+#define SEMAPHORE_H_
 #include <ddlADT.h>
 #include <memoryManager.h>
 #include <scheduler.h>
+#include <files.h>
 
 int _xchg(int *lock, int value);
 
@@ -35,3 +37,5 @@ void post_sem(int id);
 int close_sem(int id);
 
 void print_all_semaphores();
+
+#endif
