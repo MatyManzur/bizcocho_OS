@@ -2,7 +2,6 @@
 #include <semaphore.h>
 #include "stringslib.h"
 
-extern int _xchg(int * lock, int value);
 
 static char initialized;
 static blockHub hub;
@@ -67,15 +66,13 @@ int wait_sem(int id)
         _xchg(&(curr->semLock),0);
     }
     else{
-        int * pid;
+        int * pid = memalloc(sizeof(int));
         *pid = getPid();
         BlockedReason_t reason;
         reason.id = curr->id;
         reason.source = WAIT_SEM;
-        // esta podría ser también curr->semLock
-        while(_xchg(&lockListPid,1)!=0);
         add(curr->blockedProcessList, pid);
-        _xchg(&lockListPid,0);
+        _xchg(&(curr->semLock),0);
         blockProcessWithReason(*pid, reason);
     }
     return curr->value;
@@ -93,6 +90,7 @@ void post_sem(int id)
             toBegin(curr->blockedProcessList);
             int * pid = (int *) next(curr->blockedProcessList);
             if(pid!=NULL){
+                memfree(pid);
                 remove(curr->blockedProcessList);
                 BlockedReason_t reason;
                 reason.id = curr->id;
@@ -126,4 +124,51 @@ int close_sem(int id)
     }
     _xchg(&lockList,0);
     return -1;
+}
+
+static void printNum(int value, format_t * format)
+{
+    if(!value)
+    {
+        print("0", format);
+    }
+    int ordMag = 0;
+    char printable[16];
+    printable[15] = 0;
+    int index=15;
+    while(value!=0)
+    {
+        index--;
+        printable[index] = value%10 + '0';
+        value /= 10;
+    }
+    print(printable+index,format);
+}
+
+void print_all_semaphores()
+{
+    format_t format;
+    format.backgroundColor = DEFAULT;
+    format.characterColor = DEFAULT;
+
+    while(_xchg(&lockList,1)!=0);
+    toBegin(hub.semBlockList);
+    semPointer curr;
+    while((curr = (semPointer) next(hub.semBlockList))!=NULL)
+    {
+        printNum(curr->id, &format);
+        print(curr->name, &format);
+        printNum(curr->value, &format);
+        while(_xchg(&(curr->semLock),1)!=0);
+        toBegin(curr->blockedProcessList);
+        int * blockedPid;
+        print("Bloqueados: ", &format);
+        while((blockedPid = (int *) next(curr->blockedProcessList))!=NULL)
+        {
+            printNum(*blockedPid, &format);
+            print(" ", &format);
+        }
+        _xchg(&(curr->value), 0);
+    }
+    _xchg(&lockList, 0);
 }

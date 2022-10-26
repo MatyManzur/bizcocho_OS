@@ -3,7 +3,7 @@
 #include <memoryManager.h>
 #include <scheduler.h>
 
-extern int _xchg(int *lock, int value);
+int _xchg(int *lock, int value);
 
 typedef struct blockHub
 {
@@ -33,3 +33,5 @@ int wait_sem(int id);
 void post_sem(int id);
 
 int close_sem(int id);
+
+void print_all_semaphores();
