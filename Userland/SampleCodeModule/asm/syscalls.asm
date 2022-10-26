@@ -12,6 +12,8 @@ GLOBAL sys_read
 GLOBAL sys_write
 GLOBAL sys_clear_screen
 GLOBAL sys_change_color
+GLOBAL sys_print_to_stdout_color
+GLOBAL sys_set_backspace_base
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
 GLOBAL sys_read_printables
@@ -24,6 +26,10 @@ GLOBAL sys_seconds_elapsed
 GLOBAL sys_sleep
 GLOBAL sys_mem_alloc
 GLOBAL sys_mem_free
+GLOBAL sys_initialize_semaphore
+GLOBAL sys_wait_sem
+GLOBAL sys_post_sem
+GLOBAL sys_close_sem
 
 SECTION .text
 
@@ -84,6 +90,9 @@ sys_change_color:
 sys_print_to_stdout_color:
 	make_syscall 14
 
+sys_set_backspace_base:
+	make_syscall 15
+
 sys_read_printables:
 	make_syscall 20
 	
@@ -119,6 +128,18 @@ sys_memory_dump:
 	
 sys_get_last_registers:
 	make_syscall 38
+
+sys_initialize_semaphore:
+	make_syscall 40
+
+sys_wait_sem:
+	make_syscall 41
+
+sys_post_sem:
+	make_syscall 42
+
+sys_close_sem:
+	make_syscall 43
 
 
 	

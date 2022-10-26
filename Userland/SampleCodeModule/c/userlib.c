@@ -307,18 +307,18 @@ char *strncpy(char *dest, const char *src, size_t count)
 
 int removeBackspaces(char str[]){
     int i=0,j=0;
-    int backs=0;
     for(; str[j]!='\0';j++){
 
-        if( str[j] != '\b' ){
+        if( str[j] != '\b' )
+        {
             str[i++]=str[j];
         }
-        else{
-            (i==0)? :i--;
-            backs++;
+        else
+        {
+            i -= i!=0;
         }
     }
     str[i]='\0';
-    return backs;
+    return i;
 }
 

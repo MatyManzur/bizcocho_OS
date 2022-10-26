@@ -247,9 +247,9 @@ struct timezone_t
 
 void sys_exit(int8_t statusCode);
 
-uint8_t sys_start_parent_process(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority);
+uint8_t sys_start_parent_process(char *name, uint8_t argc, char **argv, int8_t(*processCodeStart)(uint8_t, void **), uint8_t priority);
 
-int8_t sys_start_child_process(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **));
+int8_t sys_start_child_process(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **));
 
 uint8_t sys_unblock_process(uint8_t pid);
 
@@ -275,13 +275,7 @@ format_t sys_change_color(color_t backgroundColor, color_t characterColor);
 
 int sys_print_to_stdout_color(char* s,format_t fmt);
 
-int sys_initialize_semaphore(char * name, int initialValue);
-
-int sys_wait_sem(int id);
-
-void sys_post_sem(int id);
-
-int sys_close_sem(int id);
+void sys_set_backspace_base();
 
 void sys_read_printables(char *bufferString, uint8_t count);
 
@@ -306,4 +300,12 @@ void sys_mem_free(void *ptr );
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
 void sys_get_last_registers(struct registers_t *registers);
+
+int sys_initialize_semaphore(char * name, int initialValue);
+
+int sys_wait_sem(int id);
+
+void sys_post_sem(int id);
+
+int sys_close_sem(int id);
 #endif

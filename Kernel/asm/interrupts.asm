@@ -37,11 +37,7 @@ EXTERN write
 EXTERN clearScreen
 EXTERN changeColor
 EXTERN printToStdoutFormat
-EXTERN initializeSemaphore
-EXTERN wait_sem
-EXTERN post_sem
-EXTERN close_sem
-
+EXTERN setBackspaceBase
 
 EXTERN readPrintables
 EXTERN getNextKey
@@ -57,6 +53,11 @@ EXTERN memalloc
 EXTERN memfree
 EXTERN memdump
 EXTERN getLastRegisters
+
+EXTERN initializeSemaphore
+EXTERN wait_sem
+EXTERN post_sem
+EXTERN close_sem
 
 SECTION .text
 
@@ -227,9 +228,6 @@ _syscallHandler:
 	caseSyscall 13, .C13
 	caseSyscall 14, .C14
 	caseSyscall 15, .C15
-	caseSyscall 16, .C16
-	caseSyscall 17, .C17
-	caseSyscall 18, .C18
 	caseSyscall 20, .C20
 	caseSyscall 21, .C21
 	caseSyscall 22, .C22
@@ -242,6 +240,10 @@ _syscallHandler:
 	caseSyscall 36, .C36
 	caseSyscall 37, .C37
 	caseSyscall 38, .C38
+	caseSyscall 40, .C40
+	caseSyscall 41, .C41
+	caseSyscall 42, .C42
+	caseSyscall 43, .C43
 	jmp .end	;default: it does nothing
 .C0:
 	call exit
@@ -289,16 +291,7 @@ _syscallHandler:
 	call printToStdoutFormat
 	jmp .end
 .C15:
-	call initializeSemaphore
-	jmp .end
-.C16:
-	call wait_sem
-	jmp .end
-.C17:
-	call post_sem
-	jmp .end
-.C18:
-	call close_sem
+	call setBackspaceBase
 	jmp .end
 .C20:
 	call readPrintables
@@ -335,6 +328,18 @@ _syscallHandler:
 	jmp .end
 .C38:
 	call getLastRegisters	
+	jmp .end
+.C40:
+	call initializeSemaphore
+	jmp .end
+.C41:
+	call wait_sem
+	jmp .end
+.C42:
+	call post_sem
+	jmp .end
+.C43:
+	call close_sem
 	jmp .end
 	
 .end:

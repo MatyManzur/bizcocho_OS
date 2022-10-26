@@ -54,7 +54,7 @@ static uint8_t getCockatoo(uint8_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
-static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,int8_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
+static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,int8_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
 
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;
@@ -118,7 +118,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, void
     return pnode;
 }
 
-uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **), uint8_t priority)
+uint8_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority)
 {
     pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,NULL,init);
     schedulerRunning = 1;
@@ -127,7 +127,7 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, void (*process
 
 
 // Hacer un startChild (equivalente a un fork exec)
-uint8_t startChildProcess(char *name, uint8_t argc, char **argv, void (*processCodeStart)(uint8_t, void **))
+uint8_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **))
 {
     uint8_t priority = schedule.nowRunning->process->priority;
     pointerPCBNODE_t parent= schedule.nowRunning;
