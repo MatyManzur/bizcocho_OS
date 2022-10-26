@@ -1,4 +1,4 @@
-
+/*
 #include "testing_utils.h"
 
 static uint32_t m_z = 362436069;
@@ -75,3 +75,4 @@ void printNum(int value)
     }
     write(STDIN,printable+index);
 }
+*/

@@ -27,19 +27,24 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="monke", .builtin=1, .programFunction=bizcochito_dummy },
 };
 
+void readUntilEnter()
+{
+    sys_write(STDOUT,promptMessage);
+    do{
+        sys_read(STDIN,buffer+bufferIndex,1);
+        sys_write(STDOUT,buffer+bufferIndex);
+    }while( buffer[bufferIndex++] !='\n'); //todo chequear buffer OVERFLORW Y ACTUAR DE FORMA ACORDE
+    buffer[bufferIndex]='\0'; //Ponemos un 0 para terminar el string
+}
+
 //builtin commands help, mem, ps, kill, nice, block, sem, pipe
 void bizcocho(uint8_t argc, void** argv)
 {   
-    sys_write(STDOUT,promptMessage);
+    sys_clear_screen();
     while (1)
     {   
-        sys_write(STDOUT,promptMessage);
-        do{
-            sys_read(STDIN,buffer+bufferIndex,1);
-            sys_write(STDOUT,buffer+bufferIndex);
-        }while( buffer[bufferIndex++] !='\n'); //todo chequear buffer OVERFLORW Y ACTUAR DE FORMA ACORDE
-
-        buffer[bufferIndex]='\0'; //Ponemos un 0 para terminar el string
+        
+        readUntilEnter();
         removeBackspaces(buffer);
         //Parse por pipe y despues parse por espacio
         char pipeTokens[2][MAX_PIPE_TOKEN_LENGTH]={{0}};
@@ -50,7 +55,6 @@ void bizcocho(uint8_t argc, void** argv)
         //Dependiendo de que tenemos, realizar el comando normal o llamando a la funcion builtin
 
     }
-    
 }
 
 int bizcochito_dummy(uint8_t argc, void** argv)

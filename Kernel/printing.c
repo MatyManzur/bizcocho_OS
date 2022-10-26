@@ -19,10 +19,46 @@ uint8_t charsWithSpecialFormat[WIDTH][HEIGHT] = {{NONE}};
 
 point_t cursor = {0,0};
 
+point_t backspaceBase = {0,0};
+
 //Funcion auxiliar que recibe un punto y devuelve un puntero a la dirección de memoria correspondiente a ese punto
 static uint8_t *pointToCursor(point_t point)
 {
     return (uint8_t * )(video + 2 * (point.row * WIDTH + point.column));
+}
+
+//Borra un char siempre que estemos después de la posicion del backspaceBase
+static void backspace()
+{
+    
+    if(pointToCursor(cursor) > pointToCursor(backspaceBase))
+    {
+        //nos movemos uno hacia atras
+        if(cursor.column > 0)
+        {
+            cursor.column--;
+        }
+        else
+        {
+            cursor.row--;
+            cursor.column = WIDTH - 1;
+            while(*pointToCursor(cursor) == ' ' && cursor.column > 0)
+            {
+                cursor.column--;
+            }
+        }
+        //ahora borramos el caracter
+        uint8_t *cursorPointer = pointToCursor(cursor);
+        charsWithSpecialFormat[cursor.column][cursor.row] = NONE;
+        *cursorPointer = ' ';
+        *(cursorPointer + 1) = currentFormat.backgroundColor << 4 | currentFormat.characterColor;
+    }
+}
+
+void setBackspaceBase()
+{
+    backspaceBase.row = cursor.row;
+    backspaceBase.column = cursor.column;
 }
 
 //printea el caracter indicado en donde se encuentre el cursor de la pantalla actual con el formato indicado
@@ -46,6 +82,11 @@ uint8_t printChar(char character, color_t backgroundColor, color_t characterColo
     if(character == '\n')
     {
         newLine(fmt.backgroundColor);
+        return 0;
+    }
+    if(character == '\b')
+    {
+        backspace();
         return 0;
     }
 
@@ -145,6 +186,8 @@ void clearScreen()
     //pone el cursor al principio
     cursor.row = 0;
     cursor.column = 0;
+    backspaceBase.row = 0;
+    backspaceBase.column = 0;
 }
 
 //copia todas las lineas "rows" líneas hacia arriba. las de abajo las borra para que no se vean repetidas con las que copio hacia arriba
@@ -176,4 +219,13 @@ void scrollUp(uint8_t rows)
     }
     cursor.column = 0;
     cursor.row = HEIGHT - rows;
+    if(backspaceBase.row >= rows)
+    {
+        backspaceBase.row -= rows;
+    }
+    else
+    {
+        backspaceBase.row = 0;
+        backspaceBase.column = 0;
+    }
 }

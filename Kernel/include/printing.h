@@ -49,6 +49,8 @@ uint8_t newLine(color_t backgroundColor);
 void scrollUp(uint8_t rows);
 
 //User
+void setBackspaceBase();
+
 void clearScreen();
 
 format_t changeColor(color_t backgroundColor, color_t characterColor);
