@@ -28,4 +28,5 @@ int xtou64(const char *str, uint64_t *ans);
 
 char *strncpy(char *dest, const char *src, size_t count);
 
+int removeBackspaces(char str[]);
 #endif

@@ -225,7 +225,9 @@ int sqrt(int x)
            2;//Esto es para conseguir la raiz ademas SSE esta deshabilitado entonces truncamos y sumamos uno
 }
 
-//Se le pasa un string, un buffer donde dejara los tokens, el char separador de tokens, una cantidad maxima de tokens y la longitud maxima de cada token. La funcion parsea con el char provisto el string en tokens, si se llega a la longitud maxima en un token el mismo quedara con esa longitud y si se llega a la cantidad maxima de tokens se dejara de parsear, si esta ultima no se alcanza entonces parsea hasta el final del string. Devuelve por parametro la cantidad de tokens que llego a parsear.
+//Se le pasa un string, un buffer donde dejara los tokens, el char separador de tokens, una cantidad maxima de tokens y la longitud maxima de cada token. 
+//La funcion parsea con el char provisto el string en tokens, si se llega a la longitud maxima en un token el mismo quedara con esa longitud y si se llega a la cantidad maxima de tokens se dejara de parsear, 
+//si esta ultima no se alcanza entonces parsea hasta el final del string. Devuelve por parametro la cantidad de tokens que llego a parsear.
 int parser(char *string, char **buffer, char separator, int maxTokenCount, int maxTokenLenght)
 {
     if (maxTokenLenght == 0 || maxTokenCount == 0)
@@ -301,5 +303,22 @@ char *strncpy(char *dest, const char *src, size_t count)
 		count--;
 	}
 	return dest;
+}
+
+int removeBackspaces(char str[]){
+    int i=0,j=0;
+    int backs=0;
+    for(; str[j]!='\0';j++){
+
+        if( str[j] != '\b' ){
+            str[i++]=str[j];
+        }
+        else{
+            (i==0)? :i--;
+            backs++;
+        }
+    }
+    str[i]='\0';
+    return backs;
 }
 
