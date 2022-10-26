@@ -5,10 +5,16 @@ uint32_t GetUint();
 
 uint32_t GetUniform(uint32_t max);
 
-static void memset(void * beginning, uint32_t value, uint32_t size);
+void memseter(void * beginning, uint32_t value, uint32_t size);
 
-static int memcheck(void * beginning, uint32_t value, uint32_t size);
+int memcheck(void * beginning, uint32_t value, uint32_t size);
 
 int64_t satoi(char* str);
 
 void printNum(int value);
+
+void bussy_wait(uint64_t n);
+
+void endless_loop_print();
+
+void endless_loop();

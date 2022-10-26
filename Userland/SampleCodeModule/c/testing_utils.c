@@ -1,5 +1,7 @@
-/*
+
 #include "testing_utils.h"
+
+#define WAIT      10000000 // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 static uint32_t m_z = 362436069;
 static uint32_t m_w = 521288629;
@@ -15,7 +17,7 @@ uint32_t GetUniform(uint32_t max){
     return (u + 1.0) * 2.328306435454494e-10 * max;
 }
 
-static void memset(void * beginning, uint32_t value, uint32_t size)
+void memseter(void * beginning, uint32_t value, uint32_t size)
 {
     uint8_t *p = (uint8_t *) beginning;
     uint32_t i;
@@ -24,7 +26,7 @@ static void memset(void * beginning, uint32_t value, uint32_t size)
         *p = value;
 }
 
-static int memcheck(void * beginning, uint32_t value, uint32_t size)
+int memcheck(void * beginning, uint32_t value, uint32_t size)
 {
     uint8_t *p = (uint8_t *) beginning;
     uint32_t i;
@@ -61,9 +63,8 @@ void printNum(int value)
 {
     if(!value)
     {
-        write(STDIN,"0");
+      sys_write(STDOUT,"0");
     }
-    int ordMag = 0;
     char printable[16];
     printable[15] = 0;
     int index=15;
@@ -73,6 +74,24 @@ void printNum(int value)
         printable[index] = value%10 + '0';
         value /= 10;
     }
-    write(STDIN,printable+index);
+    sys_write(STDOUT,printable+index);
 }
-*/
+
+void bussy_wait(uint64_t n){
+  uint64_t i;
+  for (i = 0; i < n; i++);
+}
+
+void endless_loop(){
+  while(1);
+}
+
+void endless_loop_print()
+{
+  uint8_t pid = sys_get_pid();
+
+  while(1){
+    printNum(pid);
+    bussy_wait(WAIT);
+  }
+}

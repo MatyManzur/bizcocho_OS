@@ -1,4 +1,4 @@
-/*
+
 #include <stdint.h>
 #include "testing_utils.h"
 #include "syslib.h"
@@ -29,7 +29,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
     // Request as many blocks as we can
     while(rq < MAX_BLOCKS && total < max_memory){
         mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
-        mm_rqs[rq].address = memalloc(mm_rqs[rq].size);
+        mm_rqs[rq].address = sys_mem_alloc(mm_rqs[rq].size);
 
         if(mm_rqs[rq].address)
         {
@@ -42,21 +42,20 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
     uint32_t i;
     for (i = 0; i < rq; i++)
         if (mm_rqs[i].address)
-        memset(mm_rqs[i].address, i, mm_rqs[i].size);
+        memseter(mm_rqs[i].address, i, mm_rqs[i].size);
 
     // Check
     for (i = 0; i < rq; i++)
         if (mm_rqs[i].address)
             if(!memcheck(mm_rqs[i].address, i, mm_rqs[i].size))
             {
-            printf("test_mm ERROR\n");
-            return -1;
+                sys_write(STDOUT, "test_mm ERROR\n");
+                return -1;
             }
 
         // Free
     for (i = 0; i < rq; i++)
         if (mm_rqs[i].address)
-        memfree(mm_rqs[i].address);
+        sys_mem_free(mm_rqs[i].address);
     } 
 }
-*/

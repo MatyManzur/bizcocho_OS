@@ -1,6 +1,6 @@
 /*
 #include "testing_utils.h"
-#include "syslib.h"
+#include <syslib.h>
 
 #define SEM_ID "sem"
 #define TOTAL_PAIR_PROCESSES 6
@@ -26,22 +26,21 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
   if ((inc = satoi(argv[1])) == 0) return -1;
   if ((use_sem = satoi(argv[2])) < 0) return -1;
 
+  int semId;
+
   // honestamente no hacemos ningún chequeo en initialize_semaphore 
   if (use_sem)
-    if (!sys_initialize_semaphore(SEM_ID, 1)){
-      printf("test_sync: ERROR opening semaphore\n");
-      return -1;
-    }
+    semId = sys_initialize_semaphore(SEM_ID, 1);
 
   uint64_t i;
   for (i = 0; i < n; i++){
-    if (use_sem) sys_wait_sem(SEM_ID);
+    if (use_sem) sys_wait_sem(semId);
     slowInc(&global, inc);
-    if (use_sem) sys_post_sem(SEM_ID);
+    if (use_sem) sys_post_sem(semId);
   }
 
-  if (use_sem) sys_close_sem(SEM_ID);
-  
+  if (use_sem) sys_close_sem(semId);
+    
   return 0;
 }
 
@@ -58,8 +57,8 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
   uint64_t i;
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
     // how the hell es el nuestro?
-    pids[i] = my_create_process("my_process_inc", 3, argvDec);
-    pids[i + TOTAL_PAIR_PROCESSES] = my_create_process("my_process_inc", 3, argvInc);
+    pids[i] = sys_start_child_process("my_process_inc", 3, argvDec, (void (*)(uint8_t,  void **))my_process_inc);
+    pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, argvInc, (void (*)(uint8_t,  void **)) my_process_inc);
   }
 
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
@@ -67,9 +66,9 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
     sys_wait_child(pids[i + TOTAL_PAIR_PROCESSES]);
   }
 
-  sys_write(STDIN, "Final value: ");
+  sys_write(STDOUT, "Final value: ");
   printNum(global);
-  sys_write(STDIN, "\n");
+  sys_write(STDOUT, "\n");
 
   return 0;
 }
