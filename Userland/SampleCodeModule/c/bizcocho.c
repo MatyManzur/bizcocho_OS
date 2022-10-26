@@ -12,8 +12,6 @@ int8_t bizcochito_dummy(uint8_t argc, void** argv);
 
 static char buffer[BUFFER_DIM]={0};
 
-static uint8_t bufferIndex; //No es buffer circular
-
 char* promptMessage="Bizcocho $>";
 
 static commandInfo commands[COMMAND_COUNT]={
@@ -32,8 +30,18 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="monke", .builtin=1, .programFunction=bizcochito_dummy },
 };
 
+void cleanBuffer()
+{
+    for(int i=0; i< BUFFER_DIM; i++)
+    {
+        buffer[i] = 0;
+    }
+}
+
 void readUntilEnter()
 {
+    uint8_t bufferIndex = 0;
+    cleanBuffer();
     do{
         if(bufferIndex == BUFFER_DIM - 1)
         {
@@ -102,6 +110,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
     while (1)
     {   
         sys_write(STDOUT,promptMessage);
+        sys_set_backspace_base();
         readUntilEnter();
         //Parse por pipe y despues parse por espacio
         char pipeTokenStrings[2][MAX_PIPE_TOKEN_LENGTH]={{0}};
@@ -126,7 +135,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
             foundCommand[k] = lookForCommandInString(pipeTokenStrings[k], &argc[k], argv[k], (char**) tokens[k]);
             // devuelve el indice del comando en el array de comandos
             // recibe: el string entero, donde tiene que dejar el int argc (int*) y el char* argv[] (char*[])
-            if(foundCommand < 0)
+            if(foundCommand[k] < 0)
             {
                 sys_write(STDERR, "Hey! That's not a valid command!\n");
                 error = 1;
