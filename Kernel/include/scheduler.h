@@ -34,8 +34,15 @@ typedef enum blockedSource BlockedSource_t;
 typedef struct BlockReason_t
 {
     BlockedSource_t source;
-    uint8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
+    int8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
 } BlockedReason_t;
+
+typedef struct fileDescriptor_t
+{
+    int16_t fileID;
+    uint8_t mode;
+    
+}fileDescriptor_t;
 
 typedef struct PCB_t
 {
@@ -50,7 +57,7 @@ typedef struct PCB_t
     uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
     State_t state;
     int8_t statusCode;
-    int32_t fds[MAX_FD_COUNT];
+    fileDescriptor_t fds[MAX_FD_COUNT];
     uint8_t priority;
     BlockedReason_t blockedReason;
 } PCB_t;
@@ -86,5 +93,7 @@ uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
+
+fileDescriptor_t* getFileDescriptorsFromRunningProcess();
 
 #endif

@@ -24,7 +24,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="wc", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="filter", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="pipe", .builtin=1, .programFunction=bizcochito_dummy },
-    {.name="phylo", .builtin=1, .programFunction=bizcochito_dummy },
+    {.name="phylo", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="monke", .builtin=1, .programFunction=bizcochito_dummy },
 };
 

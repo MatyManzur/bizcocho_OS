@@ -54,7 +54,7 @@ static uint8_t getCockatoo(uint8_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
-static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,int32_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
+static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,fileDescriptor_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
 
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;
@@ -73,12 +73,14 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
     if(fds==NULL){
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
-            processPCB->fds[i] = (i < 3) ? i : -1;
+            processPCB->fds[i].fileID = (i < 3) ? i : -1;
+            processPCB->fds[i].fileID = (i==0)? 'R':( (i < 3)? 'W':'N' ); 
         }
     }else{
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
-            processPCB->fds[i] = fds[i];
+            processPCB->fds[i].fileID = fds[i].fileID;
+            processPCB->fds[i].mode=fds[i].mode;
         }
     }
     processPCB->priority = priority;
@@ -491,4 +493,7 @@ static void initProcess(uint8_t argc, void **argv)
 void yield(){
     schedule.nowRunning->remainingQuantum=0;
     _int20();
+}
+fileDescriptor_t* getFileDescriptorsFromRunningProcess(){
+    return schedule.nowRunning->process->fds;
 }
