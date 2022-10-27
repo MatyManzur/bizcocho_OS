@@ -1,4 +1,11 @@
 #include <files.h>
+
+#define SEND_ERROR(s) {\
+    write(STDERR, "Error! Cannot ");\
+    write(STDERR, (s));\
+    write(STDERR, "!\n");\
+    return -1;};
+
 //estas sí serían syscalls, no como las de printing.c
 
 static void printToScreen(char* s,format_t* format){
@@ -15,9 +22,12 @@ int write(int fd,char* s)
     format_t format;
     switch (fd)
     {
+        case EMPTY:
+            SEND_ERROR("write to EMPTY file");
+            break;
+
         case STDIN:
-            //no se puede, el keyboard.c tiene el buffer
-            return -1;
+            SEND_ERROR("write to STDIN");
             break;
 
         case STDOUT:
@@ -43,10 +53,7 @@ uint8_t read(int fd, char* buf, uint8_t n)
     uint8_t totalChars = 0;
     switch (fd)
     {
-        case -1:
-            //TODO ERROR
-            break;
-        case 0:
+        case STDIN:
             while(totalChars < n)
             {
                 totalChars += readPrintables(buf + totalChars, n - totalChars);
@@ -64,39 +71,22 @@ uint8_t read(int fd, char* buf, uint8_t n)
             }
             return totalChars;
             break;
-        case 1:
-        case 2:
-            //No se puede
-            
+        case EMPTY:
+            SEND_ERROR("read from EMPTY file");
+            break;
+        case STDOUT:
+            SEND_ERROR("read from STDOUT");
+            break;
+        case STDERR:
+            SEND_ERROR("read from STDERR");
+            break;
         break;
         default:
             break;
     }
     return 0;
 }
+
 int printToStdoutFormat(char *s, format_t fmt){
     printToScreen(s,&fmt);
 }
-/*
-write(int fd, char* s)
-- escribe hasta que encuentra un \0
-- si el fd es 0 o 1 (stdin o stdout) llama a print de printing.c con DEFAULT, DEFAULT
-- si es 2 (stderr) hace lo mismo pero con RED, WHITE
-- dejamos que se pueda escribir en stdin para que lo pueda llamar el keyboard.c
-- si es >2 despues vemos, por ahora q no haga nada
-- al terminar de escribir sobre un fd, le tenemos que avisar al scheduler que desbloquee 
-los procesos que estaban bloqueados por esta razon. 
-- ver que onda el \n, lo manejamos acá, o lo manejamos en printing 
-(creo que en printing seria mejor, en printChar)
-- al llamar al print de printing.c, va a avisar cuando se termine la pantalla, en ese caso
-llamar a scrollup()
-*/
-
-/*
-- read(int fd, char* buf, int n)
-- lee la cantidad n, o hasta que encuentre un \0 del fd indicado
-- que no te deje leer de stdout o stderr
-- hay q guardarnos un buffer de lo que está en stdin
-- si todavia no leyo los n chars o no encontro un \0, le avisa al scheduler que bloquee el proceso 
-con la reason de que está leyendo de ese fd
-*/

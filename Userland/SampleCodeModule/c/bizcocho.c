@@ -1,9 +1,9 @@
 #include <bizcocho.h>
 
 
-#define COMMAND_COUNT 14 //INCLUIDO MONKEY
+#define COMMAND_COUNT 14 
 
-#define NO_CHANGE_FD -1
+#define NO_CHANGE_FD -2
 
 #define IS_PIPE(c) ((c)==2)
 
@@ -39,12 +39,12 @@ void readUntilEnter(char buffer[])
             if(bufferIndex == BUFFER_DIM - 1)
             {
                 bufferIndex++;
-                sys_write(STDOUT, '\n');
+                printf("\n");
                 break;
             }
         }
         sys_read(STDIN, buffer + bufferIndex, 1);
-        sys_write(STDOUT, buffer + bufferIndex);
+        printf(buffer + bufferIndex);
     } while( buffer[bufferIndex++] !='\n');
 
     buffer[bufferIndex - 1]='\0'; //Ponemos un 0 para terminar el string
@@ -78,7 +78,7 @@ uint8_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, voi
 {   
     //TODO PIPE y DUP2
     //Cambiar fd con STDINCHANGE y STDOUTCHANGE
-    if(stdinChange!=NO_CHANGE_FD)
+    if(stdinChange != NO_CHANGE_FD)
     {
 
     }
@@ -99,7 +99,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
     while (1)
     {   
         char buffer[BUFFER_DIM]={0};
-        sys_write(STDOUT,promptMessage);
+        printf(promptMessage);
         sys_set_backspace_base();
         readUntilEnter(buffer);
         //Parse por pipe y despues parse por espacio
@@ -114,9 +114,9 @@ int8_t bizcocho(uint8_t argc, void** argv)
 
         uint8_t error = 0;
 
-        if(pipeTokenCount > 2)
+        if(pipeTokenCount > 2) //TODO parser nunca devuelve más que 2 porque pregunta el máximo por parámetro
         {
-            sys_write(STDERR, "Cannot use pipe | more than once!\n");
+            fprintf(STDERR, "Cannot use pipe | more than once!\n");
             error = 1;
         }
         
@@ -127,7 +127,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
             // recibe: el string entero, donde tiene que dejar el int argc (int*) y el char* argv[] (char*[])
             if(foundCommand[k] < 0)
             {
-                sys_write(STDERR, "Hey! That's not a valid command!\n");
+                fprintf(STDERR, "Hey! That's not a valid command!\n");
                 error = 1;
             }
         }
@@ -138,7 +138,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
             {
                 if(commands[foundCommand[0]].builtin || commands[foundCommand[1]].builtin)
                 {
-                    sys_write(STDERR, "Cannot use a built-in command with a pipe!\n");
+                    fprintf(STDERR, "Cannot use a built-in command with a pipe!\n");
                     error = 1;
                 }
                 else
@@ -156,7 +156,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 {
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                    uint8_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], /*background? TODO pipe vacio:*/ NO_CHANGE_FD, NO_CHANGE_FD);
+                    uint8_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD);
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);
@@ -170,7 +170,6 @@ int8_t bizcocho(uint8_t argc, void** argv)
 
 int8_t bizcochito_dummy(uint8_t argc, void** argv)
 {
-    sys_write(STDOUT,"Hola soy un DUMMY PROCESS\n");
-    sys_exit(4);
+    printf("Hola soy un DUMMY PROCESS\n");
     return 0;
 }

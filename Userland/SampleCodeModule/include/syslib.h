@@ -5,6 +5,7 @@
 
 #define NULL 0
 
+#define EMPTY -1
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
