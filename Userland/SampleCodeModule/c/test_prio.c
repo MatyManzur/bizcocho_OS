@@ -21,29 +21,29 @@ void test_prio(){
         pids[i] = sys_start_child_process("endless_loop_print", 0, argv, (void (*)(uint8_t,  void **)) endless_loop_print);
 
     bussy_wait(WAIT);
-    sys_write(STDOUT, "\nCHANGING PRIORITIES...\n");
+    printf("\nCHANGING PRIORITIES...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_change_priority(pids[i], prio[i]);
 
     bussy_wait(WAIT);
-    sys_write(STDOUT, "\nBLOCKING...\n");
+    printf("\nBLOCKING...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_block_process(pids[i]);
 
-    sys_write(STDOUT, "CHANGING PRIORITIES WHILE BLOCKED...\n");
+    printf("CHANGING PRIORITIES WHILE BLOCKED...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_change_priority(pids[i], MEDIUM);
 
-    sys_write(STDOUT, "UNBLOCKING...\n");
+    printf("UNBLOCKING...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_block_process(pids[i]);
 
     bussy_wait(WAIT);
-    sys_write(STDOUT, "\nKILLING...\n");
+   printf("\nKILLING...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_kill_process(pids[i]);

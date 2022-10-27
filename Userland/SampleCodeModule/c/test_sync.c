@@ -1,4 +1,4 @@
-/*
+
 #include "testing_utils.h"
 #include <syslib.h>
 
@@ -66,10 +66,7 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
     sys_wait_child(pids[i + TOTAL_PAIR_PROCESSES]);
   }
 
-  sys_write(STDOUT, "Final value: ");
-  printNum(global);
-  sys_write(STDOUT, "\n");
+  printf("Final value: %d\n", global);
 
   return 0;
 }
-*/

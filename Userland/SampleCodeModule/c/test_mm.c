@@ -49,7 +49,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
         if (mm_rqs[i].address)
             if(!memcheck(mm_rqs[i].address, i, mm_rqs[i].size))
             {
-                sys_write(STDOUT, "test_mm ERROR\n");
+                printf("test_mm ERROR\n");
                 return -1;
             }
 

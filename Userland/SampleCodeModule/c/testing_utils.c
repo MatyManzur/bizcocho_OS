@@ -59,23 +59,6 @@ int64_t satoi(char* str){
 }
 
 
-void printNum(int value)
-{
-    if(!value)
-    {
-      sys_write(STDOUT,"0");
-    }
-    char printable[16];
-    printable[15] = 0;
-    int index=15;
-    while(value!=0)
-    {
-        index--;
-        printable[index] = value%10 + '0';
-        value /= 10;
-    }
-    sys_write(STDOUT,printable+index);
-}
 
 void bussy_wait(uint64_t n){
   uint64_t i;
@@ -91,7 +74,7 @@ void endless_loop_print()
   uint8_t pid = sys_get_pid();
 
   while(1){
-    printNum(pid);
+    printf("%d\n", pid);
     bussy_wait(WAIT);
   }
 }
