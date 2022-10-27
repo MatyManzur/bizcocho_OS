@@ -54,7 +54,7 @@ static uint8_t getCockatoo(uint8_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
-static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,int8_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
+static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,int32_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
 
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;

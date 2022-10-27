@@ -43,6 +43,9 @@ uint8_t read(int fd, char* buf, uint8_t n)
     uint8_t totalChars = 0;
     switch (fd)
     {
+        case -1:
+            //TODO ERROR
+            break;
         case 0:
             while(totalChars < n)
             {

@@ -50,7 +50,7 @@ typedef struct PCB_t
     uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
     State_t state;
     int8_t statusCode;
-    int8_t fds[MAX_FD_COUNT];
+    int32_t fds[MAX_FD_COUNT];
     uint8_t priority;
     BlockedReason_t blockedReason;
 } PCB_t;

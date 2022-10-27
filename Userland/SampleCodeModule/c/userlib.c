@@ -1,6 +1,8 @@
 
 #include <userlib.h>
 
+#define PRINTF_BUFFER_MAX_LENGTH 255
+
 #define IS_DIGIT(x) ((x)>='0' && (x)<='9')
 
 int strToNum(const char *str)
@@ -71,36 +73,49 @@ int strcmp(const char *cs, const char *ct)
 	return 0;
 }
 
-/*      TODO adaptar con write(STDOUT, ...)
-        que vaya armando un string (con malloc? o con char[MAX]?)
-        y despues haga un write(STDOUT, finalStr) al final
-        asi no hace una syscall por cada char como está haciendo xdxd
-// código sacado de:
-// https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
-void printf(char *format, ...)
+//variante de codigo sacado de:
+//https://codebrowser.dev/linux/linux/lib/string.c.html
+//Devuelve cuantos caracteres copió
+size_t strcpy(char *dest, const char *src)
 {
+	size_t tmp = 0;
+	while ((*dest++ = *src++) != '\0')
+		tmp++;
+	return tmp;
+}
+
+
+// variante de código sacado de:
+// https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
+void fprintf(int fd, char *format, ...)
+{
+    char buffer[PRINTF_BUFFER_MAX_LENGTH] = {0};
     char *traverse;
     uint64_t i;
     char *s;
+
+    int j = 0;
 
     //Initializing arguments 
     va_list arg;
     va_start(arg, format);
 
-    for (traverse = format; *traverse != '\0'; traverse++)
+    for (j = 0, traverse = format; *traverse != '\0'; traverse++)
     {
-        while (*traverse != '%') //frenamos en un %
+        while (*traverse != '%' && *traverse != 0) //frenamos en un % o en un \0
         {
-            putChar(*traverse);
+            buffer[j++] = *traverse;
             traverse++;
         }
+
+        if(*traverse==0)
+            break;
 
         traverse++;
 
         int minDigitCount = 0;
 
-        while (IS_DIGIT(
-                *traverse))    //leemos si hay un numero entre el % y la letra indicando la cantidad minima de cifras a mostrar para que complete con ceros adelante
+        while (IS_DIGIT(*traverse))    //leemos si hay un numero entre el % y la letra indicando la cantidad minima de cifras a mostrar para que complete con ceros adelante
         {
             minDigitCount *= 10;
             minDigitCount += *traverse - '0';
@@ -112,47 +127,51 @@ void printf(char *format, ...)
         switch (*traverse)
         {
             case 'c' :
-                i = va_arg(arg,
-                int);     //Fetch char argument
-                putChar(i);
+                i = va_arg(arg, int);     //Fetch char argument
+                buffer[j++] = i;
                 break;
 
             case 'd' :
-                i = va_arg(arg,
-                int);         //Fetch Decimal/Integer argument
+                i = va_arg(arg, int);     //Fetch Decimal/Integer argument
                 if (i < 0)
                 {
                     i = -i;
-                    putChar('-');
+                    buffer[j++] = '-';
                 }
-                printString(convert(i, 10, minDigitCount));
+                j += strcpy(buffer + j, convert(i, 10, minDigitCount));
                 break;
 
             case 'o':
-                i = va_arg(arg,
-                unsigned int); //Fetch Octal representation
-                printString(convert(i, 8, minDigitCount));
+                i = va_arg(arg, unsigned int); //Fetch Octal representation
+                j += strcpy(buffer + j, convert(i, 8, minDigitCount));
                 break;
 
             case 's':
-                s = va_arg(arg,
-                char *);       //Fetch string
-                printString(s);
+                s = va_arg(arg, char *);       //Fetch string
+                j += strcpy(buffer + j, s);
                 break;
 
             case 'x':
-                i = va_arg(arg,
-                unsigned long); //Fetch Hexadecimal representation
-                printString(convert(i, 16, minDigitCount));
+                i = va_arg(arg, unsigned long); //Fetch Hexadecimal representation
+                j += strcpy(buffer + j, convert(i, 16, minDigitCount));
                 break;
         }
     }
+
+    buffer[j] = 0;
+
+    sys_write(fd, buffer);
 
     //Closing argument list to necessary clean-up
     va_end(arg);
 }
 
-*/
+void printf(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    fprintf(STDOUT, format, args);
+}
 
 //Función auxiliar para convertir un numero a string en la base indicada (maximo base 16), minDigitCount es la cantidad minima de digitos del string, si el numero tiene menos digitos entonces completa con 0's
 char *convert(unsigned int num, int base, unsigned int minDigitCount)
