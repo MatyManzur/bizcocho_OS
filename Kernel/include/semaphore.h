@@ -18,9 +18,9 @@ typedef struct semBlock * semPointer;
 typedef struct semBlock
 {
     char name[32];
-    int id;
-    int value;
-    int semLock;
+    uint8_t id;
+    uint64_t value;
+    uint8_t semLock;
     ddlADT blockedProcessList;
     semPointer next;
 } semBlock;
@@ -28,13 +28,13 @@ typedef struct semBlock
 void initSemaphoreHub();
 
 //SYSCALLS
-int initializeSemaphore(char * name, int initialValue);
+int initializeSemaphore(char * name, uint64_t initialValue);
 
-int wait_sem(int id);
+uint64_t wait_sem(uint8_t id);
 
-void post_sem(int id);
+void post_sem(uint8_t id);
 
-int close_sem(int id);
+int8_t close_sem(uint8_t id);
 
 void print_all_semaphores();
 
