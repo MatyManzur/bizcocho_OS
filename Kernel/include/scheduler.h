@@ -94,6 +94,10 @@ uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
 
-fileDescriptor_t* getFileDescriptorsFromRunningProcess();
+int16_t fdToFileId(uint8_t fd);
+
+int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd);
+
+int8_t closeFile(uint8_t fd);
 
 #endif

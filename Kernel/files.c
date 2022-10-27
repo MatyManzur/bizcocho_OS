@@ -47,10 +47,44 @@ int8_t mkpipe(char* name)
 
 int8_t open(char* name, uint8_t mode, uint8_t* fd)
 {
+    pipeFile_t* file=(pipeFile_t* )find(pipeFilesList,cmpFileName,(void*)name);
+    if(file==NULL || (mode!='W' && mode != 'R') || openFile(file->fileId,mode,fd)==-1){
+        return -1;
+    }
+    file->currentOpenCount++;
+    return 0;
     //buscar el que tiene name, si no lo encuentra devuelve -1
     //chequea el mode, si esta mal devuelve -1
     //llama a openFile(fileId, mode, fd) de scheduler.c
     //return 0
+}
+int8_t close(uint8_t fd)
+{   
+    uint16_t fileId=fdToFileId(fd);
+    if(fileId==-1){
+        return -1;
+    }
+    pipeFile_t* file;
+    uint8_t removed=0;
+    toBegin(pipeFilesList);
+    while(hasNext(pipeFilesList) && !removed){
+        file=(pipeFile_t *)next(pipeFilesList);
+        if(file->fileId==fileId){
+            if(closeFile(fd)==-1){
+                return -1;
+            }
+            file->currentOpenCount--;
+            if(!file->currentOpenCount)
+            {
+                remove(pipeFilesList);
+            }
+            removed=1;
+        }
+    }
+    if(!removed){
+        return -1;
+    }
+
 }
 
 int write(int fd,char* s)
@@ -125,4 +159,10 @@ uint8_t read(int fd, char* buf, uint8_t n)
 
 int printToStdoutFormat(char *s, format_t fmt){
     printToScreen(s,&fmt);
+}
+int cmpFileName(void* a,void* b){
+    return strcmp( ((pipeFile_t*)a)->name, ((pipeFile_t*)b)->name);
+}
+int cmpFileID(void* a,void* b){
+    return *((uint16_t *)a)==*((uint16_t *) b);
 }

@@ -495,9 +495,9 @@ void yield(){
     _int20();
 }
 
-int16_t fdToFileId(uint8_t fd, uint8_t mode)
+int16_t fdToFileId(uint8_t fd)
 {
-    if(fd >= MAX_FD_COUNT || mode != schedule.nowRunning->process->fds[fd].mode)
+    if(fd >= MAX_FD_COUNT)
         return -1;
     return schedule.nowRunning->process->fds[fd].fileID;
 }
@@ -521,5 +521,10 @@ int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd)
 
 int8_t closeFile(uint8_t fd)
 {
-    
+    if(schedule.nowRunning->process->fds[fd].mode=='N'){
+        return -1;
+    }
+    schedule.nowRunning->process->fds[fd].fileID=fd;
+    schedule.nowRunning->process->fds[fd].mode='N';
+    return 0;
 }
