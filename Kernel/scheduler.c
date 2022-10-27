@@ -54,8 +54,8 @@ static uint8_t getCockatoo(uint8_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
-static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid,fileDescriptor_t fds[MAX_FD_COUNT],pointerPCBNODE_t parent){
-
+static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid, fileDescriptor_t fds[MAX_FD_COUNT], pointerPCBNODE_t parent)
+{
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
     processPCB->pid = pidToGive++;
     processPCB->ppid = ppid; //El parent provisto
@@ -63,10 +63,10 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
     processPCB->argc = argc;
     processPCB->argv = (void **)argv;
     processPCB->processCodeStart = processCodeStart;
-    processPCB->processMemStart = memalloc(PROCESS_MEM_SIZE);
+    processPCB->processMemEnd = memalloc(PROCESS_MEM_SIZE);
     processPCB->cockatoo = getCockatoo(processPCB->pid);
-    *(uint8_t *)(processPCB->processMemStart) = processPCB->cockatoo;
-    processPCB->processMemStart += PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
+    *(uint8_t *)(processPCB->processMemEnd) = processPCB->cockatoo;
+    processPCB->processMemStart = processPCB->processMemEnd + PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
     processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
     processPCB->statusCode = -1;
@@ -83,6 +83,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
             processPCB->fds[i].mode=fds[i].mode;
         }
     }
+    processPCB->fdReplacements = newList();
     processPCB->priority = priority;
     processPCB->blockedReason.source = NO_BLOCK;
     processPCB->blockedReason.id = 0;
@@ -203,9 +204,8 @@ uint8_t getPid()
 
 static void freeNode(pointerPCBNODE_t head)
 {
-    char *name = head->process->name;
-    if (name != NULL)
-        memfree(name);
+    memfree(head->process->processMemEnd);
+    freeList(head->process->fdReplacements);
     memfree(head->process);
     memfree(head);
 }
@@ -494,6 +494,32 @@ void yield(){
     schedule.nowRunning->remainingQuantum=0;
     _int20();
 }
-fileDescriptor_t* getFileDescriptorsFromRunningProcess(){
-    return schedule.nowRunning->process->fds;
+
+int16_t fdToFileId(uint8_t fd, uint8_t mode)
+{
+    if(fd >= MAX_FD_COUNT || mode != schedule.nowRunning->process->fds[fd].mode)
+        return -1;
+    return schedule.nowRunning->process->fds[fd].fileID;
+}
+
+int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd)
+{
+    uint8_t ans = 4;
+    while(schedule.nowRunning->process->fds[ans].fileID != -1)
+    {
+        ans++;
+        if(ans >= MAX_FD_COUNT)
+        {
+            return -1;
+        }            
+    }
+    schedule.nowRunning->process->fds[ans].fileID = fileId;
+    schedule.nowRunning->process->fds[ans].mode = mode;
+    *fd = ans;
+    return 0;
+}
+
+int8_t closeFile(uint8_t fd)
+{
+    
 }

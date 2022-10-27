@@ -28,6 +28,7 @@
         "registers.h": "c",
         "stringslib.h": "c",
         "semaphore.h": "c",
-        "userlib.h": "c"
+        "userlib.h": "c",
+        "time.h": "c"
     }
 }

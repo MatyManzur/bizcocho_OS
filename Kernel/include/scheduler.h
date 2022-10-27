@@ -3,7 +3,6 @@
 
 #include <printing.h>
 #include <lib.h>
-#include <string.h>
 #include <interrupts.h>
 #include <memoryManager.h>
 
@@ -41,8 +40,7 @@ typedef struct fileDescriptor_t
 {
     int16_t fileID;
     uint8_t mode;
-    
-}fileDescriptor_t;
+} fileDescriptor_t;
 
 typedef struct PCB_t
 {
@@ -53,11 +51,13 @@ typedef struct PCB_t
     void **argv;
     void (*processCodeStart)(uint8_t argc, void **argv);
     void *processMemStart;
+    void *processMemEnd;
     uint8_t cockatoo;      // un canary medio trucho que ponemos al final de la memoria para ver que no se pase (pero podría saltarlo tranquilamente)
     uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
     State_t state;
     int8_t statusCode;
     fileDescriptor_t fds[MAX_FD_COUNT];
+    ddlADT fdReplacements;
     uint8_t priority;
     BlockedReason_t blockedReason;
 } PCB_t;

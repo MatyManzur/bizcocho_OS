@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <files.h>
 #include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
@@ -93,6 +94,7 @@ int main()
     load_idt();    //arma la IDT
     memInitialize((void*) MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
     initializeScheduler(); //Inicializamos el scheduler
+    initializeFiles();
     ((EntryPoint) sampleCodeModuleAddress)();
     _sti();
     // ncPrint("[Kernel Main]");

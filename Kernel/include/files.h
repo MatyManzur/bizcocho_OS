@@ -4,11 +4,18 @@
 #include <printing.h>
 #include <keyboard.h>
 #include <scheduler.h>
+#include <ddlADT.h>
+#include <stringslib.h>
+
+#define MAX_PIPE_BUFFER_SIZE 1024
+#define MAX_PIPE_NAME_SIZE 32
 
 #define EMPTY -1
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+
+void initializeFiles();
 
 //SYSCALLS
 int write(int fd,char* s);
