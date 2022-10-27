@@ -171,5 +171,6 @@ int8_t bizcocho(uint8_t argc, void** argv)
 int8_t bizcochito_dummy(uint8_t argc, void** argv)
 {
     printf("Hola soy un DUMMY PROCESS\n");
+    sys_exit(6);
     return 0;
 }

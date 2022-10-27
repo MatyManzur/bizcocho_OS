@@ -236,11 +236,11 @@ void exit(int8_t statusCode)
 }
 
 /*
-Notas para cuando lo hagamos (borrar dps):
+Notas para cuando lo hagamos (TODO borrar dps):
 
 ! - no es lo mismo borrarlo de la lista que no borrarlo y ponerlo como FINISHED
 Situación 1) Padre se va a borrar:
-    - le pasa los hijos al abuelo, estén vivos o sean zombies
+    - le pasa los hijos al init, estén vivos o sean zombies
 Situación 2) Hijo se va a matar:
     2a) el padre está esperando por él:
         - le aviso que no me espere más
@@ -273,7 +273,7 @@ static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t
     (*childrenListFrom)->prevSibling = lastChild;
 }
 
-static void removeFromList(pointerPCBNODE_t node, pointerPCBNODE_t parentNode)
+static void removeFromList(pointerPCBNODE_t node)
 {
     if (node->previous != NULL)
     {
@@ -293,7 +293,7 @@ static void removeFromList(pointerPCBNODE_t node, pointerPCBNODE_t parentNode)
     {
         node->next->previous = node->previous;
     }
-    inheritChildren(&node->children, &parentNode->children);
+    inheritChildren(&node->children, &init->children);
     freeNode(node);
 }
 
@@ -363,7 +363,7 @@ int8_t waitchild(uint8_t childpid)
     {
         child->nextSibling->prevSibling = child->prevSibling;
     }
-    removeFromList(child, schedule.nowRunning);
+    removeFromList(child);
     return statusCode;
 }
 

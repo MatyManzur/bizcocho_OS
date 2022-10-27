@@ -69,6 +69,7 @@ initializeTask:
 	; Pusheamos en el stack los registros que lee el iretq
 	mov rax, ss
 	push rax
+	and rcx, -16	;alineamos el valor que va a tomar el rsp
 	push rcx 	; en rcx tenemos cuanto tiene que valer el nuevo rsp
 
 	mov rax, 0x202		; pusheamos los flags
