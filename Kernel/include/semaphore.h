@@ -5,7 +5,7 @@
 #include <scheduler.h>
 #include <files.h>
 
-int _xchg(int *lock, int value);
+int _xchg(uint8_t *lock, int value);
 
 typedef struct blockHub
 {

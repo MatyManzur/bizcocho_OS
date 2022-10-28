@@ -8,6 +8,7 @@
 #include <keyboard.h>
 #include <scheduler.h>
 #include <memoryManager.h>
+#include <semaphore.h>
 
 #define MEMBASE 0x900000
 #define MEMSIZE 6400000
@@ -95,6 +96,7 @@ int main()
     memInitialize((void*) MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
     initializeScheduler(); //Inicializamos el scheduler
     initializeFiles();
+    initSemaphoreHub();
     ((EntryPoint) sampleCodeModuleAddress)();
     _sti();
     // ncPrint("[Kernel Main]");

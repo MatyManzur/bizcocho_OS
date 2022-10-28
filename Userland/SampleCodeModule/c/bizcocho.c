@@ -1,7 +1,7 @@
 #include <bizcocho.h>
+#include "tests.h"
 
-
-#define COMMAND_COUNT 14 
+#define COMMAND_COUNT 16 
 
 #define NO_CHANGE_FD -2
 
@@ -26,6 +26,8 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="pipe", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="phylo", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="monke", .builtin=1, .programFunction=bizcochito_dummy },
+    {.name="testsync", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_sync },
+    {.name="testmm", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_mm },
 };
 
 void readUntilEnter(char buffer[])

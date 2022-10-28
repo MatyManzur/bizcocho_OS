@@ -8,7 +8,7 @@ static blockHub hub;
 
 static void acquire(uint8_t * lock)
 {
-    while(_xchg(&lock,1)!=0);
+    while(_xchg(lock,1)!=0);
 }
 
 int cmpById(void * inList, void * compareWith)
@@ -30,13 +30,12 @@ void initSemaphoreHub()
     hub.semBlockList = newList();
 }
 
-int lock = 0;
-int lockList = 0;
-int lockListPid = 0;
+uint8_t lock = 0;
+uint8_t lockList = 0;
+uint8_t lockListPid = 0;
 
 int initializeSemaphore(char * name, uint64_t initialValue) 
 {
-    
     semPointer curr = (semPointer) find(hub.semBlockList, cmpByName, name);
 
     if(curr==NULL)
@@ -54,7 +53,6 @@ int initializeSemaphore(char * name, uint64_t initialValue)
         add(hub.semBlockList, curr);
         _xchg(&lock,0);
     }
-
     return (int) curr->id;
 }
 
@@ -170,7 +168,7 @@ void print_all_semaphores()
             printNum(*blockedPid);
         }
         write(STDOUT, "\n");
-        _xchg(&(curr->value), 0);
+        _xchg(&(curr->semLock), 0);
     }
     _xchg(&lockList, 0);
 }
