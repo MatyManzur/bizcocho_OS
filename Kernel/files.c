@@ -87,7 +87,7 @@ int8_t close(uint8_t fd)
 int write(int fd,char* s)
 {   
     format_t format;
-    uint16_t fileId = fdToFileId(fd, 'W');
+    int16_t fileId = fdToFileId(fd, 'W');
     switch (fileId)
     {
         case EMPTY:
@@ -123,7 +123,7 @@ int write(int fd,char* s)
 uint8_t read(int fd, char* buf, uint8_t n)
 {
     uint8_t totalChars = 0;
-    uint16_t fileId = fdToFileId(fd, 'W');
+    int16_t fileId = fdToFileId(fd, 'R');
     switch (fileId)
     {
         case EMPTY:

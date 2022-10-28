@@ -73,7 +73,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
             processPCB->fds[i].fileID = (i < 3) ? i : -1;
-            processPCB->fds[i].fileID = (i==0)? 'R':( (i < 3)? 'W':'N' ); 
+            processPCB->fds[i].mode = (i==0)? 'R':( (i < 3)? 'W':'N' ); 
         }
     }
     else{

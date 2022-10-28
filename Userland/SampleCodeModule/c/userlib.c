@@ -87,7 +87,7 @@ size_t strcpy(char *dest, const char *src)
 
 // variante de código sacado de:
 // https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
-void fprintf(int fd, char *format, ...)
+static void _fprintf(int fd, char *format, va_list *args)
 {
     char buffer[PRINTF_BUFFER_MAX_LENGTH] = {0};
     char *traverse;
@@ -98,7 +98,7 @@ void fprintf(int fd, char *format, ...)
 
     //Initializing arguments 
     va_list arg;
-    va_start(arg, format);
+    va_copy(arg, *args);
 
     for (j = 0, traverse = format; *traverse != '\0'; traverse++)
     {
@@ -170,7 +170,14 @@ void printf(char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    fprintf(STDOUT, format, args);
+    _fprintf(STDOUT, format, &args);
+}
+
+void fprintf(int fd, char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    _fprintf(fd, format, &args);
 }
 
 //Función auxiliar para convertir un numero a string en la base indicada (maximo base 16), minDigitCount es la cantidad minima de digitos del string, si el numero tiene menos digitos entonces completa con 0's
