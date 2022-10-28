@@ -42,8 +42,6 @@ EXTERN mkpipe
 EXTERN open
 EXTERN close
 
-EXTERN readPrintables
-EXTERN getNextKey
 EXTERN cleanBuffer
 
 EXTERN getCurrentDateTime
@@ -234,8 +232,6 @@ _syscallHandler:
 	caseSyscall 16, .C16
 	caseSyscall 17, .C17
 	caseSyscall 18, .C18
-	caseSyscall 20, .C20
-	caseSyscall 21, .C21
 	caseSyscall 22, .C22
 	caseSyscall 30, .C30
 	caseSyscall 31, .C31
@@ -307,12 +303,6 @@ _syscallHandler:
 	jmp .end
 .C18:
 	call close
-	jmp .end
-.C20:
-	call readPrintables
-	jmp .end
-.C21:
-	call getNextKey
 	jmp .end
 .C22:
 	call cleanBuffer

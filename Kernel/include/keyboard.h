@@ -176,10 +176,9 @@ typedef struct kbEvent_t    //struct de un evento del teclado, almacena que tecl
 //rutina de atención
 void keyboard_handler();
 
-//syscalls
 uint8_t readPrintables(char *bufferString, uint8_t count);
 
-void getNextKey(struct kbEvent_t *kbEvent);
+//syscalls
 
 void cleanBuffer();
 

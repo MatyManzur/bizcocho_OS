@@ -78,7 +78,7 @@ int8_t lookForCommandInString(char* string, uint8_t* argc, char* argv[], char** 
     return index;
 }
 
-uint8_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, void** argv), uint8_t argc, void** argv, int8_t stdinChange, int8_t stdoutChange)
+uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, void** argv), uint8_t argc, void** argv, int8_t stdinChange, int8_t stdoutChange)
 {   
     //TODO PIPE y DUP2
     //Cambiar fd con STDINCHANGE y STDOUTCHANGE
@@ -90,7 +90,7 @@ uint8_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, voi
     {
         
     }
-    uint8_t pid = sys_start_child_process(name,argc,argv,programFunction);
+    uint32_t pid = sys_start_child_process(name,argc,argv,programFunction);
     //Restauras los fd
     return pid;
 }
@@ -160,7 +160,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 {
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                    uint8_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD);
+                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD);
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);

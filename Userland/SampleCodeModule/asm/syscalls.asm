@@ -19,8 +19,6 @@ GLOBAL sys_open
 GLOBAL sys_close
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
-GLOBAL sys_read_printables
-GLOBAL sys_get_next_key
 GLOBAL sys_clean_buffer
 GLOBAL sys_get_current_date_time
 GLOBAL sys_set_time_zone
@@ -104,12 +102,6 @@ sys_open:
 
 sys_close:
 	make_syscall 18
-	
-sys_read_printables:
-	make_syscall 20
-	
-sys_get_next_key:
-	make_syscall 21
 	
 sys_clean_buffer:
 	make_syscall 22

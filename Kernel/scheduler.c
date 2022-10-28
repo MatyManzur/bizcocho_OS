@@ -21,7 +21,7 @@ typedef struct pbrr_t
 } pbrr_t;
 static int schedulerRunning = 0;
 static pbrr_t schedule = {{0}};
-static int pidToGive = 1;
+static uint32_t pidToGive = 1;
 static pointerPCBNODE_t init;
 
 static ddlADT blockedProcesses[BLOCK_REASON_COUNT];
@@ -47,7 +47,7 @@ static pointerPCBNODE_t findNextProcess()
     return head;
 }
 
-static uint8_t getCockatoo(uint8_t pid)
+static uint8_t getCockatoo(uint32_t pid)
 {
     return (pid * ticks_elapsed()) % 256;
 }
@@ -91,6 +91,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
     processPCB->blockedReason.source = NO_BLOCK;
     processPCB->blockedReason.id = 0;
     
+    
     // Agrega a las listas este PCB creado
     pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
     pnode->process = processPCB;
@@ -123,7 +124,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
     return pnode;
 }
 
-uint8_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority)
+uint32_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority)
 {
     pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,NULL,init);
     schedulerRunning = 1;
@@ -131,7 +132,7 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*proce
 }
 
 // Hacer un startChild (equivalente a un fork exec)
-uint8_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **))
+uint32_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **))
 {
     uint8_t priority = schedule.nowRunning->process->priority;
     pointerPCBNODE_t parent= schedule.nowRunning;
@@ -200,7 +201,7 @@ void scheduler()
     swapTasks(schedule.nowRunning->process->stackPointer); // cambia el rsp al que le paso en el parametro
 }
 
-uint8_t getPid()
+uint32_t getPid()
 {
     return schedule.nowRunning->process->pid;
 }
@@ -213,7 +214,7 @@ static void freeNode(pointerPCBNODE_t head)
     memfree(head);
 }
 
-static pointerPCBNODE_t findByPidRec(uint8_t pid, pointerPCBNODE_t head)
+static pointerPCBNODE_t findByPidRec(uint32_t pid, pointerPCBNODE_t head)
 {
     if (head == NULL)
         return NULL;
@@ -222,7 +223,7 @@ static pointerPCBNODE_t findByPidRec(uint8_t pid, pointerPCBNODE_t head)
     return findByPidRec(pid, head->next);
 }
 
-static pointerPCBNODE_t findByPid(uint8_t pid)
+static pointerPCBNODE_t findByPid(uint32_t pid)
 {
     if(pid == schedule.nowRunning->process->pid)
         return schedule.nowRunning;
@@ -309,7 +310,7 @@ static inline void setProcessReady(PCB_t *process)
     process->blockedReason.id = 0;
 }
 
-uint8_t killProcess(uint8_t pid)
+uint8_t killProcess(uint32_t pid)
 {
     pointerPCBNODE_t head = findByPid(pid);
     if (head != NULL) // si lo encontró
@@ -329,7 +330,7 @@ uint8_t killProcess(uint8_t pid)
     return head != NULL; // devuelve si lo encontró y lo mató
 }
 
-int8_t waitchild(uint8_t childpid)
+int8_t waitchild(uint32_t childpid)
 {
     pointerPCBNODE_t head = schedule.nowRunning->children;
     if (head == NULL) // No tiene hijos
@@ -373,7 +374,7 @@ int8_t waitchild(uint8_t childpid)
 }
 
 // Para uso del kernel, no es syscall
-uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
+uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
     uint8_t found = head != NULL && head->process->state != BLOCKED;
@@ -388,7 +389,7 @@ uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
 }
 
 // Para uso del kernel, no es syscall
-uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason)
+uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
     uint8_t found = (head != NULL) && (head->process->blockedReason.source == blockReason.source) && (head->process->blockedReason.id == blockReason.id);
@@ -424,7 +425,7 @@ void unblockAllProcessesBecauseReason(BlockedReason_t blockReason)
 }
 
 // estas sí son syscalls
-uint8_t blockProcess(uint8_t pid)
+uint8_t blockProcess(uint32_t pid)
 {
     BlockedReason_t reason;
     reason.source = ASKED_TO;
@@ -432,7 +433,7 @@ uint8_t blockProcess(uint8_t pid)
     return blockProcessWithReason(pid, reason);
 }
 
-uint8_t unblockProcess(uint8_t pid)
+uint8_t unblockProcess(uint32_t pid)
 {
     BlockedReason_t reason;
     reason.source = ASKED_TO;
@@ -440,7 +441,7 @@ uint8_t unblockProcess(uint8_t pid)
     return unblockProcessWithReason(pid, reason);
 }
 
-uint8_t changePriority(uint8_t pid, uint8_t newPriority)
+uint8_t changePriority(uint32_t pid, uint8_t newPriority)
 {
     if (0 > newPriority || newPriority >= PRIORITY_COUNT)
         return 0;

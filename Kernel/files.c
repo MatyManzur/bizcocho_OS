@@ -7,7 +7,8 @@ int cmpFileName(void* a,void* b);
 
 int cmpFileID(void* a,void* b);
 
-static void printToScreen(char* s,format_t* format){
+static void printToScreen(char* s,format_t* format)
+{
     while(s!=NULL && *s != '\0'){
             s=print(s,format);
             if(s!=NULL){
@@ -88,7 +89,7 @@ int write(int fd,char* s)
 {   
     format_t format;
     int16_t fileId = fdToFileId(fd, 'W');
-    pipeFile_t* pipe=find(pipeFilesList,cmpFileID,(void *)&fileId);
+    pipeFile_t* pipe; 
     int charIndex=0;
     switch (fileId)
     {
@@ -113,7 +114,9 @@ int write(int fd,char* s)
             break;
 
         default:
-            if(pipe==NULL){
+            pipe = find(pipeFilesList, cmpFileID, (void *)&fileId);
+            if(pipe == NULL)
+            {
                 SEND_ERROR("write to non-existent PIPE");
                 break;
             }
@@ -124,16 +127,16 @@ int write(int fd,char* s)
             BlockedReason_t unblockRead;
             unblockRead.id = fileId;
             unblockRead.source = PIPE_READ;
+
             while( s[charIndex] != '\0'){
-                if( ( (pipe->readingIndex-1) % MAX_PIPE_BUFFER_SIZE ) == ( (pipe->writingIndex) % MAX_PIPE_BUFFER_SIZE) || 
-                    ( (pipe->readingIndex % MAX_PIPE_BUFFER_SIZE)==0 && (pipe->writingIndex % MAX_PIPE_BUFFER_SIZE)==MAX_PIPE_BUFFER_SIZE-1 ) )
+                //si el pipe está lleno
+                if(((pipe->readingIndex-1) % MAX_PIPE_BUFFER_SIZE ) == ((pipe->writingIndex) % MAX_PIPE_BUFFER_SIZE))
                 {
                     blockProcessWithReason(getPid(), blockWrite);
                 }
                 pipe->buffer[pipe->writingIndex++ % MAX_PIPE_BUFFER_SIZE] = s[charIndex++];
-                unblockAllProcessesBecauseReason(unblockRead);
             }
-            //todo escribe en el pipe
+            unblockAllProcessesBecauseReason(unblockRead);
             break;
     }
     return 0;
@@ -144,7 +147,7 @@ uint8_t read(int fd, char* buf, uint8_t n)
 {
     uint8_t totalChars = 0;
     int16_t fileId = fdToFileId(fd, 'R');
-    pipeFile_t* pipe=find(pipeFilesList,cmpFileID,(void *)&fileId);
+    pipeFile_t* pipe;
     switch (fileId)
     {
         case EMPTY:
@@ -179,6 +182,7 @@ uint8_t read(int fd, char* buf, uint8_t n)
             break;
             
         default:
+            pipe = find(pipeFilesList, cmpFileID, (void *)&fileId);
             if(pipe==NULL){
                 SEND_ERROR("read from non-existent PIPE");
                 break;
@@ -190,14 +194,15 @@ uint8_t read(int fd, char* buf, uint8_t n)
             BlockedReason_t unblockWrite;
             unblockWrite.id = fileId;
             unblockWrite.source = PIPE_WRITE;
-            while(totalChars < n){
-                if( (pipe->readingIndex%MAX_PIPE_BUFFER_SIZE)==(pipe->writingIndex % MAX_PIPE_BUFFER_SIZE) ){
+            while(totalChars < n)
+            {
+                if( (pipe->readingIndex%MAX_PIPE_BUFFER_SIZE)==(pipe->writingIndex % MAX_PIPE_BUFFER_SIZE) )
+                {
                     blockProcessWithReason(getPid(), blockRead);
                 }
-                buf[totalChars++]=pipe->buffer[pipe->readingIndex++ % MAX_PIPE_BUFFER_SIZE];
-                unblockAllProcessesBecauseReason(unblockWrite);
+                buf[totalChars++] = pipe->buffer[pipe->readingIndex++ % MAX_PIPE_BUFFER_SIZE];
             }
-            //todo lee del pipe
+            unblockAllProcessesBecauseReason(unblockWrite);
             break;
     }
     return 0;

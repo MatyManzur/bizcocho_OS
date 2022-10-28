@@ -120,19 +120,6 @@ uint8_t readPrintables(char *bufferString, uint8_t count)
     return i;
 }
 
-//Lee la próxima tecla del buffer en la posición indicada por readingIndex, y lo incrementa siempre que haya habido algo para leer. Lee teclas printeables y no printeables.
-void getNextKey(struct kbEvent_t *kbEvent)
-{
-    if (readingIndex == writingIndex) //si no hay nada para leer, devuelve key=0. No espera a que se aprete algo
-    {
-        kbEvent->key = 0;
-        return;
-    }
-    kbEvent->key = buffer[(readingIndex) % BUFFER_DIM].key;
-    kbEvent->action = buffer[(readingIndex) % BUFFER_DIM].action;
-    readingIndex++;
-}
-
 //lleva el readingIndex hasta el writingIndex pero fijandose qué paso con las teclas de shift
 void cleanBuffer()
 {

@@ -34,7 +34,7 @@ typedef enum blockedSource BlockedSource_t;
 typedef struct BlockReason_t
 {
     BlockedSource_t source;
-    int8_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
+    int32_t id; // para indicar qué pipe/hijo/semaforo está esperando (¡si no aplica poner en 0!)
 } BlockedReason_t;
 
 typedef struct fileDescriptor_t
@@ -45,8 +45,8 @@ typedef struct fileDescriptor_t
 
 typedef struct PCB_t
 {
-    uint8_t pid;
-    uint8_t ppid;
+    uint32_t pid;
+    uint32_t ppid;
     char name[NAME_MAX];
     uint8_t argc;
     void **argv;
@@ -72,23 +72,23 @@ typedef struct lostFd_t{
 }lostFd_t; 
 
 //SYSCALLS
-uint8_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority);
+uint32_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority);
 
-uint8_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **));
+uint32_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **));
 
-uint8_t getPid();
+uint32_t getPid();
 
-int8_t waitchild(uint8_t childpid);
+int8_t waitchild(uint32_t childpid);
 
 void exit(int8_t statusCode);
 
-uint8_t killProcess(uint8_t pid);
+uint8_t killProcess(uint32_t pid);
 
-uint8_t blockProcess(uint8_t pid);
+uint8_t blockProcess(uint32_t pid);
 
-uint8_t unblockProcess(uint8_t pid);
+uint8_t unblockProcess(uint32_t pid);
 
-uint8_t changePriority(uint8_t pid, uint8_t newPriority);
+uint8_t changePriority(uint32_t pid, uint8_t newPriority);
 
 void yield();
 
@@ -99,9 +99,9 @@ void initializeScheduler();
 
 void scheduler();
 
-uint8_t blockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
+uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason);
 
-uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
+uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason);
 
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
 
