@@ -6,9 +6,9 @@
 #define WAIT      0x10000000 // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 #define TOTAL_PROCESSES 3
-#define LOWEST 0 //TODO: Change as required
+#define LOWEST 4 //TODO: Change as required
 #define MEDIUM 2 //TODO: Change as required
-#define HIGHEST 4 //TODO: Change as required
+#define HIGHEST 0 //TODO: Change as required
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
@@ -33,7 +33,7 @@ void test_prio(){
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_block_process(pids[i]);
 
-    printf("CHANGING PRIORITIES WHILE BLOCKED...\n");
+    printf("\nCHANGING PRIORITIES WHILE BLOCKED...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_change_priority(pids[i], MEDIUM);

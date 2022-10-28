@@ -91,7 +91,7 @@ static void _fprintf(int fd, char *format, va_list *args)
 {
     char buffer[PRINTF_BUFFER_MAX_LENGTH] = {0};
     char *traverse;
-    uint64_t i;
+    int64_t i;
     char *s;
 
     int j = 0;

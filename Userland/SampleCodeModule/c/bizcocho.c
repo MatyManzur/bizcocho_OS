@@ -174,7 +174,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
 
 int8_t bizcochito_dummy(uint8_t argc, void** argv)
 {
-    printf("%d", 56);
+    printf("HOLA\n");
     //sys_exit(6);
     return 0;
 }
