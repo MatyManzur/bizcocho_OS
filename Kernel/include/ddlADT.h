@@ -1,6 +1,8 @@
 #ifndef DDLADT_H_
 #define DDLADT_H_
-#include <scheduler.h>
+
+#include <stddef.h>
+#include <memoryManager.h>
 
 typedef struct ddlCDT * ddlADT;
 

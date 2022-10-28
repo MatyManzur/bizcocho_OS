@@ -7,8 +7,8 @@
 
 #define TOTAL_PROCESSES 3
 #define LOWEST 0 //TODO: Change as required
-#define MEDIUM 1 //TODO: Change as required
-#define HIGHEST 2 //TODO: Change as required
+#define MEDIUM 2 //TODO: Change as required
+#define HIGHEST 4 //TODO: Change as required
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
@@ -47,4 +47,6 @@ void test_prio(){
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_kill_process(pids[i]);
+
+    sys_exit(0);
 }

@@ -21,6 +21,8 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
     if (argc != 1) sys_exit(1);
 
     if ((max_memory = satoi(argv[0])) <= 0) sys_exit(1);;
+    
+    printf("Este Proceso es Infinito, utilizar un kill para terminarlo!\n");
 
     while (1){
         rq = 0;
@@ -37,13 +39,14 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
                 rq++;
             }
         }
-
+       
         // Set
         uint32_t i;
         for (i = 0; i < rq; i++)
             if (mm_rqs[i].address)
             memseter(mm_rqs[i].address, i, mm_rqs[i].size);
 
+       
         // Check
         for (i = 0; i < rq; i++)
             if (mm_rqs[i].address)
@@ -52,10 +55,11 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
                     printf("test_mm ERROR\n");
                     sys_exit(1);
                 }
-
+        
             // Free
         for (i = 0; i < rq; i++)
             if (mm_rqs[i].address)
                 sys_mem_free(mm_rqs[i].address);
+        
     } 
 }
