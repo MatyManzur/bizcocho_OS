@@ -9,6 +9,8 @@
 
 #define GET_TOKEN_POINTER(tokens,index,length) ( ( (char *) (tokens) ) + (index) * (length) )
 int8_t bizcochito_dummy(uint8_t argc, void** argv);
+int8_t sender(uint8_t argc, void** argv);
+int8_t receiver(uint8_t argc, void** argv);
 
 char* promptMessage="Bizcocho $>";
 
@@ -20,8 +22,8 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="kill", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="nice", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="block", .builtin=1, .programFunction=bizcochito_dummy },
-    {.name="cat", .builtin=0, .programFunction=bizcochito_dummy },
-    {.name="wc", .builtin=0, .programFunction=bizcochito_dummy },
+    {.name="cat", .builtin=0, .programFunction=sender },
+    {.name="wc", .builtin=0, .programFunction=receiver },
     {.name="filter", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="pipe", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="phylo", .builtin=0, .programFunction=bizcochito_dummy },
@@ -80,18 +82,24 @@ int8_t lookForCommandInString(char* string, uint8_t* argc, char* argv[], char** 
 
 uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, void** argv), uint8_t argc, void** argv, int8_t stdinChange, int8_t stdoutChange)
 {   
-    //TODO PIPE y DUP2
-    //Cambiar fd con STDINCHANGE y STDOUTCHANGE
     if(stdinChange != NO_CHANGE_FD)
     {
-
+        if(sys_dup2(stdinChange, STDIN) != 0)
+        {
+            fprintf(STDERR, "Error in replacing fileDescriptors!\n");
+            return 0;
+        }
     }
     if(stdoutChange != NO_CHANGE_FD)
     {
-        
+        if(sys_dup2(stdoutChange, STDOUT) != 0)
+        {
+            fprintf(STDERR, "Error in replacing fileDescriptors!\n");
+            return 0;
+        }
     }
     uint32_t pid = sys_start_child_process(name,argc,argv,programFunction);
-    //Restauras los fd
+    sys_revert_fd_replacements();
     return pid;
 }
 
@@ -143,12 +151,36 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 if(commands[foundCommand[0]].builtin || commands[foundCommand[1]].builtin)
                 {
                     fprintf(STDERR, "Cannot use a built-in command with a pipe!\n");
-                    error = 1;
+                    continue;
                 }
-                else
+
+                if(sys_mkpipe("pipe")!=0)
                 {
-                    //TODO pipes
+                    fprintf(STDERR, "Error in creating pipe!\n");
+                    continue;
                 }
+
+                uint8_t writeFd;
+                if(sys_open("pipe", 'W', &writeFd) != 0)
+                {
+                    fprintf(STDERR, "Error in opening writing end of pipe!\n");
+                    continue;
+                }
+                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], NO_CHANGE_FD, writeFd);
+                sys_close(writeFd);
+                if(leftPid == 0)
+                    continue;
+
+                uint8_t readFd;
+                if(sys_open("pipe", 'R', &readFd) != 0)
+                {
+                    fprintf(STDERR, "Error in opening reading end of pipe!\n");
+                    continue;
+                }
+                uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1], argv[1], readFd, NO_CHANGE_FD);
+                sys_close(readFd);
+                if(rightPid == 0)
+                    continue;
             }
             else
             {
@@ -160,7 +192,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 {
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD);
+                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background, argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD);
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);
@@ -176,5 +208,24 @@ int8_t bizcochito_dummy(uint8_t argc, void** argv)
 {
     printf("HOLA\n");
     //sys_exit(6);
+    return 0;
+}
+
+int8_t sender(uint8_t argc, void** argv)
+{
+    printf("HOLA\n");
+    sys_exit(0);
+    return 0;
+}
+
+int8_t receiver(uint8_t argc, void** argv)
+{
+    char c;
+    while(c!=0)
+    {
+        sys_read(STDIN, &c, 1);
+        printf("Recibido: %c\n", c);
+    }
+    sys_exit(0);
     return 0;
 }

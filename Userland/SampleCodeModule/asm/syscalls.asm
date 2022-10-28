@@ -17,6 +17,8 @@ GLOBAL sys_set_backspace_base
 GLOBAL sys_mkpipe
 GLOBAL sys_open
 GLOBAL sys_close
+GLOBAL sys_dup2
+GLOBAL sys_revert_fd_replacements
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
 GLOBAL sys_clean_buffer
@@ -102,6 +104,12 @@ sys_open:
 
 sys_close:
 	make_syscall 18
+
+sys_dup2:
+	make_syscall 19
+
+sys_revert_fd_replacements:
+	make_syscall 20
 	
 sys_clean_buffer:
 	make_syscall 22

@@ -119,6 +119,10 @@ int8_t sys_open(char* name, uint8_t mode, uint8_t* fd);
 
 int8_t sys_close(uint8_t fd);
 
+int8_t sys_dup2(uint8_t fromFd, uint8_t toFd);
+
+void sys_revert_fd_replacements();
+
 void sys_clean_buffer();
 
 void sys_get_current_date_time(struct datetime_t *datetime, struct timezone_t *tzone);

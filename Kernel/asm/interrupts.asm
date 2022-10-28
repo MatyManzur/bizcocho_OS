@@ -41,6 +41,8 @@ EXTERN setBackspaceBase
 EXTERN mkpipe
 EXTERN open
 EXTERN close
+EXTERN dup2
+EXTERN revertFdReplacements
 
 EXTERN cleanBuffer
 
@@ -232,6 +234,8 @@ _syscallHandler:
 	caseSyscall 16, .C16
 	caseSyscall 17, .C17
 	caseSyscall 18, .C18
+	caseSyscall 19, .C19
+	caseSyscall 20, .C20
 	caseSyscall 22, .C22
 	caseSyscall 30, .C30
 	caseSyscall 31, .C31
@@ -303,6 +307,12 @@ _syscallHandler:
 	jmp .end
 .C18:
 	call close
+	jmp .end
+.C19:
+	call dup2
+	jmp .end
+.C20:
+	call revertFdReplacements
 	jmp .end
 .C22:
 	call cleanBuffer

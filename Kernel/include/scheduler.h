@@ -92,6 +92,8 @@ uint8_t changePriority(uint32_t pid, uint8_t newPriority);
 
 void yield();
 
+int8_t dup2(uint8_t fromFd, uint8_t toFd);
+
 void revertFdReplacements();
 
 //KERNEL ONLY
