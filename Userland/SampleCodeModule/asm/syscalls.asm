@@ -1,13 +1,13 @@
 GLOBAL sys_exit
 GLOBAL sys_start_parent_process
 GLOBAL sys_start_child_process
-GLOBAL sys_unblock_process
 GLOBAL sys_block_process
 GLOBAL sys_kill_process
 GLOBAL sys_get_pid
 GLOBAL sys_wait_child
 GLOBAL sys_change_priority
 GLOBAL sys_yield
+GLOBAL sys_print_all_processes
 GLOBAL sys_read
 GLOBAL sys_write
 GLOBAL sys_clear_screen
@@ -33,6 +33,7 @@ GLOBAL sys_initialize_semaphore
 GLOBAL sys_wait_sem
 GLOBAL sys_post_sem
 GLOBAL sys_close_sem
+GLOBAL sys_print_all_semaphores
 
 SECTION .text
 
@@ -57,27 +58,26 @@ sys_start_parent_process:
 sys_start_child_process:
 	make_syscall 2
 	
-sys_unblock_process:
-	make_syscall 3
-	
 sys_block_process:
-	make_syscall 4
+	make_syscall 3
 
 sys_kill_process:
-	make_syscall 5
+	make_syscall 4
 
 sys_get_pid:
-	make_syscall 6
+	make_syscall 5
 
 sys_wait_child:
-	make_syscall 7
+	make_syscall 6
 
 sys_change_priority:
-	make_syscall 8
+	make_syscall 7
 
 sys_yield:
+	make_syscall 8
+
+sys_print_all_processes:
 	make_syscall 9
-	
 sys_read:
 	make_syscall 10
 
@@ -152,6 +152,9 @@ sys_post_sem:
 
 sys_close_sem:
 	make_syscall 43
+
+sys_print_all_semaphores:
+	make_syscall 44
 
 
 	

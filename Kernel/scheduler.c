@@ -359,8 +359,10 @@ uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
         head->process->blockedReason = blockReason;
         add(blockedProcesses[blockReason.source], head->process);
         _int20();
+    }else{
+        return unblockProcessWithReason(pid,blockReason);
     }
-    return found;
+    return found; 
 }
 
 // Para uso del kernel, no es syscall

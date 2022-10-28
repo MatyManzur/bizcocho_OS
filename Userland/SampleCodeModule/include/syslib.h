@@ -87,8 +87,6 @@ uint32_t sys_start_parent_process(char *name, uint8_t argc, char **argv, int8_t(
 
 uint32_t sys_start_child_process(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **));
 
-uint8_t sys_unblock_process(uint32_t pid);
-
 uint8_t sys_block_process(uint32_t pid);
 
 uint8_t sys_kill_process(uint32_t pid);
@@ -100,6 +98,8 @@ int8_t sys_wait_child(uint32_t childpid);
 uint8_t sys_change_priority(uint32_t pid, uint8_t newPriority);
 
 void sys_yield();
+
+void sys_print_all_processes();
 
 uint8_t sys_read(int fd, char* buf, uint8_t n);
 
@@ -150,4 +150,7 @@ int sys_wait_sem(int id);
 void sys_post_sem(int id);
 
 int sys_close_sem(int id);
+
+void sys_print_all_semaphores();
+
 #endif

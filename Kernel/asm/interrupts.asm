@@ -31,6 +31,7 @@ EXTERN unblockProcess
 EXTERN changePriority
 EXTERN exit
 EXTERN yield
+EXTERN printAllProcesses
 
 EXTERN read
 EXTERN write
@@ -61,6 +62,7 @@ EXTERN initializeSemaphore
 EXTERN wait_sem
 EXTERN post_sem
 EXTERN close_sem
+EXTERN print_all_semaphores
 
 SECTION .text
 
@@ -250,6 +252,7 @@ _syscallHandler:
 	caseSyscall 41, .C41
 	caseSyscall 42, .C42
 	caseSyscall 43, .C43
+	caseSyscall 44, .C44
 	jmp .end	;default: it does nothing
 .C0:
 	call exit
@@ -261,25 +264,25 @@ _syscallHandler:
 	call startChildProcess
 	jmp .end
 .C3:
-	call unblockProcess
-	jmp .end
-.C4:
 	call blockProcess
 	jmp .end
-.C5:
+.C4:
 	call killProcess
 	jmp .end
-.C6:
+.C5:
 	call getPid
 	jmp .end
-.C7:
+.C6:
 	call waitchild
 	jmp .end
-.C8:
+.C7:
 	call changePriority
 	jmp .end
-.C9:
+.C8:
 	call yield
+	jmp .end
+.C9:
+	call printAllProcesses
 	jmp .end
 .C10:
 	call read
@@ -355,6 +358,9 @@ _syscallHandler:
 	jmp .end
 .C43:
 	call close_sem
+	jmp .end
+.C44:
+	call print_all_semaphores
 	jmp .end
 	
 .end:
