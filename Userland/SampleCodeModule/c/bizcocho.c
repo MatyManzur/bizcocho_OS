@@ -220,7 +220,7 @@ int8_t sender(uint8_t argc, void** argv)
 
 int8_t receiver(uint8_t argc, void** argv)
 {
-    char c;
+    char c = 1;
     while(c!=0)
     {
         sys_read(STDIN, &c, 1);

@@ -44,7 +44,9 @@ int8_t mkpipe(char* name)
 
 int8_t open(char* name, uint8_t mode, uint8_t* fd)
 {
-    pipeFile_t* file=(pipeFile_t* )find(pipeFilesList,cmpFileName,(void*)name);
+    pipeFile_t aux = {0};
+    strncpy(aux.name, name, MAX_PIPE_NAME_SIZE);
+    pipeFile_t* file=(pipeFile_t* )find(pipeFilesList,cmpFileName,(void*)&aux);
     if(file==NULL || (mode!='W' && mode != 'R') || openFile(file->fileId,mode,fd)==-1)
     {
         return -1;
@@ -216,7 +218,7 @@ int printToStdoutFormat(char *s, format_t fmt)
 
 int cmpFileName(void* a,void* b)
 {
-    return strcmp( ((pipeFile_t*)a)->name, ((pipeFile_t*)b)->name);
+    return !strcmp( ((pipeFile_t*)a)->name, ((pipeFile_t*)b)->name);
 }
 
 int cmpFileID(void* a,void* b)
