@@ -19,6 +19,7 @@ typedef struct pbrr_t
     pointerPCBNODE_t processes[PRIORITY_COUNT];
     pointerPCBNODE_t nowRunning;
 } pbrr_t;
+
 static int schedulerRunning = 0;
 static pbrr_t schedule = {{0}};
 static uint32_t pidToGive = 1;
@@ -240,32 +241,6 @@ void exit(int8_t statusCode)
     schedule.nowRunning->process->statusCode = statusCode;
     killProcess(schedule.nowRunning->process->pid);
 }
-
-/*
-Notas para cuando lo hagamos (TODO borrar dps):
-
-! - no es lo mismo borrarlo de la lista que no borrarlo y ponerlo como FINISHED
-Situación 1) Padre se va a borrar:
-    - le pasa los hijos al init, estén vivos o sean zombies
-Situación 2) Hijo se va a matar:
-    2a) el padre está esperando por él:
-        - le aviso que no me espere más
-        - => caso 2b)
-    2b) el padre no está esperando por él (está vivo o está zombie, no importa):
-        - dejo el statusCode en el struct
-        - me paso a FINISHED
-        - no me borro de la lista, ya me va a borrar el wait()
-Situación 3) Padre va a esperar a un hijo: wait(pid)
-    3a) el hijo está vivo:
-        - marcamos como que está bloqueado por esperar a este hijo (o uno en general con un 0 ponele)
-        - cómo devuelve el wait() el statusCode cuando este termine ??
-            que al ponerlo en blocked llame a scheduler() y se va a ir
-            cuando retome, retoma desde justo después de la llamada a scheduler() ? creo que si
-    3b) el hijo está FINISHED:
-        - agarro el statusCode
-        - lo borro de la lista
-        - devuelvo el statusCode
-*/
 
 static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo)
 {
@@ -576,3 +551,9 @@ void revertFdReplacements()
         remove(list);
     }
 }
+
+void printAllProcesses()
+{
+     
+}
+

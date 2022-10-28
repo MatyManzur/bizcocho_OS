@@ -1,4 +1,8 @@
 #include <files.h>
+#define PRINTF_BUFFER_MAX_LENGTH 255
+
+#define IS_DIGIT(x) ((x)>='0' && (x)<='9')
+
 static uint16_t fileIdToGive = 3;
 
 static ddlADT pipeFilesList;
@@ -234,4 +238,85 @@ int8_t modifyOpenCount(uint16_t fileID, int8_t units)
     }
     file->currentOpenCount += units;
     return 0;
+}
+
+// variante de código sacado de:
+// https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
+void fprintf(int fd, char *format, ...)
+{
+    char buffer[PRINTF_BUFFER_MAX_LENGTH] = {0};
+    char *traverse;
+    int64_t i;
+    char *s;
+
+    int j = 0;
+
+    //Initializing arguments 
+    va_list arg;
+    va_start(arg, format);
+
+    for (j = 0, traverse = format; *traverse != '\0' && j < PRINTF_BUFFER_MAX_LENGTH; traverse++)
+    {
+        while (*traverse != '%' && *traverse != 0) //frenamos en un % o en un \0
+        {
+            buffer[j++] = *traverse;
+            traverse++;
+        }
+
+        if(*traverse==0)
+            break;
+
+        traverse++;
+
+        int minDigitCount = 0;
+
+        while (IS_DIGIT(*traverse))    //leemos si hay un numero entre el % y la letra indicando la cantidad minima de cifras a mostrar para que complete con ceros adelante
+        {
+            minDigitCount *= 10;
+            minDigitCount += *traverse - '0';
+            traverse++;
+        }
+
+
+        //Fetching and executing arguments
+        switch (*traverse)
+        {
+            case 'c' :
+                i = va_arg(arg, int);     //Fetch char argument
+                buffer[j++] = i;
+                break;
+
+            case 'd' :
+                i = va_arg(arg, int);     //Fetch Decimal/Integer argument
+                if (i < 0)
+                {
+                    i = -i;
+                    buffer[j++] = '-';
+                }
+                j += strcpy(buffer + j, convert(i, 10, minDigitCount));
+                break;
+
+            case 'o':
+                i = va_arg(arg, unsigned int); //Fetch Octal representation
+                j += strcpy(buffer + j, convert(i, 8, minDigitCount));
+                break;
+
+            case 's':
+                s = va_arg(arg, char *);       //Fetch string
+                j += strcpy(buffer + j, s);
+                break;
+
+            case 'x':
+                i = va_arg(arg, unsigned long); //Fetch Hexadecimal representation
+                j += strcpy(buffer + j, convert(i, 16, minDigitCount));
+                break;
+        }
+    }
+
+    buffer[j] = 0;
+
+    write(fd, buffer);
+
+    //Closing argument list to necessary clean-up
+    va_end(arg);
 }

@@ -96,6 +96,8 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd);
 
 void revertFdReplacements();
 
+void printAllProcesses();
+
 //KERNEL ONLY
 void initializeScheduler();
 

@@ -34,6 +34,8 @@ void initializeFiles();
 
 int8_t modifyOpenCount(uint16_t fileID, int8_t units);
 
+void fprintf(int fd, char *format, ...);
+
 //SYSCALLS
 int write(int fd,char* s);
 

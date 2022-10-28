@@ -55,3 +55,14 @@ int strcmp(const char *cs, const char *ct)
 	return 0;
 }
 
+//variante de codigo sacado de:
+//https://codebrowser.dev/linux/linux/lib/string.c.html
+//Devuelve cuantos caracteres copió
+size_t strcpy(char *dest, const char *src)
+{
+	size_t tmp = 0;
+	while ((*dest++ = *src++) != '\0')
+		tmp++;
+	return tmp;
+}
+

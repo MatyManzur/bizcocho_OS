@@ -100,7 +100,7 @@ static void _fprintf(int fd, char *format, va_list *args)
     va_list arg;
     va_copy(arg, *args);
 
-    for (j = 0, traverse = format; *traverse != '\0'; traverse++)
+    for (j = 0, traverse = format; *traverse != '\0' && j < PRINTF_BUFFER_MAX_LENGTH; traverse++)
     {
         while (*traverse != '%' && *traverse != 0) //frenamos en un % o en un \0
         {
