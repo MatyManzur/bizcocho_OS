@@ -24,6 +24,7 @@ enum blockedSource
     NO_BLOCK = 0,//Poner ID en 0
     ASKED_TO,//Igual con este
     PIPE_READ,
+    PIPE_WRITE,
     WAIT_CHILD,
     WAIT_SEM,
     BLOCK_REASON_COUNT
