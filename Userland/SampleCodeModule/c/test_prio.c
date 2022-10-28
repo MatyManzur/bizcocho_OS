@@ -3,7 +3,7 @@
 #include "syslib.h"
 
 #define MINOR_WAIT 1000000 // TODO: Change this value to prevent a process from flooding the screen
-#define WAIT      10000000 // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
+#define WAIT      0x10000000 // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 #define TOTAL_PROCESSES 3
 #define LOWEST 0 //TODO: Change as required
@@ -17,7 +17,9 @@ void test_prio(){
     uint64_t i;
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
+    {
         pids[i] = sys_start_child_process("endless_loop_print", 0, NULL, (int8_t (*)(uint8_t,  void **)) endless_loop_print);
+    }
 
     bussy_wait(WAIT);
     printf("\nCHANGING PRIORITIES...\n");
@@ -39,10 +41,10 @@ void test_prio(){
     printf("UNBLOCKING...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
-        sys_block_process(pids[i]);
+        sys_unblock_process(pids[i]);
 
     bussy_wait(WAIT);
-   printf("\nKILLING...\n");
+    printf("\nKILLING...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
         sys_kill_process(pids[i]);

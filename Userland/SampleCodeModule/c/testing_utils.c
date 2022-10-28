@@ -1,7 +1,7 @@
 
 #include "testing_utils.h"
 
-#define WAIT      1000 // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
+#define WAIT      0x1000000 // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 static uint32_t m_z = 362436069;
 static uint32_t m_w = 521288629;
@@ -71,12 +71,11 @@ void endless_loop(){
 
 void endless_loop_print()
 {
-  printf("Llegué endles_loop_print\n");
   uint8_t pid = sys_get_pid();
 
   while(1){
     for(int i=0; i<pid; i++)
-      printf("a ");
+      printf("%d ", pid);
     bussy_wait(WAIT);
   }
 }
