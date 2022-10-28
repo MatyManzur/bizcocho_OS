@@ -1,6 +1,7 @@
+#include <lib.h>
+#include <interrupts.h>
 #include <time.h>
 #include <keyboard.h>
-#include <stdint.h>
 
 static void int_20();
 

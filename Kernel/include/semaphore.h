@@ -1,8 +1,7 @@
 #ifndef SEMAPHORE_H_
 #define SEMAPHORE_H_
-#include <ddlADT.h>
-#include <memoryManager.h>
-#include <scheduler.h>
+
+#include <lib.h>
 #include <files.h>
 
 int _xchg(uint8_t *lock, int value);

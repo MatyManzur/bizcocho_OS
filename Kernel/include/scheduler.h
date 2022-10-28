@@ -1,12 +1,10 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
-#include <ddlADT.h>
-#include <printing.h>
 #include <lib.h>
 #include <interrupts.h>
-#include <memoryManager.h>
 #include <files.h>
+#include <time.h>
 
 #define MAX_FD_COUNT 64
 #define PRIORITY_COUNT 5
@@ -51,7 +49,7 @@ typedef struct PCB_t
     char name[NAME_MAX];
     uint8_t argc;
     void **argv;
-    void (*processCodeStart)(uint8_t argc, void **argv);
+    int8_t (*processCodeStart)(uint8_t argc, void **argv);
     void *processMemStart;
     void *processMemEnd;
     uint8_t cockatoo;      // un canary medio trucho que ponemos al final de la memoria para ver que no se pase (pero podría saltarlo tranquilamente)
@@ -59,10 +57,18 @@ typedef struct PCB_t
     State_t state;
     int8_t statusCode;
     fileDescriptor_t fds[MAX_FD_COUNT];
-    struct ddlCDT* fdReplacements;
+    ddlADT fdReplacements;
     uint8_t priority;
     BlockedReason_t blockedReason;
 } PCB_t;
+
+typedef struct lostFd_t{
+
+    int16_t lostID;
+    uint8_t lostMode;
+
+    uint8_t index;
+}lostFd_t; 
 
 //SYSCALLS
 uint8_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority);
@@ -85,6 +91,8 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority);
 
 void yield();
 
+void revertFdReplacements();
+
 //KERNEL ONLY
 void initializeScheduler();
 
@@ -96,7 +104,7 @@ uint8_t unblockProcessWithReason(uint8_t pid, BlockedReason_t blockReason);
 
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
 
-int16_t fdToFileId(uint8_t fd);
+int16_t fdToFileId(uint8_t fd, uint8_t mode);
 
 int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd);
 

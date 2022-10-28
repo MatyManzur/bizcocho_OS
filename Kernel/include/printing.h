@@ -1,8 +1,7 @@
 #ifndef PRINTING_H
 #define PRINTING_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include <lib.h>
 
 //colores
 typedef enum color_t

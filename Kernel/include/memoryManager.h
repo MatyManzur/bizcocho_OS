@@ -1,8 +1,11 @@
 #ifndef MEMORYMANAGER_H_
 #define MEMORYMANAGER_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include <lib.h>
+
+#define OUT_OF_MEM_ERROR(ret) {\
+    write(STDERR, "Out of memory!\n");\
+    return (ret);};
 
 void memInitialize(void * memBase,uint32_t memSize);
 

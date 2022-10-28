@@ -14,11 +14,10 @@ int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 void test_prio(){
     int64_t pids[TOTAL_PROCESSES];
-    char *argv[] = {0};
     uint64_t i;
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
-        pids[i] = sys_start_child_process("endless_loop_print", 0, argv, (int8_t (*)(uint8_t,  void **)) endless_loop_print);
+        pids[i] = sys_start_child_process("endless_loop_print", 0, NULL, (int8_t (*)(uint8_t,  void **)) endless_loop_print);
 
     bussy_wait(WAIT);
     printf("\nCHANGING PRIORITIES...\n");

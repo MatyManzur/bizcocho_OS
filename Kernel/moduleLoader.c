@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <lib.h>
 #include <moduleLoader.h>
 #include <naiveConsole.h>

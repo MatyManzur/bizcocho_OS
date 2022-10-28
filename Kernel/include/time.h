@@ -1,10 +1,8 @@
 #ifndef _TIME_H_
 #define _TIME_H_
 
-#include <scheduler.h>
 #include <lib.h>
-
-
+#include <scheduler.h>
 struct datetime_t
 {
     uint8_t hours;

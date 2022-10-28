@@ -1,6 +1,5 @@
 #define NULL 0
 #include <semaphore.h>
-#include "stringslib.h"
 
 
 static char initialized;

@@ -1,11 +1,10 @@
 #ifndef FILES_H_
 #define FILES_H_
 
-#include <printing.h>
+#include <lib.h>
 #include <keyboard.h>
+#include <printing.h>
 #include <scheduler.h>
-#include <ddlADT.h>
-#include <stringslib.h>
 
 #define MAX_PIPE_BUFFER_SIZE 1024
 #define MAX_PIPE_NAME_SIZE 32
@@ -33,7 +32,7 @@ typedef struct pipeFile_t {
 
 void initializeFiles();
 
-int8_t increaseOpenCount(uint16_t fileID);
+int8_t modifyOpenCount(uint16_t fileID, int8_t units);
 
 //SYSCALLS
 int write(int fd,char* s);
@@ -47,9 +46,5 @@ int8_t mkpipe(char* name);
 int8_t open(char* name, uint8_t mode, uint8_t* fd);
 
 int8_t close(uint8_t fd);
-//TODO
-int8_t dup2(uint16_t fromFd,uint16_t toFd);
-
-void revertFdReplacements();
 
 #endif

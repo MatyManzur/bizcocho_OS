@@ -1,6 +1,5 @@
 
 #include <registers.h>
-#include <stringslib.h>
 
 #define REGISTER_COUNT 18
 #define HALF 0x100000000

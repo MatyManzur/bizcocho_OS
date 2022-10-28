@@ -1,14 +1,10 @@
-#include <stdint.h>
-#include <files.h>
-#include <string.h>
 #include <lib.h>
-#include <moduleLoader.h>
-#include <naiveConsole.h>
-#include <printing.h>
-#include <keyboard.h>
 #include <scheduler.h>
 #include <memoryManager.h>
+#include <files.h>
 #include <semaphore.h>
+#include <moduleLoader.h>
+#include <naiveConsole.h>
 
 #define MEMBASE 0x900000
 #define MEMSIZE 6400000
@@ -91,34 +87,15 @@ void *initializeKernelBinary()
 
 int main()
 {   
-    _cli();//No queremos interrupciones por ahora mientras setupeamos todo
-    load_idt();    //arma la IDT
-    memInitialize((void*) MEMBASE, MEMSIZE);   //inicialiamos el famoso MM
-    initializeScheduler(); //Inicializamos el scheduler
+    _cli(); //No queremos interrupciones por ahora mientras setupeamos todo
+    load_idt();
+    memInitialize((void*) MEMBASE, MEMSIZE);   
+    initializeScheduler(); 
     initializeFiles();
     initSemaphoreHub();
-    ((EntryPoint) sampleCodeModuleAddress)();
     _sti();
-    // ncPrint("[Kernel Main]");
-    // ncNewline();
-    // ncPrint("  Sample code module at 0x");
-    // ncPrintHex((uint64_t) sampleCodeModuleAddress);
-    // ncNewline();
-    // ncPrint("  Calling the sample code module returned: ");
-    // ncPrintHex(((EntryPoint) sampleCodeModuleAddress)());    //llama a que arranque el userland
-    // ncNewline();
-    // ncNewline();
-
-    // ncPrint("  Sample data module at 0x");
-    // ncPrintHex((uint64_t) sampleDataModuleAddress);
-    // ncNewline();
-    // ncPrint("  Sample data module contents: ");
-
-
-    // ncPrint((char *) sampleDataModuleAddress);
-    // ncNewline();
-
-    // ncPrint("[Finished]");
+    ((EntryPoint) sampleCodeModuleAddress)();
+    
 
     while (1)
     {

@@ -1,7 +1,5 @@
 #include <scheduler.h>
-#include <ddlADT.h>
-#include <time.h>
-#include <stringslib.h>
+
 
 typedef struct nodePCB_t *pointerPCBNODE_t;
 
@@ -28,7 +26,7 @@ static pointerPCBNODE_t init;
 
 static ddlADT blockedProcesses[BLOCK_REASON_COUNT];
 
-static void initProcess(uint8_t argc, void **argv);
+static int8_t initProcess(uint8_t argc, void **argv);
 
 static pointerPCBNODE_t findNextProcess()
 {
@@ -70,19 +68,21 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
     processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
     processPCB->statusCode = -1;
-    if(fds==NULL){
+    if(fds==NULL)
+    {
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
             processPCB->fds[i].fileID = (i < 3) ? i : -1;
             processPCB->fds[i].fileID = (i==0)? 'R':( (i < 3)? 'W':'N' ); 
         }
-    }else{
+    }
+    else{
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
             processPCB->fds[i].fileID = fds[i].fileID;
-            processPCB->fds[i].mode=fds[i].mode;
-            if(i > 3 && fds[i].mode != 'N'){
-                increaseOpenCount(fds[i].fileID);
+            processPCB->fds[i].mode = fds[i].mode;
+            if(fds[i].fileID > 2 && fds[i].mode != 'N'){
+                modifyOpenCount(fds[i].fileID, 1);
             }
         }
     }
@@ -120,7 +120,6 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
             pnode->prevSibling=aux;
         }
     }
-
     return pnode;
 }
 
@@ -130,7 +129,6 @@ uint8_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*proce
     schedulerRunning = 1;
     return pnode->process->pid;
 }
-
 
 // Hacer un startChild (equivalente a un fork exec)
 uint8_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **))
@@ -142,7 +140,9 @@ uint8_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*proces
 
     return pnode->process->pid;
 }
-void initializeScheduler(){
+
+void initializeScheduler()
+{
     for(int i = 0; i< BLOCK_REASON_COUNT; i++)
     {
         blockedProcesses[i] = newList();
@@ -475,7 +475,7 @@ uint8_t changePriority(uint8_t pid, uint8_t newPriority)
     return head != NULL;
 }
 
-static void initProcess(uint8_t argc, void **argv)
+static int8_t initProcess(uint8_t argc, void **argv)
 {
     while (1)
     {
@@ -491,6 +491,7 @@ static void initProcess(uint8_t argc, void **argv)
         }
         _hlt();
     }
+    return 0;
 }
 
 void yield(){
@@ -498,9 +499,11 @@ void yield(){
     _int20();
 }
 
-int16_t fdToFileId(uint8_t fd)
+int16_t fdToFileId(uint8_t fd, uint8_t mode)
 {
     if(fd >= MAX_FD_COUNT)
+        return -1;
+    if(mode != 0 && mode != schedule.nowRunning->process->fds[fd].mode)
         return -1;
     return schedule.nowRunning->process->fds[fd].fileID;
 }
@@ -524,10 +527,51 @@ int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd)
 
 int8_t closeFile(uint8_t fd)
 {
-    if(schedule.nowRunning->process->fds[fd].mode=='N'){
+    if(fd >= MAX_FD_COUNT)
+    {
         return -1;
     }
-    schedule.nowRunning->process->fds[fd].fileID=fd;
+    if(schedule.nowRunning->process->fds[fd].mode=='N')
+    {
+        return -1;
+    }
+    schedule.nowRunning->process->fds[fd].fileID= -1;
     schedule.nowRunning->process->fds[fd].mode='N';
     return 0;
+}
+
+int8_t dup2(uint8_t fromFd, uint8_t toFd)
+{
+    if(fromFd >= MAX_FD_COUNT || toFd >= MAX_FD_COUNT)
+    {
+        return -1;
+    }
+    lostFd_t* lost=memalloc(sizeof(lostFd_t));
+    if(lost==NULL){
+        return -1;
+    }
+    lost->index=toFd;
+    lost->lostID=schedule.nowRunning->process->fds[toFd].fileID;
+    lost->lostMode=schedule.nowRunning->process->fds[toFd].mode;
+    add(schedule.nowRunning->process->fdReplacements,(void *) lost);
+
+    schedule.nowRunning->process->fds[toFd].fileID = schedule.nowRunning->process->fds[fromFd].fileID;
+    schedule.nowRunning->process->fds[toFd].mode = schedule.nowRunning->process->fds[fromFd].mode;
+    modifyOpenCount(schedule.nowRunning->process->fds[toFd].fileID, 1);
+    return 0;
+}
+
+void revertFdReplacements()
+{
+    lostFd_t* last;
+    ddlADT list=schedule.nowRunning->process->fdReplacements;
+    toBegin(list);
+    while(hasNext(list)){
+        last=(lostFd_t *)next(list);
+        modifyOpenCount(schedule.nowRunning->process->fds[last->index].fileID,-1);
+        schedule.nowRunning->process->fds[last->index].fileID=last->index;
+        schedule.nowRunning->process->fds[last->index].mode=last->lostMode;
+        memfree((void *) last);
+        remove(list);
+    }
 }
