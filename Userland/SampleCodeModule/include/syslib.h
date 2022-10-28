@@ -278,6 +278,12 @@ int sys_print_to_stdout_color(char* s,format_t fmt);
 
 void sys_set_backspace_base();
 
+int8_t sys_mkpipe(char* name);
+
+int8_t sys_open(char* name, uint8_t mode, uint8_t* fd);
+
+int8_t sys_close(uint8_t fd);
+
 void sys_read_printables(char *bufferString, uint8_t count);
 
 void sys_get_next_key(struct kbEvent_t *kbEvent);

@@ -14,6 +14,9 @@ GLOBAL sys_clear_screen
 GLOBAL sys_change_color
 GLOBAL sys_print_to_stdout_color
 GLOBAL sys_set_backspace_base
+GLOBAL sys_mkpipe
+GLOBAL sys_open
+GLOBAL sys_close
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
 GLOBAL sys_read_printables
@@ -93,6 +96,15 @@ sys_print_to_stdout_color:
 sys_set_backspace_base:
 	make_syscall 15
 
+sys_mkpipe:
+	make_syscall 16
+
+sys_open:
+	make_syscall 17
+
+sys_close:
+	make_syscall 18
+	
 sys_read_printables:
 	make_syscall 20
 	

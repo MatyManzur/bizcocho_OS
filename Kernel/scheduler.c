@@ -81,6 +81,9 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
         {
             processPCB->fds[i].fileID = fds[i].fileID;
             processPCB->fds[i].mode=fds[i].mode;
+            if(i > 3 && fds[i].mode != 'N'){
+                increaseOpenCount(fds[i].fileID);
+            }
         }
     }
     processPCB->fdReplacements = newList();

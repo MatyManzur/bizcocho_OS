@@ -38,6 +38,9 @@ EXTERN clearScreen
 EXTERN changeColor
 EXTERN printToStdoutFormat
 EXTERN setBackspaceBase
+EXTERN mkpipe
+EXTERN open
+EXTERN close
 
 EXTERN readPrintables
 EXTERN getNextKey
@@ -228,6 +231,9 @@ _syscallHandler:
 	caseSyscall 13, .C13
 	caseSyscall 14, .C14
 	caseSyscall 15, .C15
+	caseSyscall 16, .C16
+	caseSyscall 17, .C17
+	caseSyscall 18, .C18
 	caseSyscall 20, .C20
 	caseSyscall 21, .C21
 	caseSyscall 22, .C22
@@ -292,6 +298,15 @@ _syscallHandler:
 	jmp .end
 .C15:
 	call setBackspaceBase
+	jmp .end
+.C16:
+	call mkpipe
+	jmp .end
+.C17:
+	call open
+	jmp .end
+.C18:
+	call close
 	jmp .end
 .C20:
 	call readPrintables

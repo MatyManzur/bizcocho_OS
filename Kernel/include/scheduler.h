@@ -1,10 +1,12 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
+#include <ddlADT.h>
 #include <printing.h>
 #include <lib.h>
 #include <interrupts.h>
 #include <memoryManager.h>
+#include <files.h>
 
 #define MAX_FD_COUNT 64
 #define PRIORITY_COUNT 5
@@ -57,7 +59,7 @@ typedef struct PCB_t
     State_t state;
     int8_t statusCode;
     fileDescriptor_t fds[MAX_FD_COUNT];
-    ddlADT fdReplacements;
+    struct ddlCDT* fdReplacements;
     uint8_t priority;
     BlockedReason_t blockedReason;
 } PCB_t;

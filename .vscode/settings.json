@@ -29,6 +29,7 @@
         "stringslib.h": "c",
         "semaphore.h": "c",
         "userlib.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "keyboard.h": "c"
     }
 }
