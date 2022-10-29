@@ -59,7 +59,7 @@ int8_t open(char* name, uint8_t mode, uint8_t* fd)
     }
     file->currentOpenCount++;
     if(mode=='W')
-        file->writingIndex++;
+        file->writeOpenCount++;
     //openFile dejó en *fd la rta
     return 0;
 }
@@ -219,19 +219,26 @@ uint8_t read(int fd, char* buf, uint8_t n)
             unblockWrite.source = PIPE_WRITE;
             while(totalChars < n)
             {
-                if( (pipe->readingIndex%MAX_PIPE_BUFFER_SIZE)==(pipe->writingIndex % MAX_PIPE_BUFFER_SIZE) )
+                if( (pipe->readingIndex % MAX_PIPE_BUFFER_SIZE)==(pipe->writingIndex % MAX_PIPE_BUFFER_SIZE) )
                 {
                     if(pipe->writeOpenCount > 0)
                     {
                         blockProcessWithReason(getPid(), blockRead);
+                        //se despierta cuando alguien escribio algo, o cuando ya no hay mas procesos escribiendo
+                        continue; //intentamos devuelta para ver qué pasó
                     }
-                    //se despierta cuando ya no hay procesos que tienen el lado de escritura abierto
-                    buf[totalChars++] = 0;
-                    return 0;
+                    else
+                    {
+                        //Ya no hay procesos que tienen el lado de escritura abierto
+                        buf[totalChars++] = 0;
+                        return totalChars;
+                    }
+                    
                 }
                 buf[totalChars++] = pipe->buffer[pipe->readingIndex++ % MAX_PIPE_BUFFER_SIZE];
             }
             unblockAllProcessesBecauseReason(unblockWrite);
+            return totalChars;
             break;
     }
     return 0;

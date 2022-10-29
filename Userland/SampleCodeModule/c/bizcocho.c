@@ -170,20 +170,20 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 }
                 char namepipe[MAX_PIPE_NAME_SIZE] = {0};
                 snprintf(namepipe,MAX_PIPE_NAME_SIZE,"Pipe %d",pipesCreated);
-                if(sys_mkpipe("pipe")!=0)
+                if(sys_mkpipe(namepipe)!=0)
                 {
                     fprintf(STDERR, "Error in creating pipe!\n");
                     continue;
                 }
                 pipesCreated++;
                 uint8_t writeFd;
-                if(sys_open("pipe", 'W', &writeFd) != 0)
+                if(sys_open(namepipe, 'W', &writeFd) != 0)
                 {
                     fprintf(STDERR, "Error in opening writing end of pipe!\n");
                     continue;
                 }
                 uint8_t readFd;
-                if(sys_open("pipe", 'R', &readFd) != 0)
+                if(sys_open(namepipe, 'R', &readFd) != 0)
                 {
                     fprintf(STDERR, "Error in opening reading end of pipe!\n");
                     sys_close(writeFd);
