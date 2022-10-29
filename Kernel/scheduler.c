@@ -290,6 +290,10 @@ uint8_t killProcess(uint32_t pid)
     pointerPCBNODE_t head = findByPid(pid);
     if (head != NULL) // si lo encontró
     {
+        if(head->process->state==BLOCKED)
+        {
+            unblockProcessWithReason(head->process->pid, head->process->blockedReason);
+        }
         pointerPCBNODE_t parentHead = findByPid(head->process->ppid);
         if (parentHead == NULL) // no debería, porque si no está el padre, a lo sumo tiene que ser el init, y el init está siempre
             return 0;
@@ -352,15 +356,13 @@ int8_t waitchild(uint32_t childpid)
 uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
-    uint8_t found = head != NULL && head->process->state != BLOCKED && head->process->state != FINISHED;
+    uint8_t found = head != NULL && head->process->state == READY;
     if (found)
     {
         head->process->state = BLOCKED;
         head->process->blockedReason = blockReason;
         add(blockedProcesses[blockReason.source], head->process);
         _int20();
-    }else{
-        return unblockProcessWithReason(pid,blockReason);
     }
     return found; 
 }
@@ -369,7 +371,7 @@ uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
-    uint8_t found = (head != NULL) && (head->process->blockedReason.source == blockReason.source) && (head->process->blockedReason.id == blockReason.id) && (head->process->state!=FINISHED);
+    uint8_t found = head != NULL && head->process->blockedReason.source == blockReason.source && head->process->blockedReason.id == blockReason.id && head->process->state == BLOCKED;
     if (found)
     {
         setProcessReady(head->process);
@@ -401,21 +403,18 @@ void unblockAllProcessesBecauseReason(BlockedReason_t blockReason)
     }
 }
 
-// estas sí son syscalls
+// syscall: bloquea o desbloquea el proceso segun corresponda
 uint8_t blockProcess(uint32_t pid)
 {
     BlockedReason_t reason;
     reason.source = ASKED_TO;
     reason.id = 0;
-    return blockProcessWithReason(pid, reason);
-}
-
-uint8_t unblockProcess(uint32_t pid)
-{
-    BlockedReason_t reason;
-    reason.source = ASKED_TO;
-    reason.id = 0;
-    return unblockProcessWithReason(pid, reason);
+    uint8_t couldBlock = blockProcessWithReason(pid, reason);
+    if(!couldBlock)
+    {
+        return unblockProcessWithReason(pid, reason);
+    }
+    return couldBlock;
 }
 
 uint8_t changePriority(uint32_t pid, uint8_t newPriority)

@@ -85,7 +85,7 @@ int8_t lookForCommandInString(char* string, uint8_t* argc, char* argv[], char** 
     return index;
 }
 
-uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, void** argv), uint8_t argc, void** argv, int8_t stdinChange, int8_t stdoutChange)
+uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, void** argv), uint8_t argc, void** argv, int8_t stdinChange, int8_t stdoutChange, uint8_t background)
 {   
     if(stdinChange != NO_CHANGE_FD)
     {
@@ -103,13 +103,23 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
             return 0;
         }
     }
-    uint32_t pid = sys_start_child_process(name,argc,argv,programFunction);
+    uint32_t pid;
+    if(background)
+    {
+        pid = sys_start_parent_process(name, argc, argv, programFunction, 2);
+    }
+    else
+    {
+        pid = sys_start_child_process(name,argc,argv,programFunction);
+        sys_change_priority(pid, 2);
+    }
+    
     sys_revert_fd_replacements();
     return pid;
 }
 
 
-//builtin commands help, mem, ps, kill, nice, block, sem, pipe
+//builtin commands help, mem, ps, kill, nice, block, sem, pipe (TODO: borrar)
 int8_t bizcocho(uint8_t argc, void** argv)
 {   
     sys_clear_screen();
@@ -140,8 +150,6 @@ int8_t bizcocho(uint8_t argc, void** argv)
         for(int k=0; k < pipeTokenCount && !error; k++)
         {
             foundCommand[k] = lookForCommandInString(pipeTokenStrings[k], &argc[k], argv[k], (char**) tokens[k]);
-            // devuelve el indice del comando en el array de comandos
-            // recibe: el string entero, donde tiene que dejar el int argc (int*) y el char* argv[] (char*[])
             if(foundCommand[k] < 0)
             {
                 fprintf(STDERR, "Hey! That's not a valid command!\n");
@@ -171,21 +179,39 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     fprintf(STDERR, "Error in opening writing end of pipe!\n");
                     continue;
                 }
-                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0], argv[0], NO_CHANGE_FD, writeFd);
-                sys_close(writeFd);
-                if(leftPid == 0)
-                    continue;
-
                 uint8_t readFd;
                 if(sys_open("pipe", 'R', &readFd) != 0)
                 {
                     fprintf(STDERR, "Error in opening reading end of pipe!\n");
+                    sys_close(writeFd);
                     continue;
                 }
-                uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1], argv[1], readFd, NO_CHANGE_FD);
+
+                uint8_t leftBackground = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
+                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - leftBackground, argv[0], NO_CHANGE_FD, writeFd, leftBackground);
+                sys_close(writeFd);
+                if(leftPid == 0)
+                    continue;
+                
+                uint8_t rightBackground = (argc[1] > 0) && (strcmp(argv[0][argc[1] - 1], "&") == 0);
+                uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1] - rightBackground, argv[1], readFd, NO_CHANGE_FD, rightBackground);
                 sys_close(readFd);
                 if(rightPid == 0)
+                {
+                    sys_kill_process(leftPid);
                     continue;
+                }
+                if(!leftBackground)
+                {
+                    int8_t statusCode = sys_wait_child(leftPid);
+                    printf("Program %s exited with status code %d !\n", commands[foundCommand[0]].name, statusCode);
+                }
+                if(!rightBackground)
+                {
+                    int8_t statusCode = sys_wait_child(rightPid);
+                    printf("Program %s exited with status code %d !\n", commands[foundCommand[1]].name, statusCode);
+                }
+
             }
             else
             {
@@ -197,7 +223,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 {
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background, argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD);
+                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background, argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD, background);
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);

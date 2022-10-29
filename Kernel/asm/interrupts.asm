@@ -27,7 +27,6 @@ EXTERN startChildProcess
 EXTERN getPid
 EXTERN waitchild
 EXTERN blockProcess
-EXTERN unblockProcess
 EXTERN changePriority
 EXTERN exit
 EXTERN yield

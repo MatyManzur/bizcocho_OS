@@ -86,8 +86,6 @@ uint8_t killProcess(uint32_t pid);
 
 uint8_t blockProcess(uint32_t pid);
 
-uint8_t unblockProcess(uint32_t pid);
-
 uint8_t changePriority(uint32_t pid, uint8_t newPriority);
 
 void yield();
