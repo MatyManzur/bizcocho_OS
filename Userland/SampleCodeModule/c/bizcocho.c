@@ -106,7 +106,7 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
     uint32_t pid;
     if(background)
     {
-        pid = sys_start_parent_process(name, argc, argv, programFunction, 2);
+        pid = sys_start_parent_process(name, argc, argv, programFunction, 2 ,sys_get_pid()); //Hacemos que copie los FDs de Bizcocho
     }
     else
     {

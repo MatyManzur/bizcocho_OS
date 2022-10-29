@@ -83,7 +83,7 @@ struct timezone_t
 
 void sys_exit(int8_t statusCode);
 
-uint32_t sys_start_parent_process(char *name, uint8_t argc, char **argv, int8_t(*processCodeStart)(uint8_t, void **), uint8_t priority);
+uint32_t sys_start_parent_process(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
 
 uint32_t sys_start_child_process(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **));
 

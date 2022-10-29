@@ -53,6 +53,28 @@ static uint8_t getCockatoo(uint32_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
+static pointerPCBNODE_t findByPidRec(uint32_t pid, pointerPCBNODE_t head)
+{
+    if (head == NULL)
+        return NULL;
+    if (head->process->pid == pid)
+        return head;
+    return findByPidRec(pid, head->next);
+}
+
+static pointerPCBNODE_t findByPid(uint32_t pid)
+{
+    if(pid == schedule.nowRunning->process->pid)
+        return schedule.nowRunning;
+    pointerPCBNODE_t foundPointer = NULL;
+    for (int i = 0; i < PRIORITY_COUNT && foundPointer == NULL; i++)
+    {
+        foundPointer = findByPidRec(pid, schedule.processes[i]);
+    }
+    return foundPointer;
+}
+
+
 static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid, fileDescriptor_t fds[MAX_FD_COUNT], pointerPCBNODE_t parent)
 {
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
@@ -125,15 +147,21 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
     return pnode;
 }
 
-uint32_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority)
+uint32_t startParentProcess(char *name, uint8_t argc, char ** argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds)
 {
-    pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,NULL,init);
+    pointerPCBNODE_t processToCopyFds= findByPid(pidToCopyFds);
+    fileDescriptor_t* fdsToCopy=NULL;
+    if(processToCopyFds != NULL && pidToCopyFds !=0 )
+    {
+        fdsToCopy=processToCopyFds->process->fds;
+    }
+    pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,fdsToCopy,init);
     schedulerRunning = 1;
     return pnode->process->pid;
 }
 
 // Hacer un startChild (equivalente a un fork exec)
-uint32_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **))
+uint32_t startChildProcess(char *name, uint8_t argc, char ** argv, int8_t (*processCodeStart)(uint8_t, void **))
 {
     uint8_t priority = schedule.nowRunning->process->priority;
     pointerPCBNODE_t parent= schedule.nowRunning;
@@ -215,26 +243,8 @@ static void freeNode(pointerPCBNODE_t head)
     memfree(head);
 }
 
-static pointerPCBNODE_t findByPidRec(uint32_t pid, pointerPCBNODE_t head)
-{
-    if (head == NULL)
-        return NULL;
-    if (head->process->pid == pid)
-        return head;
-    return findByPidRec(pid, head->next);
-}
 
-static pointerPCBNODE_t findByPid(uint32_t pid)
-{
-    if(pid == schedule.nowRunning->process->pid)
-        return schedule.nowRunning;
-    pointerPCBNODE_t foundPointer = NULL;
-    for (int i = 0; i < PRIORITY_COUNT && foundPointer == NULL; i++)
-    {
-        foundPointer = findByPidRec(pid, schedule.processes[i]);
-    }
-    return foundPointer;
-}
+
 
 void exit(int8_t statusCode)
 {
