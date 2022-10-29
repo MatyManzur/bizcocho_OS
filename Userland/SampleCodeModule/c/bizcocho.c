@@ -167,7 +167,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     fprintf(STDERR, "Cannot use a built-in command with a pipe!\n");
                     continue;
                 }
-                char namepipe[MAX_PIPE_NAME_SIZE];
+                char namepipe[MAX_PIPE_NAME_SIZE] = {0};
                 snprintf(namepipe,MAX_PIPE_NAME_SIZE,"Pipe %d",pipesCreated);
                 if(sys_mkpipe("pipe")!=0)
                 {
@@ -254,7 +254,7 @@ int8_t sender(uint8_t argc, void** argv)
 int8_t receiver(uint8_t argc, void** argv)
 {
     char c = 1;
-    while(c!='\n')
+    while(c!=0)
     {
         sys_read(STDIN, &c, 1);
         printf("Recibido: %c\n", c);

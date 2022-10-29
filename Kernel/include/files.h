@@ -25,6 +25,7 @@ typedef struct pipeFile_t {
     char buffer[MAX_PIPE_BUFFER_SIZE];
     size_t readingIndex;
     size_t writingIndex;
+    size_t writeOpenCount;
     size_t currentOpenCount;
 } pipeFile_t;
 
@@ -32,7 +33,7 @@ typedef struct pipeFile_t {
 
 void initializeFiles();
 
-int8_t modifyOpenCount(uint16_t fileID, int8_t units);
+int8_t modifyOpenCount(uint16_t fileID, int8_t units, uint8_t mode);
 
 void fprintf(int fd, char *format, ...);
 

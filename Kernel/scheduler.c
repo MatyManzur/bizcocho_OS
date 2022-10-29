@@ -105,7 +105,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, char **argv, int8
             processPCB->fds[i].fileID = fds[i].fileID;
             processPCB->fds[i].mode = fds[i].mode;
             if(fds[i].fileID > 2 && fds[i].mode != 'N'){
-                modifyOpenCount(fds[i].fileID, 1);
+                modifyOpenCount(fds[i].fileID, 1, fds[i].mode);
             }
         }
     }
@@ -243,9 +243,6 @@ static void freeNode(pointerPCBNODE_t head)
     memfree(head);
 }
 
-
-
-
 void exit(int8_t statusCode)
 {
     schedule.nowRunning->process->statusCode = statusCode;
@@ -305,8 +302,15 @@ uint8_t killProcess(uint32_t pid)
     pointerPCBNODE_t head = findByPid(pid);
     if (head != NULL) // si lo encontró
     {
-        if(head->process->state==BLOCKED)
+        for(uint8_t i; i<MAX_FD_COUNT;i++) //cerramos los files que haya dejado abiertos
         {
+            if(head->process->fds[i].mode != 'N' && head->process->fds[i].fileID > STDERR)
+            {
+                close(i);
+            }
+        }
+        if(head->process->state==BLOCKED)
+        {   //para que no quede en la lista de bloqueados
             unblockProcessWithReason(head->process->pid, head->process->blockedReason);
         }
         pointerPCBNODE_t parentHead = findByPid(head->process->ppid);
@@ -491,12 +495,14 @@ void yield(){
     _int20();
 }
 
-int16_t fdToFileId(uint8_t fd, uint8_t mode)
+int16_t fdToFileId(uint8_t fd, uint8_t* mode)
 {
     if(fd >= MAX_FD_COUNT)
         return -1;
-    if(mode != 0 && mode != schedule.nowRunning->process->fds[fd].mode)
+    if(mode != NULL && *mode != 0 && *mode != schedule.nowRunning->process->fds[fd].mode)
         return -1;
+    if(mode != NULL && *mode == 0)
+        *mode = schedule.nowRunning->process->fds[fd].mode;
     return schedule.nowRunning->process->fds[fd].fileID;
 }
 
@@ -549,7 +555,7 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd)
 
     schedule.nowRunning->process->fds[toFd].fileID = schedule.nowRunning->process->fds[fromFd].fileID;
     schedule.nowRunning->process->fds[toFd].mode = schedule.nowRunning->process->fds[fromFd].mode;
-    modifyOpenCount(schedule.nowRunning->process->fds[toFd].fileID, 1);
+    modifyOpenCount(schedule.nowRunning->process->fds[toFd].fileID, 1, schedule.nowRunning->process->fds[toFd].mode);
     return 0;
 }
 
@@ -560,7 +566,7 @@ void revertFdReplacements()
     toBegin(list);
     while(hasNext(list)){
         last=(lostFd_t *)next(list);
-        modifyOpenCount(schedule.nowRunning->process->fds[last->index].fileID,-1);
+        modifyOpenCount(schedule.nowRunning->process->fds[last->index].fileID,-1, schedule.nowRunning->process->fds[last->index].mode);
         schedule.nowRunning->process->fds[last->index].fileID=last->index;
         schedule.nowRunning->process->fds[last->index].mode=last->lostMode;
         memfree((void *) last);

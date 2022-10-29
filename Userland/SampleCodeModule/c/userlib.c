@@ -87,7 +87,7 @@ size_t strcpy(char *dest, const char *src)
 
 // variante de código sacado de:
 // https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
-size_t snprintf(char* buffer,size_t n, char *format, va_list *args)
+static size_t _snprintf(char* buffer,size_t n, char *format, va_list *args)
 {
     char *traverse;
     int64_t i;
@@ -162,12 +162,19 @@ size_t snprintf(char* buffer,size_t n, char *format, va_list *args)
     return j;
 }
 
+size_t snprintf(char* buffer,size_t n, char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    return _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+}
+
 void printf(char *format, ...)//Codigo repetido???? TODO
 {
     va_list args;
     va_start(args, format);
     char buffer[PRINTF_BUFFER_MAX_LENGTH]={0};
-    snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
     sys_write(STDOUT,buffer);
 }
 
@@ -176,7 +183,7 @@ void fprintf(int fd, char *format, ...)
     va_list args;
     va_start(args, format);
     char buffer[PRINTF_BUFFER_MAX_LENGTH]={0};
-    snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
     sys_write(fd,buffer);
 }
 
@@ -322,7 +329,7 @@ size_t strncpy(char *dest, const char *src, size_t count)
 {
     size_t n=0;
 	char *tmp = dest;
-	while ( (*tmp = *src !=0 ) && n < count){
+	while ( ((*tmp = *src) !=0 ) && n < count){
 		tmp++;
 		src++;
         n++;

@@ -18,7 +18,7 @@ void fprintf(int fd, char *format, ...);
 
 void printf(char *format, ...);
 
-size_t snprintf(char* buffer,size_t n, char *format, va_list *args);
+size_t snprintf(char* buffer,size_t n, char *format, ...);
 
 char *convert(unsigned int num, int base, unsigned int minDigitCount);
 

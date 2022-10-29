@@ -42,6 +42,7 @@ int8_t mkpipe(char* name)
     pipeFile->readingIndex = 0;
     pipeFile->writingIndex = 0;
     pipeFile->currentOpenCount = 0;
+    pipeFile->writeOpenCount = 0;
     add(pipeFilesList, (void*) pipeFile);
     return 0;
 }
@@ -57,13 +58,16 @@ int8_t open(char* name, uint8_t mode, uint8_t* fd)
         //No existe el File/El modo es invalido/Hubo un error al abrir el file osea esta lleno de FDs
     }
     file->currentOpenCount++;
+    if(mode=='W')
+        file->writingIndex++;
     //openFile dejó en *fd la rta
     return 0;
 }
 
 int8_t close(uint8_t fd)
 {   
-    uint16_t fileId = fdToFileId(fd, 0);
+    uint8_t mode = 0;
+    uint16_t fileId = fdToFileId(fd, &mode);
     if(fileId == -1)
     {
         return -1;
@@ -80,6 +84,17 @@ int8_t close(uint8_t fd)
                 return -1;
             }
             file->currentOpenCount--;
+            if(mode=='W')
+            {
+                file->writeOpenCount--;
+                if(file->writeOpenCount == 0)
+                {
+                    BlockedReason_t unblockRead;
+                    unblockRead.id = fileId;
+                    unblockRead.source = PIPE_READ;
+                    unblockAllProcessesBecauseReason(unblockRead);
+                }
+            }
             if(!file->currentOpenCount)
             {
                 memfree(file);
@@ -94,7 +109,8 @@ int8_t close(uint8_t fd)
 int write(int fd,char* s)
 {   
     format_t format;
-    int16_t fileId = fdToFileId(fd, 'W');
+    uint8_t mode = 'W';
+    int16_t fileId = fdToFileId(fd, &mode);
     pipeFile_t* pipe; 
     int charIndex=0;
     switch (fileId)
@@ -152,7 +168,8 @@ int write(int fd,char* s)
 uint8_t read(int fd, char* buf, uint8_t n)
 {
     uint8_t totalChars = 0;
-    int16_t fileId = fdToFileId(fd, 'R');
+    uint8_t mode = 'R';
+    int16_t fileId = fdToFileId(fd, &mode);
     pipeFile_t* pipe;
     switch (fileId)
     {
@@ -204,7 +221,13 @@ uint8_t read(int fd, char* buf, uint8_t n)
             {
                 if( (pipe->readingIndex%MAX_PIPE_BUFFER_SIZE)==(pipe->writingIndex % MAX_PIPE_BUFFER_SIZE) )
                 {
-                    blockProcessWithReason(getPid(), blockRead);
+                    if(pipe->writeOpenCount > 0)
+                    {
+                        blockProcessWithReason(getPid(), blockRead);
+                    }
+                    //se despierta cuando ya no hay procesos que tienen el lado de escritura abierto
+                    buf[totalChars++] = 0;
+                    return 0;
                 }
                 buf[totalChars++] = pipe->buffer[pipe->readingIndex++ % MAX_PIPE_BUFFER_SIZE];
             }
@@ -230,13 +253,15 @@ int cmpFileID(void* a,void* b)
     return *((uint16_t *)a)==*((uint16_t *) b);
 }
 
-int8_t modifyOpenCount(uint16_t fileID, int8_t units)
+int8_t modifyOpenCount(uint16_t fileID, int8_t units, uint8_t mode)
 {
     pipeFile_t* file = find(pipeFilesList,cmpFileID,(void *) &fileID);
     if(file==NULL){
         return -1;
     }
     file->currentOpenCount += units;
+    if(mode=='W')
+        file->writeOpenCount += units;
     return 0;
 }
 
