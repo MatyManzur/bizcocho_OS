@@ -352,7 +352,7 @@ int8_t waitchild(uint32_t childpid)
 uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
-    uint8_t found = head != NULL && head->process->state != BLOCKED;
+    uint8_t found = head != NULL && head->process->state != BLOCKED && head->process->state != FINISHED;
     if (found)
     {
         head->process->state = BLOCKED;
@@ -369,7 +369,7 @@ uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 {
     pointerPCBNODE_t head = findByPid(pid);
-    uint8_t found = (head != NULL) && (head->process->blockedReason.source == blockReason.source) && (head->process->blockedReason.id == blockReason.id);
+    uint8_t found = (head != NULL) && (head->process->blockedReason.source == blockReason.source) && (head->process->blockedReason.id == blockReason.id) && (head->process->state!=FINISHED);
     if (found)
     {
         setProcessReady(head->process);
