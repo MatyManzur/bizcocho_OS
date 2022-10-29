@@ -1,5 +1,5 @@
 #include <time.h>
-
+#include <scheduler.h>
 static unsigned long ticks = 0; //cantidad total de ticks desde la primera interrupcion del timer tick
 
 static struct timezone_t timezone = {0,0}; //time zone actual con horas y minutos
@@ -113,12 +113,13 @@ static int isLeapYear(int year)
     return 0;
 }
 
-//Espera a que hayan pasado la cantidad de ticks indicada
+//Espera a que hayan pasado la cantidad de segundos indicada
 void sleep(uint64_t sleepTicks)
 {
     uint64_t finish = ticks + sleepTicks;
     while (ticks < finish)
     {
-        _hlt();    //espera a la proxima interrupcion. Tienen que llegar interrupciones del mismo timer tick para que incremente ticks y así salir de este while
+        yield();    //espera a la proxima interrupcion. Tienen que llegar interrupciones del mismo timer tick para que incremente ticks y así salir de este while
     }
 }
+

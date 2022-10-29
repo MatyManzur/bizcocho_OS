@@ -2,7 +2,10 @@
 #include "tests.h"
 #include "testing_utils.h"
 #define COMMAND_COUNT 18
-
+#define CHECK_ARGC(argc,amount){\
+    if(argc != amount){\
+        fprintf(STDERR, "Error! Invalid argument count, Received %d when %d was necessary\n",argc,amount);\
+        return -1;}};
 #define NO_CHANGE_FD -2
 
 #define IS_PIPE(c) ((c)==2)
@@ -16,7 +19,7 @@ int8_t kill(uint8_t argc, void* argv[]);
 int8_t block(uint8_t argc, void* argv[]);
 int8_t nice(uint8_t argc, void* argv[]);
 int8_t ps(uint8_t argc, void* argv[]);
-
+int8_t loop(uint8_t argc, void* argv[]);
 char* promptMessage="Bizcocho $>";
 
 static uint32_t bizcochoPid = 0;
@@ -25,7 +28,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="mem", .builtin=1, .programFunction=sys_print_mem_state },
     {.name="ps", .builtin=1, .programFunction=ps },
-    {.name="loop", .builtin=0, .programFunction=bizcochito_dummy },
+    {.name="loop", .builtin=0, .programFunction=loop },
     {.name="kill", .builtin=1, .programFunction=kill },
     {.name="nice", .builtin=1, .programFunction=nice },
     {.name="block", .builtin=1, .programFunction=block },
@@ -266,11 +269,7 @@ int8_t receiver(uint8_t argc, void** argv)
 
 int8_t kill(uint8_t argc, void* argv[])
 {
-    if(argc != 1)
-    {
-        fprintf(STDERR,"Error! Invalid argument count, Received %d when %d was necessary\n",argc, 1);
-        return -1;
-    }
+    CHECK_ARGC(argc,1)
     uint32_t pid= satoi((char*)argv[0]);
     if(pid==bizcochoPid)
     {
@@ -296,11 +295,7 @@ int8_t ps(uint8_t argc, void* argv[])
 }
 
 int8_t block(uint8_t argc, void* argv[]){
-    if(argc != 1)
-    {
-        fprintf(STDERR,"Error! Invalid argument count, Received %d when %d was necessary\n",argc, 1);
-        return -1;
-    }
+    CHECK_ARGC(argc,1)
     uint32_t pid= satoi((char*)argv[0]);
     if(pid==bizcochoPid)
     {
@@ -317,11 +312,7 @@ int8_t block(uint8_t argc, void* argv[]){
 
 int8_t nice(uint8_t argc, void* argv[])
 {
-    if(argc != 2)
-    {
-        fprintf(STDERR,"Error! Invalid argument count, Received %d when %d was necessary\n",argc, 2);
-        return -1;
-    }
+    CHECK_ARGC(argc,2)
     uint32_t pid = satoi((char *) argv[0]);
     uint8_t priority = satoi((char *) argv[1]);
     if(!sys_change_priority(pid,priority))
@@ -330,4 +321,21 @@ int8_t nice(uint8_t argc, void* argv[])
         return -1;
     }
     return 0;
+}
+int8_t loop(uint8_t argc, void* argv[]){
+    uint32_t pid=sys_get_pid();
+    struct datetime_t previousTime;
+    struct datetime_t timeAtCheck={0};
+    struct timezone_t timezone;
+    sys_get_current_date_time(&timeAtCheck,&timezone);
+    previousTime.secs=timeAtCheck.secs;
+    while(1){
+        sys_get_current_date_time(&timeAtCheck,&timezone);
+        if( ( previousTime.secs+5 )<timeAtCheck.secs || previousTime.secs > timeAtCheck.secs)
+        {
+            previousTime.secs=timeAtCheck.secs;
+            printf("Hola soy el Loop con PID:%d \n",pid);
+        }
+        sys_yield();
+    }
 }
