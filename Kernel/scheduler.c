@@ -585,19 +585,26 @@ static char getStateChar(State_t state, BlockedSource_t blockedSource)
 
 void printAllProcesses()
 {
-    fprintf(STDOUT, "|-------------|-----|------|-------|-------|----------|---------|\n");
-    fprintf(STDOUT, "| processName | pid | ppid | state | prior | stackPtr | basePtr |\n");
-    fprintf(STDOUT, "|-------------|-----|------|-------|-------|----------|---------|\n");
+    fprintf(STDOUT, "|-------------|-----|------|-------|-------|------------|-----------|\n");
+    fprintf(STDOUT, "| processName | pid | ppid | state | prior |  stackPtr  |  basePtr  |\n");
+    fprintf(STDOUT, "|-------------|-----|------|-------|-------|------------|-----------|\n");
+    uint32_t processCount = 0;
     for(int i=0 ; i<PRIORITY_COUNT ; i++)
     {
         pointerPCBNODE_t head = schedule.processes[i];
         while(head!=NULL)
         {
             PCB_t* process = head->process;
-            fprintf(STDOUT, "| %s | %d | %d | %c | %d | 0x%x | 0x%x |\n", 
+            processCount++;
+            fprintf(STDOUT, "| %s | %3d |  %3d |   %c   |   %1d   | 0x%7x | 0x%7x |\n", 
                 process->name, process->pid, process->ppid, getStateChar(process->state, process->blockedReason.source), process->priority, process->stackPointer, process->processMemStart);
             head = head->next;
         }
     }
+    fprintf(STDOUT, "|-------------|-----|------|-------|-------|------------|-----------|\n");
+    fprintf(STDOUT, "| Total Process Count:  %2d | R: Ready - F: Finished - ?: Unknown    |\n", processCount);
+    fprintf(STDOUT, "| Blocked because: B: Asked - P: Empty Pipe - p: Full Pipe          |\n", processCount);
+    fprintf(STDOUT, "| C: Waiting Child - S: Waiting Semaphore                           |\n", processCount);
+    fprintf(STDOUT, "|-------------------------------------------------------------------|\n");
 }
 

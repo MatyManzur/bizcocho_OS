@@ -130,6 +130,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
     {   
         char buffer[BUFFER_DIM]={0};
         printf(promptMessage);
+        sys_clean_buffer();
         sys_set_backspace_base();
         readUntilEnter(buffer);
         //Parse por pipe y despues parse por espacio
@@ -144,11 +145,8 @@ int8_t bizcocho(uint8_t argc, void** argv)
 
         uint8_t error = 0;
 
-        if(pipeTokenCount > 2) //TODO parser nunca devuelve más que 2 porque pregunta el máximo por parámetro
-        {
-            fprintf(STDERR, "Cannot use pipe | more than once!\n");
-            error = 1;
-        }
+        if(pipeTokenCount == 0) //si apreta solo enter sin escribir nada
+            continue;
         
         for(int k=0; k < pipeTokenCount && !error; k++)
         {
@@ -255,7 +253,7 @@ int8_t sender(uint8_t argc, void** argv)
 int8_t receiver(uint8_t argc, void** argv)
 {
     char c = 1;
-    while(c!=0)
+    while(c!='\n')
     {
         sys_read(STDIN, &c, 1);
         printf("Recibido: %c\n", c);
