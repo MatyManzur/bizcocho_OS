@@ -25,13 +25,13 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
 
   //printf("%d %d %d\n", satoi(argv[0]), satoi(argv[1]), satoi(argv[2]));
 
-  //if ((n = satoi(argv[0])) <= 0) sys_exit(1);
-  //if ((inc = satoi(argv[1])) == 0) sys_exit(1);
-  //if ((use_sem = satoi(argv[2])) < 0) sys_exit(1);
+  if ((n = satoi(argv[0])) <= 0) sys_exit(1);
+  if ((inc = satoi(argv[1])) == 0) sys_exit(1);
+  if ((use_sem = satoi(argv[2])) < 0) sys_exit(1);
   inc = 1;
   n = 5;
   use_sem=1;
-
+  printf("qwerqwer\n");
   int semId;
 
   // honestamente no hacemos ningún chequeo en initialize_semaphore 
@@ -60,23 +60,17 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
 
   global = 0;
   uint64_t i;
-  printf("asdasdq2312\n");
+  
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
     pids[i] = sys_start_child_process("my_process_inc", 3, argvDec, (int8_t (*)(uint8_t,  void **))my_process_inc);
     pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, argvInc, (int8_t (*)(uint8_t,  void **)) my_process_inc);
   }
-  for(int j = 0; j<pids[0]; j++)
-    printf("zxcvzxcv\n");
-  for(int j = 0; j<pids[1]; j++)
-    printf("hjklhjkl\n");
-  printf("12\n");
+  
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
     printf("12123\n");
     sys_wait_child(pids[i]);
-    printf("124353\n");
     sys_wait_child(pids[i + TOTAL_PAIR_PROCESSES]);
   }
-  printf("22\n");
   printf("Final value: %d\n", global);
 
   sys_exit(0);

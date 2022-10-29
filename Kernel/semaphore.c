@@ -12,7 +12,7 @@ static void acquire(uint8_t * lock)
 
 int cmpById(void * inList, void * compareWith)
 {
-    return ((semPointer) inList)->id == *((int*) compareWith);
+    return ((semPointer) inList)->id == *((uint32_t*) compareWith);
 }
 
 int cmpByName(void * inList, void * compareWith)
@@ -29,11 +29,12 @@ void initSemaphoreHub()
     hub.semBlockList = newList();
 }
 
+uint32_t semCount = 0;
 uint8_t lock = 0;
 uint8_t lockList = 0;
 uint8_t lockListPid = 0;
 
-int initializeSemaphore(char * name, uint64_t initialValue) 
+uint32_t initializeSemaphore(char * name, uint64_t initialValue) 
 {
     semPointer curr = (semPointer) find(hub.semBlockList, cmpByName, name);
 
@@ -48,14 +49,15 @@ int initializeSemaphore(char * name, uint64_t initialValue)
         curr->value = initialValue;
         curr->semLock = 0;
         curr->blockedProcessList = newList();
-        acquire(&lock);   
+        acquire(&lock);  
+        semCount++; 
         add(hub.semBlockList, curr);
         _xchg(&lock,0);
     }
-    return (int) curr->id;
+    return curr->id;
 }
 
-uint64_t wait_sem(uint8_t id)
+uint64_t wait_sem(uint32_t id)
 {
     semPointer curr = (semPointer) find(hub.semBlockList, cmpById, &id);
 
@@ -68,7 +70,7 @@ uint64_t wait_sem(uint8_t id)
         _xchg(&(curr->semLock),0);
     }
     else{
-        uint8_t * pid = memalloc(sizeof(int));
+        uint32_t * pid = memalloc(sizeof(uint32_t));
         *pid = getPid();
         BlockedReason_t reason;
         reason.id = curr->id;
@@ -80,7 +82,7 @@ uint64_t wait_sem(uint8_t id)
     return curr->value;
 }
 
-void post_sem(uint8_t id)
+void post_sem(uint32_t id)
 {
     semPointer curr = (semPointer) find(hub.semBlockList, cmpById, &id);
     if(curr!=NULL)
@@ -90,7 +92,7 @@ void post_sem(uint8_t id)
         {
             acquire(&lockListPid);
             toBegin(curr->blockedProcessList);
-            uint8_t * pid = (uint8_t *) next(curr->blockedProcessList);
+            uint32_t * pid = (uint32_t *) next(curr->blockedProcessList);
             if(pid!=NULL){
                 memfree(pid);
                 remove(curr->blockedProcessList);
@@ -109,7 +111,7 @@ void post_sem(uint8_t id)
     }
 }
 
-int8_t close_sem(uint8_t id)
+int8_t close_sem(uint32_t id)
 {
     acquire(&lockList);
     toBegin(hub.semBlockList);
@@ -120,6 +122,9 @@ int8_t close_sem(uint8_t id)
         {
             remove(hub.semBlockList);
             memfree(curr);
+            acquire(&lock);
+            semCount--;
+            _xchg(&lock, 0);
             _xchg(&lockList,0);
             return 0;
         }
@@ -128,43 +133,27 @@ int8_t close_sem(uint8_t id)
     return -1;
 }
 
-static void printNum(int value)
+uint32_t getSemCount()
 {
-    if(!value)
-    {
-        write(STDOUT,"0");
-    }
-    char printable[16];
-    printable[15] = 0;
-    printable[14] = '\n';
-    int index=14;
-    while(value!=0)
-    {
-        index--;
-        printable[index] = value%10 + '0';
-        value /= 10;
-    }
-    write(STDOUT, printable+index);
+    return semCount;
 }
+
 
 void print_all_semaphores()
 {
     acquire(&lockList);
     toBegin(hub.semBlockList);
+    fprintf(STDOUT, "|         Name         | ID | Value | Blocked Processes\n");
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)
     {
-        printNum(curr->id);
-        write(STDOUT, curr->name);
-        write(STDOUT, "\n");
-        printNum(curr->value);
+        fprintf(STDOUT, "|     %s     | %d | %d | ", curr->name, curr->id, curr->value);
         acquire(&(curr->semLock));
         toBegin(curr->blockedProcessList);
-        int * blockedPid;
-        write(STDOUT, "Bloqueados: ");
-        while((blockedPid = (int *) next(curr->blockedProcessList))!=NULL)
+        uint32_t * blockedPid;
+        while((blockedPid = (uint32_t *) next(curr->blockedProcessList))!=NULL)
         {
-            printNum(*blockedPid);
+            fprintf(STDOUT, " %d ", *blockedPid);
         }
         write(STDOUT, "\n");
         _xchg(&(curr->semLock), 0);

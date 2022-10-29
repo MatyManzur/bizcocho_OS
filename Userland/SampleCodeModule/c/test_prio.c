@@ -41,7 +41,7 @@ void test_prio(){
     printf("UNBLOCKING...\n");
 
     for(i = 0; i < TOTAL_PROCESSES; i++)
-        sys_unblock_process(pids[i]);
+        sys_block_process(pids[i]);
 
     bussy_wait(WAIT);
     printf("\nKILLING...\n");
