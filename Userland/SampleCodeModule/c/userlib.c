@@ -3,7 +3,7 @@
 
 #define PRINTF_BUFFER_MAX_LENGTH 255
 
-#define IS_DIGIT(x) ((x)>='0' && (x)<='9')
+#define IS_DIGIT(x) ((x)>='0' && (x)<='9') 
 
 int strToNum(const char *str)
 { //Pasa un string a decimal
@@ -352,5 +352,53 @@ int removeBackspaces(char str[]){
     }
     str[i]='\0';
     return i;
+}
+
+void printSemaphoreTable()
+{
+    uint32_t semAmount;
+    semInfoPointer * semInfo = sys_print_all_semaphores(&semAmount);
+    printf("|---------------|----|-------|---------------------------|\n");
+    printf("| semaphoreName | id | value | blocked by this semaphore |\n");
+    printf("|---------------|----|-------|---------------------------|\n");
+    for(int i = 0; i < semAmount ; i++)
+    {
+        printf("|---------------|----|-------|---------------------------|\n");
+        printf("|   %s     | %d |   %d  |", semInfo[i]->name, semInfo[i]->id, semInfo[i]->value);
+        int j=0;
+        while(semInfo[i]->blocked[j])
+            printf("  %d  ", semInfo[i]->blocked[j]);
+        sys_mem_free(semInfo[i]->blocked);
+        sys_mem_free(semInfo[i]);
+        printf("\n|---------------|----|-------|---------------------------|\n");
+    }
+    sys_mem_free(semInfo);
+}
+
+void printProcessesTable()
+{
+    uint32_t procAmount;
+    processInfoPointer * processesInfo = sys_print_all_processes(&procAmount);
+    printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
+    printf("| processName | pid | ppid | state | prior |  stackPtr  |  basePtr  |\n");
+    printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
+
+    uint32_t index = 0;
+
+    while(index != procAmount){
+        processInfoPointer process = processesInfo[index];
+        printf("| %s | %3d |  %3d |   %c   |   %1d   | 0x%7x | 0x%7x |\n", 
+            process->name, process->pid, process->ppid, process->status, process->priority, 
+            process->stackPointer, process->processMemStart);
+        sys_mem_free(processesInfo[index]);
+        index++;
+    }
+
+    printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
+    printf("| Total Process Count:  %2d | R: Ready - F: Finished - ?: Unknown    |\n", procAmount);
+    printf("| Blocked because: B: Asked - P: Empty Pipe - p: Full Pipe          |\n");
+    printf("| C: Waiting Child - S: Waiting Semaphore                           |\n");
+    printf("|-------------------------------------------------------------------|\n");
+    sys_mem_free(processesInfo);
 }
 

@@ -36,16 +36,16 @@ int lockListPid = 0;
 
 uint32_t initializeSemaphore(char * name, uint64_t initialValue) 
 {
-    
     semPointer curr = (semPointer) find(hub.semBlockList, cmpByName, name);
 
     if(curr==NULL)
     {
         curr = memalloc(sizeof(struct semBlock));
         if(curr==NULL)
-            return -1;
+            return 0;
         strncpy(curr->name, name, 32); 
         curr->next = NULL;
+        curr->amountBlocked = 0;
         curr->id = hub.globalid++;
         curr->value = initialValue;
         curr->semLock = 0;
@@ -73,6 +73,7 @@ uint64_t wait_sem(uint32_t id)
     else{
         uint32_t * pid = memalloc(sizeof(uint32_t));
         *pid = getPid();
+        curr->amountBlocked++;
         BlockedReason_t reason;
         reason.id = curr->id;
         reason.source = WAIT_SEM;
@@ -97,6 +98,7 @@ void post_sem(uint32_t id)
             if(pid!=NULL){
                 memfree(pid);
                 remove(curr->blockedProcessList);
+                curr->amountBlocked--;
                 BlockedReason_t reason;
                 reason.id = curr->id;
                 reason.source = WAIT_SEM;
@@ -140,28 +142,33 @@ uint32_t getSemCount()
 }
 
 
-void print_all_semaphores()
+// desde userland se deben realizar los malloc
+semInfoPointer print_all_semaphores(uint32_t * semAmount)
 {
-    write(STDOUT, "LLEGADSFA\n");
-    fprintf(STDOUT, "%d\n", lockList);
     acquire(&lockList);
-    write(STDOUT, "LasdasADSFA\n");
     toBegin(hub.semBlockList);
-    write(STDOUT, "LLEGAwerew\n");
-    fprintf(STDOUT, "|         Name         | ID | Value | Blocked Processes\n");
+    *semAmount = 0;
+    semInfoPointer * informationPointer = memalloc(sizeof(semInfoPointer)*semCount);
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)
     {
-        fprintf(STDOUT, "|     %s     | %d | %d | ", curr->name, curr->id, curr->value);
+        informationPointer[*semAmount] = memalloc(sizeof(semInfo));
+        informationPointer[*semAmount]->id = curr->id;
+        strcpy(informationPointer[*semAmount]->name, curr->name);
+        informationPointer[*semAmount]->value = curr->value;
         acquire(&(curr->semLock));
+        informationPointer[*semAmount]->blocked = memalloc(sizeof(uint32_t)*(curr->amountBlocked+1));
         toBegin(curr->blockedProcessList);
         uint32_t * blockedPid;
+        int i=0;
         while((blockedPid = (uint32_t *) next(curr->blockedProcessList))!=NULL)
         {
-            fprintf(STDOUT, " %d ", *blockedPid);
+            informationPointer[*semAmount]->blocked[i++] = *blockedPid;
         }
-        write(STDOUT, "\n");
+        informationPointer[*semAmount]->blocked[i] = 0; // marcamos el último
+        (*semAmount)++;
         _xchg(&(curr->semLock), 0);
     }
     _xchg(&lockList, 0);
+    return informationPointer;
 }

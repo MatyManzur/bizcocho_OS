@@ -10,6 +10,9 @@
 #define STDERR 2
 #define EMPTY 3
 
+#define MAX_PROC_NAME 64
+#define MAX_SEM_NAME 32
+
 typedef struct registers_t
 {
     uint64_t rax;
@@ -81,6 +84,29 @@ struct timezone_t
     int8_t minutes;
 };
 
+typedef struct semInfo * semInfoPointer;
+
+typedef struct semInfo
+{
+    char name[MAX_SEM_NAME];
+    uint32_t id;
+    uint64_t value;
+    uint32_t * blocked;
+} semInfo;
+
+typedef struct processInfo * processInfoPointer;
+
+typedef struct processInfo
+{
+    char name[MAX_PROC_NAME];
+    uint32_t pid;
+    uint32_t ppid;
+    char status;
+    uint8_t priority;
+    uint64_t stackPointer;
+    void *processMemStart;
+} processInfo;
+
 void sys_exit(int8_t statusCode);
 
 uint32_t sys_start_parent_process(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
@@ -99,7 +125,7 @@ uint8_t sys_change_priority(uint32_t pid, uint8_t newPriority);
 
 void sys_yield();
 
-void sys_print_all_processes();
+processInfoPointer * sys_print_all_processes(uint32_t * procAmount);
 
 uint8_t sys_read(int fd, char* buf, uint8_t n);
 
@@ -153,6 +179,7 @@ void sys_post_sem(int id);
 
 int sys_close_sem(int id);
 
-void sys_print_all_semaphores();
+semInfoPointer * sys_print_all_semaphores(uint32_t * semAmount);
+
 
 #endif

@@ -30,10 +30,8 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
   if ((use_sem = satoi(argv[2])) < 0) sys_exit(1);
   int semId;
 
-  // honestamente no hacemos ningún chequeo en initialize_semaphore 
-  if (use_sem){
-    semId = sys_initialize_semaphore(SEM_ID, 1);
-  }
+  if (use_sem && !(semId = sys_initialize_semaphore(SEM_ID, 1))) sys_exit(1);
+  
   uint64_t i;
   for (i = 0; i < n; i++){
     if (use_sem) sys_wait_sem(semId);

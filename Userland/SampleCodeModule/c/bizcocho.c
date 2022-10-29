@@ -291,7 +291,7 @@ int8_t kill(uint8_t argc, void* argv[])
 
 int8_t ps(uint8_t argc, void* argv[])
 {
-    sys_print_all_processes();
+    printProcessesTable();
     return 0;
 }
 

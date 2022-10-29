@@ -35,4 +35,9 @@ size_t strcpy(char *dest, const char *src);
 size_t strncpy(char *dest, const char *src, size_t count);
 
 int removeBackspaces(char str[]);
+
+void printProcessesTable();
+
+void printSemaphoreTable();
+
 #endif

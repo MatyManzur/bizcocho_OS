@@ -589,28 +589,31 @@ static char getStateChar(State_t state, BlockedSource_t blockedSource)
     }
 }
 
-void printAllProcesses()
+processInfoPointer * printAllProcesses(uint32_t * procAmount)
 {
-    fprintf(STDOUT, "|-------------|-----|------|-------|-------|------------|-----------|\n");
-    fprintf(STDOUT, "| processName | pid | ppid | state | prior |  stackPtr  |  basePtr  |\n");
-    fprintf(STDOUT, "|-------------|-----|------|-------|-------|------------|-----------|\n");
-    uint32_t processCount = 0;
+    *procAmount = 0;
+    processInfoPointer * procInfo = memalloc(sizeof(processInfoPointer)*MAX_SHOWN);
     for(int i=0 ; i<PRIORITY_COUNT ; i++)
     {
         pointerPCBNODE_t head = schedule.processes[i];
         while(head!=NULL)
         {
             PCB_t* process = head->process;
-            processCount++;
-            fprintf(STDOUT, "| %s | %3d |  %3d |   %c   |   %1d   | 0x%7x | 0x%7x |\n", 
-                process->name, process->pid, process->ppid, getStateChar(process->state, process->blockedReason.source), process->priority, process->stackPointer, process->processMemStart);
+            procInfo[*procAmount] = memalloc(sizeof(processInfo));
+            strcpy(procInfo[*procAmount]->name, process->name);
+            procInfo[*procAmount]->pid = process->pid;
+            procInfo[*procAmount]->ppid = process->ppid;
+            procInfo[*procAmount]->status = getStateChar(process->state, process->blockedReason.source);
+            procInfo[*procAmount]->priority = process->priority;
+            procInfo[*procAmount]->stackPointer = process->stackPointer;
+            procInfo[*procAmount]->processMemStart = process->processMemStart;
             head = head->next;
+            (*procAmount)++;
+            if(*procAmount == MAX_SHOWN)
+                return procInfo;
         }
     }
-    fprintf(STDOUT, "|-------------|-----|------|-------|-------|------------|-----------|\n");
-    fprintf(STDOUT, "| Total Process Count:  %2d | R: Ready - F: Finished - ?: Unknown    |\n", processCount);
-    fprintf(STDOUT, "| Blocked because: B: Asked - P: Empty Pipe - p: Full Pipe          |\n", processCount);
-    fprintf(STDOUT, "| C: Waiting Child - S: Waiting Semaphore                           |\n", processCount);
-    fprintf(STDOUT, "|-------------------------------------------------------------------|\n");
+    
+    return procInfo;
 }
 

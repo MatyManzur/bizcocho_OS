@@ -10,7 +10,7 @@
 #define PRIORITY_COUNT 5
 #define NAME_MAX 64
 #define PROCESS_MEM_SIZE 4096
-
+#define MAX_SHOWN 30
 enum state
 {
     BLOCKED,
@@ -71,6 +71,19 @@ typedef struct lostFd_t{
     uint8_t index;
 }lostFd_t; 
 
+typedef struct processInfo * processInfoPointer;
+
+typedef struct processInfo
+{
+    char name[NAME_MAX];
+    uint32_t pid;
+    uint32_t ppid;
+    char status;
+    uint8_t priority;
+    uint64_t stackPointer;
+    void *processMemStart;
+} processInfo;
+
 //SYSCALLS
 uint32_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
 
@@ -94,7 +107,7 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd);
 
 void revertFdReplacements();
 
-void printAllProcesses();
+processInfoPointer * printAllProcesses(uint32_t * procAmount);
 
 //KERNEL ONLY
 void initializeScheduler();
