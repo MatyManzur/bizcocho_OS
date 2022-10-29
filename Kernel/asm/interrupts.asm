@@ -227,6 +227,7 @@ _syscallHandler:
 	caseSyscall 6,	.C6
 	caseSyscall 7, 	.C7
 	caseSyscall 8, 	.C8
+	caseSyscall 9,  .C9
 	caseSyscall 10, .C10
 	caseSyscall 11, .C11
 	caseSyscall 12, .C12

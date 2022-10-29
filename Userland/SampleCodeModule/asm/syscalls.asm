@@ -78,6 +78,7 @@ sys_yield:
 
 sys_print_all_processes:
 	make_syscall 9
+	
 sys_read:
 	make_syscall 10
 

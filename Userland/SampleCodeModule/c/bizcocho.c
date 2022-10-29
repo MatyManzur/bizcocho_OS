@@ -15,13 +15,14 @@ int8_t receiver(uint8_t argc, void** argv);
 int8_t kill(uint8_t argc, void* argv[]);
 int8_t block(uint8_t argc, void* argv[]);
 int8_t nice(uint8_t argc, void* argv[]);
+int8_t ps(uint8_t argc, void* argv[]);
 
 char* promptMessage="Bizcocho $>";
 
 static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="mem", .builtin=1, .programFunction=bizcochito_dummy },
-    {.name="ps", .builtin=1, .programFunction=bizcochito_dummy },
+    {.name="ps", .builtin=1, .programFunction=ps },
     {.name="loop", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="kill", .builtin=1, .programFunction=kill },
     {.name="nice", .builtin=1, .programFunction=nice },
@@ -247,6 +248,13 @@ int8_t kill(uint8_t argc, void* argv[]){
     }
     return 0;
 }
+
+int8_t ps(uint8_t argc, void* argv[])
+{
+    sys_print_all_processes();
+    return 0;
+}
+
 int8_t block(uint8_t argc, void* argv[]){
     if(argc != 1){
         fprintf(STDERR,"Error! Invalida cantidad de argumentos, Recibidos: %d y Necesarios: %d",argc,1);

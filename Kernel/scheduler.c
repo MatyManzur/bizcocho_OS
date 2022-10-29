@@ -554,8 +554,36 @@ void revertFdReplacements()
     }
 }
 
+static char stateChars[] = {'?', 'R', 'F'};
+static char blockedReasonChars[] = {'?', 'B', 'P', 'p', 'C', 'S'};
+
+static char getStateChar(State_t state, BlockedSource_t blockedSource)
+{
+    if(state==BLOCKED)
+    {
+        return blockedReasonChars[(blockedSource > 5)? 0 : blockedSource];
+    }
+    else
+    {
+        return stateChars[(state > 2)? 0 : state];
+    }
+}
+
 void printAllProcesses()
 {
-     
+    fprintf(STDOUT, "|-------------|-----|------|-------|-------|----------|---------|\n");
+    fprintf(STDOUT, "| processName | pid | ppid | state | prior | stackPtr | basePtr |\n");
+    fprintf(STDOUT, "|-------------|-----|------|-------|-------|----------|---------|\n");
+    for(int i=0 ; i<PRIORITY_COUNT ; i++)
+    {
+        pointerPCBNODE_t head = schedule.processes[i];
+        while(head!=NULL)
+        {
+            PCB_t* process = head->process;
+            fprintf(STDOUT, "| %s | %d | %d | %c | %d | 0x%x | 0x%x |\n", 
+                process->name, process->pid, process->ppid, getStateChar(process->state, process->blockedReason.source), process->priority, process->stackPointer, process->processMemStart);
+            head = head->next;
+        }
+    }
 }
 
