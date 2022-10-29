@@ -252,7 +252,7 @@ void exit(int8_t statusCode)
     killProcess(schedule.nowRunning->process->pid);
 }
 
-static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo)
+static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo, uint32_t ppid)
 {
     pointerPCBNODE_t lastChild = NULL;
     while(*childrenListTo != NULL)
@@ -262,6 +262,11 @@ static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t
     }
     *childrenListTo = *childrenListFrom;
     (*childrenListFrom)->prevSibling = lastChild;
+    while(*childrenListFrom != NULL)
+    {
+        (*childrenListFrom)->process->ppid = ppid;
+        childrenListFrom = &((*childrenListFrom)->nextSibling);
+    }
 }
 
 static void removeFromList(pointerPCBNODE_t node)
@@ -284,7 +289,7 @@ static void removeFromList(pointerPCBNODE_t node)
     {
         node->next->previous = node->previous;
     }
-    inheritChildren(&node->children, &init->children);
+    inheritChildren(&node->children, &init->children, init->process->pid);
     freeNode(node);
 }
 

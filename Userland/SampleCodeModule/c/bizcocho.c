@@ -19,6 +19,8 @@ int8_t ps(uint8_t argc, void* argv[]);
 
 char* promptMessage="Bizcocho $>";
 
+static uint32_t bizcochoPid = 0;
+
 static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="mem", .builtin=1, .programFunction=bizcochito_dummy },
@@ -123,6 +125,7 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
 int8_t bizcocho(uint8_t argc, void** argv)
 {   
     sys_clear_screen();
+    bizcochoPid = sys_get_pid();
     while (1)
     {   
         char buffer[BUFFER_DIM]={0};
@@ -260,16 +263,27 @@ int8_t receiver(uint8_t argc, void** argv)
     sys_exit(0);
     return 0;
 }
-int8_t kill(uint8_t argc, void* argv[]){
-    if(argc != 1){
-        fprintf(STDERR,"Error! Invalida cantidad de argumentos, Recibidos: %d y Necesarios: 1",argc);
+
+int8_t kill(uint8_t argc, void* argv[])
+{
+    if(argc != 1)
+    {
+        fprintf(STDERR,"Error! Invalid argument count, Received %d when %d was necessary\n",argc, 1);
         return -1;
     }
     uint32_t pid= satoi((char*)argv[0]);
-    if(!sys_kill_process(pid)){
-        fprintf(STDERR,"Error! No se encontro el proceso con PID: %d",pid);
+    if(pid==bizcochoPid)
+    {
+        fprintf(STDERR, "HA! You think I'd let you beat me so easily?!\n");
         return -1;
-    }else{
+    }
+    if(!sys_kill_process(pid))
+    {
+        fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
+        return -1;
+    }
+    else
+    {
         printf("PID:%d has been SLAIN\n",pid);
     }
     return 0;
@@ -282,26 +296,37 @@ int8_t ps(uint8_t argc, void* argv[])
 }
 
 int8_t block(uint8_t argc, void* argv[]){
-    if(argc != 1){
-        fprintf(STDERR,"Error! Invalida cantidad de argumentos, Recibidos: %d y Necesarios: %d",argc,1);
+    if(argc != 1)
+    {
+        fprintf(STDERR,"Error! Invalid argument count, Received %d when %d was necessary\n",argc, 1);
         return -1;
     }
     uint32_t pid= satoi((char*)argv[0]);
-    if(!sys_block_process(pid)){
-        fprintf(STDERR,"Error! No se encontro el proceso con PID: %d",pid);
+    if(pid==bizcochoPid)
+    {
+        fprintf(STDERR, "Nah, I don't feel much like sleeping now :)\n");
+        return -1;
+    }
+    if(!sys_block_process(pid))
+    {
+        fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
         return -1;
     }
     return 0;
 }
-int8_t nice(uint8_t argc, void* argv[]){
-    if(argc != 2){
-        fprintf(STDERR,"Error! Invalida cantidad de argumentos, Recibidos: %d y Necesarios: %d",argc,2);
+
+int8_t nice(uint8_t argc, void* argv[])
+{
+    if(argc != 2)
+    {
+        fprintf(STDERR,"Error! Invalid argument count, Received %d when %d was necessary\n",argc, 2);
         return -1;
     }
     uint32_t pid = satoi((char *) argv[0]);
     uint8_t priority = satoi((char *) argv[1]);
-    if(!sys_change_priority(pid,priority)){
-        fprintf(STDERR,"Error! No se encontro el proceso con PID: %d O la prioridad dada es invalida deberia ser [0-4]",pid);
+    if(!sys_change_priority(pid,priority))
+    {
+        fprintf(STDERR,"Error! Couldn't find process with PID: %d or given priority value is invalid: should be [0-4]\n",pid);
         return -1;
     }
     return 0;
