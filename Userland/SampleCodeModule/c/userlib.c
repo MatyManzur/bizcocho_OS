@@ -112,12 +112,12 @@ static size_t _snprintf(char* buffer,size_t n, char *format, va_list *args)
 
         traverse++;
 
-        int minDigitCount = 0;
+        int middleNumber = 0;
 
         while (IS_DIGIT(*traverse))    //leemos si hay un numero entre el % y la letra indicando la cantidad minima de cifras a mostrar para que complete con ceros adelante
         {
-            minDigitCount *= 10;
-            minDigitCount += *traverse - '0';
+            middleNumber *= 10;
+            middleNumber += *traverse - '0';
             traverse++;
         }
 
@@ -137,22 +137,30 @@ static size_t _snprintf(char* buffer,size_t n, char *format, va_list *args)
                     i = -i;
                     buffer[j++] = '-';
                 }
-                j += strncpy(buffer + j, convert(i, 10, minDigitCount), n-j);
+                j += strncpy(buffer + j, convert(i, 10, middleNumber), n-j);
                 break;
 
             case 'o':
                 i = va_arg(arg, unsigned int); //Fetch Octal representation
-                j += strncpy(buffer + j, convert(i, 8, minDigitCount), n-j);
+                j += strncpy(buffer + j, convert(i, 8, middleNumber), n-j);
                 break;
 
             case 's':
                 s = va_arg(arg, char *);       //Fetch string
-                j += strncpy(buffer + j, s,n-j);
+                int maxChars = middleNumber == 0? n-j : ((middleNumber < n-j)? middleNumber : n-j);
+                int copied = strncpy(buffer + j, s, maxChars);
+                j += copied;
+                middleNumber -= copied;
+                while(middleNumber > 0 && j < n)
+                {  
+                    buffer[j++] = ' ';
+                    middleNumber--;
+                }
                 break;
 
             case 'x':
                 i = va_arg(arg, unsigned long); //Fetch Hexadecimal representation
-                j += strncpy(buffer + j, convert(i, 16, minDigitCount), n-j);
+                j += strncpy(buffer + j, convert(i, 16, middleNumber), n-j);
                 break;
         }
     }
@@ -387,7 +395,7 @@ void printProcessesTable()
 
     while(index != procAmount){
         processInfoPointer process = processesInfo[index];
-        printf("| %s | %3d |  %3d |   %c   |   %1d   | 0x%7x | 0x%7x |\n", 
+        printf("| %11s | %3d |  %3d |   %c   |   %1d   |  0x%7x | 0x%7x |\n", 
             process->name, process->pid, process->ppid, process->status, process->priority, 
             process->stackPointer, process->processMemStart);
         sys_mem_free(processesInfo[index]);
@@ -395,7 +403,7 @@ void printProcessesTable()
     }
 
     printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
-    printf("| Total Process Count:  %2d | R: Ready - F: Finished - ?: Unknown    |\n", procAmount);
+    printf("| Total Process Count: %3d | R: Ready - F: Finished - ?: Unknown    |\n", procAmount);
     printf("| Blocked because: B: Asked - P: Empty Pipe - p: Full Pipe          |\n");
     printf("| C: Waiting Child - S: Waiting Semaphore                           |\n");
     printf("|-------------------------------------------------------------------|\n");
