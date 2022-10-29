@@ -1,5 +1,6 @@
 
 #include <memoryManager.h>
+#include <files.h>
 #define BLOCK_SIZE sizeof(Header)
 #define BLOCK_AMOUNT (baseSize/BLOCK_SIZE);
 typedef uint64_t Align;
@@ -124,3 +125,4 @@ void memfree(void * ap){
         }
     }
 }   
+

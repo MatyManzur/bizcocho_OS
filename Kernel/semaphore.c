@@ -36,6 +36,7 @@ int lockListPid = 0;
 
 uint32_t initializeSemaphore(char * name, uint64_t initialValue) 
 {
+    
     semPointer curr = (semPointer) find(hub.semBlockList, cmpByName, name);
 
     if(curr==NULL)

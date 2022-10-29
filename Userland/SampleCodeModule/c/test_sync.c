@@ -28,10 +28,6 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
   if ((n = satoi(argv[0])) <= 0) sys_exit(1);
   if ((inc = satoi(argv[1])) == 0) sys_exit(1);
   if ((use_sem = satoi(argv[2])) < 0) sys_exit(1);
-  inc = 1;
-  n = 5;
-  use_sem=1;
-  printf("qwerqwer\n");
   int semId;
 
   // honestamente no hacemos ningún chequeo en initialize_semaphore 
@@ -45,7 +41,6 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
     if (use_sem) sys_post_sem(semId);
   }
   if (use_sem) sys_close_sem(semId);
-  printf("7 %d 8\n", global);
 
   sys_exit(0);
 }
@@ -67,7 +62,6 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
   }
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
-    printf("12123\n");
     sys_wait_child(pids[i]);
     sys_wait_child(pids[i + TOTAL_PAIR_PROCESSES]);
   }

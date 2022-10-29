@@ -13,7 +13,7 @@ struct ddlCDT
 {
     TList first; //El primero de la lista
     TList current;//El current node por el que se esta iterando
-    int nextCalled;
+    TList toRemove;
 };
 
 ddlADT newList()
@@ -21,7 +21,7 @@ ddlADT newList()
     ddlADT ans = memalloc(sizeof(struct ddlCDT));
     ans->first=NULL;
     ans->current=NULL;
-    ans->nextCalled=0;
+    ans->toRemove=NULL;
     return ans;
 }
 
@@ -52,31 +52,30 @@ elemType next(ddlADT list)
         return NULL;
     }
     elemType aux = list->current->elem;
+    list->toRemove = list->current;
     list->current = list->current->next;
-    list->nextCalled = 1;
     return aux;
 }
 
 void remove(ddlADT list)
 {
-    if(hasNext(list) && list->nextCalled) //si llamaron a next es porque list->current->prev != NULL porque es el ultimo devuelto
+    if(list->toRemove != NULL)
     {
-        list->nextCalled = 0;
-        TList aborrar = list->current->prev;
-        if(aborrar->prev==NULL) // es el primero
+        if(list->toRemove->prev==NULL) // es el primero
         {
-            list->first = aborrar->next; 
+            list->first = list->toRemove->next; 
         }
         else
         {
-            aborrar->prev->next = aborrar->next;
+            list->toRemove->prev->next = list->toRemove->next;
         }
         
-        if(aborrar->next!=NULL)
+        if(list->toRemove->next!=NULL)
         {
-            aborrar->next->prev = aborrar->prev;
+            list->toRemove->next->prev = list->toRemove->prev;
         }
-        memfree(aborrar);
+        memfree(list->toRemove);
+        list->toRemove = NULL;
     }
 }
 
