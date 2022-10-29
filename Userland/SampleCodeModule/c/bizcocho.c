@@ -244,7 +244,7 @@ int8_t kill(uint8_t argc, void* argv[]){
         fprintf(STDERR,"Error! No se encontro el proceso con PID: %d",pid);
         return -1;
     }else{
-        printf("PID:%d has been SLAIN",pid);
+        printf("PID:%d has been SLAIN\n",pid);
     }
     return 0;
 }

@@ -5,7 +5,7 @@
 static char initialized;
 static blockHub hub;
 
-static void acquire(uint8_t * lock)
+static void acquire(int * lock)
 {
     while(_xchg(lock,1)!=0);
 }
@@ -30,9 +30,9 @@ void initSemaphoreHub()
 }
 
 uint32_t semCount = 0;
-uint8_t lock = 0;
-uint8_t lockList = 0;
-uint8_t lockListPid = 0;
+int lock = 0;
+int lockList = 0;
+int lockListPid = 0;
 
 uint32_t initializeSemaphore(char * name, uint64_t initialValue) 
 {
@@ -141,8 +141,12 @@ uint32_t getSemCount()
 
 void print_all_semaphores()
 {
+    write(STDOUT, "LLEGADSFA\n");
+    fprintf(STDOUT, "%d\n", lockList);
     acquire(&lockList);
+    write(STDOUT, "LasdasADSFA\n");
     toBegin(hub.semBlockList);
+    write(STDOUT, "LLEGAwerew\n");
     fprintf(STDOUT, "|         Name         | ID | Value | Blocked Processes\n");
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)

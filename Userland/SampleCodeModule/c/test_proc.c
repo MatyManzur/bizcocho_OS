@@ -37,7 +37,8 @@ int64_t test_processes(uint64_t argc, char *argv[]){
       }
     }
 
-    sys_initialize_semaphore(string +(i++), 1);
+    //sys_initialize_semaphore(string +(i++), 1);
+    //printf("asdfasdf\n");
     sys_print_all_semaphores();
     // Randomly kills, blocks or unblocks processes until every one has been killed
     while (alive > 0){

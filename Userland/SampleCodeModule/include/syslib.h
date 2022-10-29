@@ -143,7 +143,7 @@ int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
 void sys_get_last_registers(struct registers_t *registers);
 
-int sys_initialize_semaphore(char * name, int initialValue);
+uint32_t sys_initialize_semaphore(char * name, uint64_t initialValue);
 
 int sys_wait_sem(int id);
 
