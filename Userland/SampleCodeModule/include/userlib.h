@@ -18,6 +18,8 @@ void fprintf(int fd, char *format, ...);
 
 void printf(char *format, ...);
 
+size_t snprintf(char* buffer,size_t n, char *format, va_list *args);
+
 char *convert(unsigned int num, int base, unsigned int minDigitCount);
 
 uint8_t ulongToStr(unsigned long num, char *ans);
@@ -30,7 +32,7 @@ int xtou64(const char *str, uint64_t *ans);
 
 size_t strcpy(char *dest, const char *src);
 
-char *strncpy(char *dest, const char *src, size_t count);
+size_t strncpy(char *dest, const char *src, size_t count);
 
 int removeBackspaces(char str[]);
 #endif

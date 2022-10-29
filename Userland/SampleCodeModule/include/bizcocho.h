@@ -9,6 +9,7 @@
 #define MAX_TOKEN_LENGTH 15
 #define MAX_TOKEN_COUNT 2
 #define MAX_ARG_COUNT 8
+#define MAX_PIPE_NAME_SIZE 32
 
 typedef struct command_info{
     char* name;

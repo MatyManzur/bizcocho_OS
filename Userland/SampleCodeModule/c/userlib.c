@@ -87,9 +87,8 @@ size_t strcpy(char *dest, const char *src)
 
 // variante de código sacado de:
 // https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c 
-static void _fprintf(int fd, char *format, va_list *args)
+size_t snprintf(char* buffer,size_t n, char *format, va_list *args)
 {
-    char buffer[PRINTF_BUFFER_MAX_LENGTH] = {0};
     char *traverse;
     int64_t i;
     char *s;
@@ -100,7 +99,7 @@ static void _fprintf(int fd, char *format, va_list *args)
     va_list arg;
     va_copy(arg, *args);
 
-    for (j = 0, traverse = format; *traverse != '\0' && j < PRINTF_BUFFER_MAX_LENGTH; traverse++)
+    for (j = 0, traverse = format; *traverse != '\0' && j < n; traverse++)
     {
         while (*traverse != '%' && *traverse != 0) //frenamos en un % o en un \0
         {
@@ -138,46 +137,47 @@ static void _fprintf(int fd, char *format, va_list *args)
                     i = -i;
                     buffer[j++] = '-';
                 }
-                j += strcpy(buffer + j, convert(i, 10, minDigitCount));
+                j += strncpy(buffer + j, convert(i, 10, minDigitCount), n-j);
                 break;
 
             case 'o':
                 i = va_arg(arg, unsigned int); //Fetch Octal representation
-                j += strcpy(buffer + j, convert(i, 8, minDigitCount));
+                j += strncpy(buffer + j, convert(i, 8, minDigitCount), n-j);
                 break;
 
             case 's':
                 s = va_arg(arg, char *);       //Fetch string
-                j += strcpy(buffer + j, s);
+                j += strncpy(buffer + j, s,n-j);
                 break;
 
             case 'x':
                 i = va_arg(arg, unsigned long); //Fetch Hexadecimal representation
-                j += strcpy(buffer + j, convert(i, 16, minDigitCount));
+                j += strncpy(buffer + j, convert(i, 16, minDigitCount), n-j);
                 break;
         }
     }
-
     buffer[j] = 0;
-
-    sys_write(fd, buffer);
-
     //Closing argument list to necessary clean-up
     va_end(arg);
+    return j;
 }
 
-void printf(char *format, ...)
+void printf(char *format, ...)//Codigo repetido???? TODO
 {
     va_list args;
     va_start(args, format);
-    _fprintf(STDOUT, format, &args);
+    char buffer[PRINTF_BUFFER_MAX_LENGTH]={0};
+    snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    sys_write(STDOUT,buffer);
 }
 
 void fprintf(int fd, char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    _fprintf(fd, format, &args);
+    char buffer[PRINTF_BUFFER_MAX_LENGTH]={0};
+    snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    sys_write(fd,buffer);
 }
 
 //Función auxiliar para convertir un numero a string en la base indicada (maximo base 16), minDigitCount es la cantidad minima de digitos del string, si el numero tiene menos digitos entonces completa con 0's
@@ -318,17 +318,16 @@ int xtou64(const char *str, uint64_t *ans) //devuelve el numero por parametro po
     return 0;
 }
 
-//https://codebrowser.dev/linux/linux/lib/string.c.html
-char *strncpy(char *dest, const char *src, size_t count)
+size_t strncpy(char *dest, const char *src, size_t count)
 {
+    size_t n=0;
 	char *tmp = dest;
-	while (count) {
-		if ((*tmp = *src) != 0)
-			src++;
+	while ( (*tmp = *src !=0 ) && n < count){
 		tmp++;
-		count--;
+		src++;
+        n++;
 	}
-	return dest;
+	return n;
 }
 
 int removeBackspaces(char str[]){

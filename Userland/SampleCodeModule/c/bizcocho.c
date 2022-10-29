@@ -20,7 +20,7 @@ int8_t ps(uint8_t argc, void* argv[]);
 char* promptMessage="Bizcocho $>";
 
 static uint32_t bizcochoPid = 0;
-
+static size_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="mem", .builtin=1, .programFunction=bizcochito_dummy },
@@ -108,7 +108,7 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
     uint32_t pid;
     if(background)
     {
-        pid = sys_start_parent_process(name, argc, argv, programFunction, 2 ,sys_get_pid()); //Hacemos que copie los FDs de Bizcocho
+        pid = sys_start_parent_process(name, argc, argv, programFunction, 2 ,bizcochoPid); //Hacemos que copie los FDs de Bizcocho
     }
     else
     {
@@ -133,7 +133,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
         sys_clean_buffer();
         sys_set_backspace_base();
         readUntilEnter(buffer);
-        //Parse por pipe y despues parse por espacio
+        //Parsea por pipe y despues parse por espacio
         char pipeTokenStrings[2][MAX_PIPE_TOKEN_LENGTH]={{0}};
 
         uint8_t pipeTokenCount = parser(buffer, (char**)pipeTokenStrings, '|', 2, MAX_PIPE_TOKEN_LENGTH);
@@ -167,13 +167,14 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     fprintf(STDERR, "Cannot use a built-in command with a pipe!\n");
                     continue;
                 }
-
+                char namepipe[MAX_PIPE_NAME_SIZE];
+                snprintf(namepipe,MAX_PIPE_NAME_SIZE,"Pipe %d",pipesCreated);
                 if(sys_mkpipe("pipe")!=0)
                 {
                     fprintf(STDERR, "Error in creating pipe!\n");
                     continue;
                 }
-
+                pipesCreated++;
                 uint8_t writeFd;
                 if(sys_open("pipe", 'W', &writeFd) != 0)
                 {
