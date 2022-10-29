@@ -2,7 +2,6 @@
 #define MEMORYMANAGER_H_
 
 #include <lib.h>
-
 #define OUT_OF_MEM_ERROR(ret) {\
     write(STDERR, "Out of memory!\n");\
     return (ret);};
@@ -13,4 +12,5 @@ void* memalloc(uint32_t nbytes);
 
 void memfree(void * ap);
 
+void printMemState();
 #endif

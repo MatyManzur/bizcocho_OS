@@ -141,6 +141,8 @@ void sys_mem_free(void *ptr );
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
+void sys_print_mem_state();
+
 void sys_get_last_registers(struct registers_t *registers);
 
 uint32_t sys_initialize_semaphore(char * name, uint64_t initialValue);

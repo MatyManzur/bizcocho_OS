@@ -1,10 +1,13 @@
 
 #include <memoryManager.h>
+#include <stringslib.h>
 #include <files.h>
-#define BLOCK_SIZE sizeof(Header)
-#define BLOCK_AMOUNT (baseSize/BLOCK_SIZE);
-typedef uint64_t Align;
 
+#define BLOCK_SIZE sizeof(Header)
+#define BLOCK_AMOUNT (baseSize/BLOCK_SIZE)
+typedef uint64_t Align;
+//Cantidad de Bloques libres, ocupados, total(BLOCK_AMOUNT)
+//Cantidad de espacio libre, ocupado(total-libre), total(Basesize)
 union header{
     struct
     {
@@ -124,5 +127,26 @@ void memfree(void * ap){
             currp->s.next = insertp; //Hago que el de atras me apunte
         }
     }
-}   
+}
 
+void printMemState(){
+    uint32_t amountOfFreeBlocks=0;
+
+    Header * mem=freep;
+    if(mem != NULL){
+        do{
+            amountOfFreeBlocks+=mem->s.size;
+            mem=mem->s.next;
+        }while(mem->s.next!=NULL);
+    }
+    uint32_t amountOfOccupiedBlocks = BLOCK_AMOUNT-amountOfFreeBlocks;
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "| Free Blocks | Used Blocks | Total Blocks |\n");
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT,"| %d | %d | %d |\n",amountOfFreeBlocks,amountOfOccupiedBlocks,BLOCK_AMOUNT);
+    fprintf(STDOUT, "| Block Size= %d Bytes |\n",BLOCK_SIZE);
+    fprintf(STDOUT, "|------------|------------|-------------|\n");
+    fprintf(STDOUT, "| Free Bytes | Used Bytes | Total Bytes |\n");
+    fprintf(STDOUT, "|------------|------------|-------------|\n");
+    fprintf(STDOUT,"| %d | %d | %d |\n",amountOfFreeBlocks*BLOCK_SIZE,amountOfOccupiedBlocks*BLOCK_SIZE,BLOCK_AMOUNT*BLOCK_SIZE);
+}

@@ -1,7 +1,7 @@
 #include <bizcocho.h>
 #include "tests.h"
 #include "testing_utils.h"
-#define COMMAND_COUNT 18 
+#define COMMAND_COUNT 18
 
 #define NO_CHANGE_FD -2
 
@@ -23,7 +23,7 @@ static uint32_t bizcochoPid = 0;
 static size_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
-    {.name="mem", .builtin=1, .programFunction=bizcochito_dummy },
+    {.name="mem", .builtin=1, .programFunction=sys_print_mem_state },
     {.name="ps", .builtin=1, .programFunction=ps },
     {.name="loop", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="kill", .builtin=1, .programFunction=kill },
@@ -39,6 +39,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="testmm", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_mm },
     {.name="testprio", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_prio },
     {.name="testproc", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**)) test_processes },
+    {.name="clear", .builtin=1, .programFunction=sys_clear_screen},
 };
 
 void readUntilEnter(char buffer[])
