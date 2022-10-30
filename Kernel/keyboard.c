@@ -24,6 +24,7 @@ static uint32_t readingIndex;    //indice del buffer que apunta al proximo a lee
 static uint32_t writingIndex;    //indice del buffer que apunta al proximo a escribir
 
 static uint8_t shifted;    //flag que se prende si el Shift está apretado
+static uint8_t ctrld;    //flag que se prende si el Ctrl está apretado
 
 //se llama cada vez que interrumpe el teclado, escribe en el buffer
 void keyboard_handler()
@@ -77,7 +78,7 @@ void keyboard_handler()
 /*
 Intenta leer del buffer "count" caracteres PRINTEABLES (omite teclas no printeables) 
 y los guarda en el buffer pasado por parametro. 
-Corta si encuentra un \n
+Corta si encuentra un \n o un Ctrl+D
 ya transforma las mayúsculas y las pone como un caracter en el buffer pasado por parametro.
 Devuelve los caracteres que alcanzó a leer.
 */
@@ -100,9 +101,18 @@ uint8_t readPrintables(char *bufferString, uint8_t count)
             {
                 shifted = !shifted;
             }
+            else if (kbEvent.key == VK_LCONTROL || kbEvent.key == VK_RCONTROL)
+            {
+                ctrld = !ctrld;
+            }
                 //si no fue algo de shift y no fue una tecla especial
             else if (kbEvent.key > 0 && kbEvent.action == PRESSED)
             {
+                if(ctrld && kbEvent.key == VK_D) //Si apretan Ctrl+D manda un \0
+                {
+                    bufferString[i++] = '\0';
+                    return i;
+                }
                 //obtenemos el caracter correspondiente
                 char printableChar = printableKeys[shifted][kbEvent.key];
                 //si esa tecla tenía un caracter printeable, lo ponemos en el string e i++
@@ -132,9 +142,17 @@ void cleanBuffer()
                 shifted = 1;
             else
                 shifted = 0;
-        } else if (kbEvent.key == VK_CAPITAL && kbEvent.action == PRESSED)
+        } 
+        else if (kbEvent.key == VK_CAPITAL && kbEvent.action == PRESSED)
         {
             shifted = !shifted;
+        }
+        else if (kbEvent.key == VK_LCONTROL || kbEvent.key == VK_RCONTROL)
+        {
+            if (kbEvent.action == PRESSED)
+                ctrld = 1;
+            else
+                ctrld = 0;
         }
     }
 }

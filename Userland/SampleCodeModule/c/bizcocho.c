@@ -14,7 +14,6 @@
 
 #define GET_TOKEN_POINTER(tokens,index,length) ( ( (char *) (tokens) ) + (index) * (length) )
 int8_t bizcochito_dummy(uint8_t argc, void** argv);
-int8_t hitman(uint8_t argc, void** argv);
 int8_t cat(uint8_t argc, void** argv);
 int8_t wc(uint8_t argc, void** argv);
 int8_t filter(uint8_t argc, void** argv);
@@ -212,15 +211,6 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     sys_kill_process(leftPid);
                     continue;
                 }
-                uint8_t hitmanArgc=0;
-                uint32_t* hitmanArgv[2];
-                if(!leftBackground)
-                    hitmanArgv[hitmanArgc++] = leftPid;
-                if(!rightBackground)
-                    hitmanArgv[hitmanArgc++] = rightPid;
-                uint32_t hitmanPid = 0;
-                if(hitmanArgc > 0)
-                    hitmanPid = sys_start_child_process("hitman", hitmanArgc, hitmanArgv, hitman);
                 if(!leftBackground)
                 {
                     int8_t statusCode = sys_wait_child(leftPid);
@@ -230,11 +220,6 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 {
                     int8_t statusCode = sys_wait_child(rightPid);
                     printf("Program %s exited with status code %d !\n", commands[foundCommand[1]].name, statusCode);
-                }
-                if(hitmanPid != 0)
-                {
-                    sys_kill_process(hitmanPid);
-                    sys_wait_child(hitmanPid);
                 }
             }
             else
@@ -248,45 +233,15 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
                     uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background, argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD, background);
-                    uint32_t hitmanPid = 0;
-                    if(!background)
-                    {
-                        uint32_t* hitmanArgv[1] = {pid};
-                        hitmanPid = sys_start_child_process("hitman", 1, hitmanArgv, hitman);
-                    }
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);
                         printf("Program %s exited with status code %d !\n", commands[foundCommand[0]].name, statusCode);
                     }
-                    if(hitmanPid != 0)
-                    {
-                        sys_kill_process(hitmanPid);
-                        sys_wait_child(hitmanPid);
-                    }
                 }
             }
         }
     }
-}
-
-int8_t hitman(uint8_t argc, void** argv)
-{
-    if(argc>0)
-    {
-        uint32_t** targetPids = (uint32_t**)argv;
-        char c = 0;
-        while(c!='q')
-        {
-            sys_read(STDIN, &c, 1);
-        }
-        for(int i=0; i<argc; i++)
-        {
-            sys_kill_process(targetPids[i]);
-        }
-    }
-    sys_exit(0);
-    return 0;
 }
 
 int8_t bizcochito_dummy(uint8_t argc, void** argv)
