@@ -10,10 +10,14 @@
 
 #define IS_PIPE(c) ((c)==2)
 
+#define IS_VOWEL(c) ((c)=='A' || (c)=='E' || (c)=='I' || (c)=='O' || (c)=='U' || (c)=='a' || (c)=='e' || (c)=='i' || (c)=='o' || (c)=='u')
+
 #define GET_TOKEN_POINTER(tokens,index,length) ( ( (char *) (tokens) ) + (index) * (length) )
 int8_t bizcochito_dummy(uint8_t argc, void** argv);
-int8_t sender(uint8_t argc, void** argv);
-int8_t receiver(uint8_t argc, void** argv);
+int8_t hitman(uint8_t argc, void** argv);
+int8_t cat(uint8_t argc, void** argv);
+int8_t wc(uint8_t argc, void** argv);
+int8_t filter(uint8_t argc, void** argv);
 
 int8_t kill(uint8_t argc, void* argv[]);
 int8_t block(uint8_t argc, void* argv[]);
@@ -32,9 +36,9 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="kill", .builtin=1, .programFunction=kill },
     {.name="nice", .builtin=1, .programFunction=nice },
     {.name="block", .builtin=1, .programFunction=block },
-    {.name="cat", .builtin=0, .programFunction=sender },
-    {.name="wc", .builtin=0, .programFunction=receiver },
-    {.name="filter", .builtin=0, .programFunction=bizcochito_dummy },
+    {.name="cat", .builtin=0, .programFunction=cat },
+    {.name="wc", .builtin=0, .programFunction=wc },
+    {.name="filter", .builtin=0, .programFunction=filter },
     {.name="pipe", .builtin=1, .programFunction=bizcochito_dummy },
     {.name="phylo", .builtin=0, .programFunction=bizcochito_dummy },
     {.name="monke", .builtin=1, .programFunction=bizcochito_dummy },
@@ -199,7 +203,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 if(leftPid == 0)
                     continue;
                 
-                uint8_t rightBackground = (argc[1] > 0) && (strcmp(argv[0][argc[1] - 1], "&") == 0);
+                uint8_t rightBackground = (argc[1] > 0) && (strcmp(argv[1][argc[1] - 1], "&") == 0);
                 uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1] - rightBackground, argv[1], readFd, NO_CHANGE_FD, rightBackground);
                 sys_close(readFd);
                 if(rightPid == 0)
@@ -207,6 +211,15 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     sys_kill_process(leftPid);
                     continue;
                 }
+                uint8_t hitmanArgc=0;
+                uint32_t* hitmanArgv[2];
+                if(!leftBackground)
+                    hitmanArgv[hitmanArgc++] = leftPid;
+                if(!rightBackground)
+                    hitmanArgv[hitmanArgc++] = rightPid;
+                uint32_t hitmanPid = 0;
+                if(hitmanArgc > 0)
+                    hitmanPid = sys_start_child_process("hitman", hitmanArgc, hitmanArgv, hitman);
                 if(!leftBackground)
                 {
                     int8_t statusCode = sys_wait_child(leftPid);
@@ -217,7 +230,11 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     int8_t statusCode = sys_wait_child(rightPid);
                     printf("Program %s exited with status code %d !\n", commands[foundCommand[1]].name, statusCode);
                 }
-
+                if(hitmanPid != 0)
+                {
+                    sys_kill_process(hitmanPid);
+                    sys_wait_child(hitmanPid);
+                }
             }
             else
             {
@@ -230,10 +247,21 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
                     uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background, argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD, background);
+                    uint32_t hitmanPid = 0;
+                    if(!background)
+                    {
+                        uint32_t* hitmanArgv[1] = {pid};
+                        hitmanPid = sys_start_child_process("hitman", 1, hitmanArgv, hitman);
+                    }
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);
                         printf("Program %s exited with status code %d !\n", commands[foundCommand[0]].name, statusCode);
+                    }
+                    if(hitmanPid != 0)
+                    {
+                        sys_kill_process(hitmanPid);
+                        sys_wait_child(hitmanPid);
                     }
                 }
             }
@@ -241,27 +269,68 @@ int8_t bizcocho(uint8_t argc, void** argv)
     }
 }
 
-int8_t bizcochito_dummy(uint8_t argc, void** argv)
+int8_t hitman(uint8_t argc, void** argv)
 {
-    printf("HOLA\n");
-    //sys_exit(6);
-    return 0;
-}
-
-int8_t sender(uint8_t argc, void** argv)
-{
-    printf("HOLA\n");
+    if(argc>0)
+    {
+        uint32_t** targetPids = (uint32_t**)argv;
+        char c = 0;
+        while(c!='q')
+        {
+            sys_read(STDIN, &c, 1);
+        }
+        for(int i=0; i<argc; i++)
+        {
+            sys_kill_process(targetPids[i]);
+        }
+    }
     sys_exit(0);
     return 0;
 }
 
-int8_t receiver(uint8_t argc, void** argv)
+int8_t bizcochito_dummy(uint8_t argc, void** argv)
+{
+    printf("HOLA\n");
+    return 0;
+}
+
+int8_t cat(uint8_t argc, void** argv)
 {
     char c = 1;
     while(c!=0)
     {
         sys_read(STDIN, &c, 1);
-        printf("Recibido: %c\n", c);
+        printf("%c", c);
+    }
+    sys_exit(0);
+    return 0;
+}
+
+int8_t wc(uint8_t argc, void** argv)
+{
+    char c = 1;
+    uint16_t lines = 0;
+    while(c!=0)
+    {
+        sys_read(STDIN, &c, 1);
+        if(c=='\n')
+            lines++;
+    }
+    printf("Total lines count: %d\n", lines);
+    sys_exit(0);
+    return 0;
+}
+
+int8_t filter(uint8_t argc, void** argv)
+{
+    char c = 1;
+    while(c!=0)
+    {
+        sys_read(STDIN, &c, 1);
+        if(!IS_VOWEL(c))
+        {
+            printf("%c", c);
+        }
     }
     sys_exit(0);
     return 0;
