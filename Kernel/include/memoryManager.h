@@ -18,5 +18,5 @@ void* memalloc(uint32_t nbytes);
 
 void memfree(void * ap);
 
-memInfoPointer getMemInfo();
+memInfoPointer getMemState();
 #endif

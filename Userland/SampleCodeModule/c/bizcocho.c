@@ -26,7 +26,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="wc", .builtin=0, .programFunction=wc },
     {.name="filter", .builtin=0, .programFunction=filter },
     {.name="pipe", .builtin=1, .programFunction=help },
-    {.name="sem", .builtin=1, .programFunction=help },
+    {.name="sem", .builtin=1, .programFunction=printSemaphoreTable },
     {.name="phylo", .builtin=0, .programFunction=help },
     {.name="monke", .builtin=1, .programFunction=monke },
     {.name="color", .builtin=1, .programFunction=color },

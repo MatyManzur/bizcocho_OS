@@ -403,7 +403,7 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
             }
         }
         informationPointer[*pipeAmount]->blockedByWriting=memalloc(blockedAmount*sizeof(uint32_t));
-        uint32_t blockedIndex=0;
+        blockedIndex=0;
         toBegin(blockedWriteList);
         while(hasNext(blockedWriteList)){
             currentProcess=(PCB_t*) next(blockedWriteList);

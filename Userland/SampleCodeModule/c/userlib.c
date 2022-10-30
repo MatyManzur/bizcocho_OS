@@ -375,7 +375,7 @@ void printSemaphoreTable()
         printf("|   %s     | %d |   %d  |", semInfo[i]->name, semInfo[i]->id, semInfo[i]->value);
         int j=0;
         while(semInfo[i]->blocked[j])
-            printf("  %d  ", semInfo[i]->blocked[j]);
+            printf("  %d  ", semInfo[i]->blocked[j++]);
         sys_mem_free(semInfo[i]->blocked);
         sys_mem_free(semInfo[i]);
         printf("\n|---------------|----|-------|---------------------------|\n");
@@ -386,7 +386,7 @@ void printSemaphoreTable()
 void printProcessesTable()
 {
     uint32_t procAmount;
-    processInfoPointer * processesInfo = sys_print_all_processes(&procAmount);
+    processInfoPointer * processesInfo = sys_get_process_info(&procAmount);
     printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
     printf("| processName | pid | ppid | state | prior |  stackPtr  |  basePtr  |\n");
     printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
@@ -416,13 +416,14 @@ void printMemState(){
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     fprintf(STDOUT, "| Free Blocks | Used Blocks | Total Blocks |\n");
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
-    fprintf(STDOUT, "|    %d    |    %d    |    %d    |\n",meminfo->freeBlocks,occupiedBlocks,totalBlocks);
-    fprintf(STDOUT, "|------------------------------------------|\n");
-    fprintf(STDOUT, "| Block Size= %d Bytes                     |\n",meminfo->blockSize);
-    fprintf(STDOUT, "|------------|------------|-------------|\n");
-    fprintf(STDOUT, "| Free Bytes | Used Bytes | Total Bytes |\n");
-    fprintf(STDOUT, "|------------|------------|-------------|\n");
-    fprintf(STDOUT,"|   %d   |   %d   |   %d   |\n",meminfo->freeBlocks*meminfo->blockSize,occupiedBlocks*meminfo->blockSize,totalBlocks*meminfo->blockSize);
+    fprintf(STDOUT, "|   %6d    |   %6d    |    %6d    |\n",meminfo->freeBlocks,occupiedBlocks,totalBlocks);
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "| Block Size= %2d Bytes                     |\n",meminfo->blockSize);
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "|  Free Bytes |  Used Bytes |  Total Bytes |\n");
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "|   %7d   |   %7d   |    %7d   |\n",meminfo->freeBlocks*meminfo->blockSize,occupiedBlocks*meminfo->blockSize,totalBlocks*meminfo->blockSize);
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     sys_mem_free(meminfo);
 }
 
