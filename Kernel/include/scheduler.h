@@ -61,6 +61,7 @@ typedef struct PCB_t
     ddlADT fdReplacements;
     uint8_t priority;
     BlockedReason_t blockedReason;
+    uint8_t inDeathList;
 } PCB_t;
 
 typedef struct lostFd_t{
@@ -85,9 +86,9 @@ typedef struct processInfo
 } processInfo;
 
 //SYSCALLS
-uint32_t startParentProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
+uint32_t startParentProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
 
-uint32_t startChildProcess(char *name, uint8_t argc, char **argv, int8_t (*processCodeStart)(uint8_t, void **));
+uint32_t startChildProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t diesOnEsc);
 
 uint32_t getPid();
 
@@ -125,5 +126,7 @@ int16_t fdToFileId(uint8_t fd, uint8_t* mode);
 int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd);
 
 int8_t closeFile(uint8_t fd);
+
+void killAllInDeathList();
 
 #endif

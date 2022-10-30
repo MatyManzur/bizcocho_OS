@@ -106,7 +106,7 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
     }
     else
     {
-        pid = sys_start_child_process(name,argc,argv,programFunction);
+        pid = sys_start_child_process(name,argc,argv,programFunction, 1);
         sys_change_priority(pid, 2);
     }
     

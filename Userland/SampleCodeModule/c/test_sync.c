@@ -56,8 +56,8 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
   uint64_t i;
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
-    pids[i] = sys_start_child_process("my_process_inc", 3,(void **) argvDec, (int8_t (*)(uint8_t,  void **))my_process_inc);
-    pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, (void **) argvInc, (int8_t (*)(uint8_t,  void **)) my_process_inc);
+    pids[i] = sys_start_child_process("my_process_inc", 3,(void **) argvDec, (int8_t (*)(uint8_t,  void **))my_process_inc, 0);
+    pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, (void **) argvInc, (int8_t (*)(uint8_t,  void **)) my_process_inc, 0);
   }
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){

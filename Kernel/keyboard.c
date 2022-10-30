@@ -67,6 +67,10 @@ void keyboard_handler()
     {
         saveRegisters(); 
     }
+    if (scanCode == VK_ESCAPE && kbEvent.action == RELEASED)
+    {
+        killAllInDeathList();
+    }
     buffer[(writingIndex++) % BUFFER_DIM] = kbEvent;    //guardamos el struct en el buffer en la posicion indicada por writingIndex%BUFFER_DIM y lo incrementamos
     
     BlockedReason_t block;
