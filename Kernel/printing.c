@@ -81,7 +81,7 @@ uint8_t printChar(char character, color_t backgroundColor, color_t characterColo
 
     if(character == '\n')
     {
-        newLine(fmt.backgroundColor);
+        newLine();
         return 0;
     }
     if(character == '\b')
@@ -153,11 +153,11 @@ format_t changeColor(color_t backgroundColor, color_t characterColor)
 }
 
 //borra los caracteres que queden en la línea y setea el fondo al color indicado
-uint8_t newLine(color_t backgroundColor)
+uint8_t newLine()
 {
     while (cursor.column < WIDTH)
     {
-        int error = printChar(' ', backgroundColor, DEFAULT);    //hacemos esto hasta que lleguemos al fin de la línea
+        int error = printChar(' ', DEFAULT, DEFAULT);    //hacemos esto hasta que lleguemos al fin de la línea
         if (error)
             return 1; //si se paso de la pantalla
     }

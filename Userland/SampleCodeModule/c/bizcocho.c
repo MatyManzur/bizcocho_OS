@@ -1,7 +1,7 @@
 #include <bizcocho.h>
 #include "tests.h"
 
-#define COMMAND_COUNT 18
+#define COMMAND_COUNT 20
 
 #define NO_CHANGE_FD -2
 
@@ -15,7 +15,7 @@ char* promptMessage="Bizcocho $>";
 static uint32_t bizcochoPid = 0;
 static size_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT]={
-    {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
+    {.name="help", .builtin=1, .programFunction=help },
     {.name="mem", .builtin=1, .programFunction=mem },
     {.name="ps", .builtin=1, .programFunction=ps },
     {.name="loop", .builtin=0, .programFunction=loop },
@@ -25,9 +25,11 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="cat", .builtin=0, .programFunction=cat },
     {.name="wc", .builtin=0, .programFunction=wc },
     {.name="filter", .builtin=0, .programFunction=filter },
-    {.name="pipe", .builtin=1, .programFunction=bizcochito_dummy },
-    {.name="phylo", .builtin=0, .programFunction=bizcochito_dummy },
-    {.name="monke", .builtin=1, .programFunction=bizcochito_dummy },
+    {.name="pipe", .builtin=1, .programFunction=help },
+    {.name="sem", .builtin=1, .programFunction=help },
+    {.name="phylo", .builtin=0, .programFunction=help },
+    {.name="monke", .builtin=1, .programFunction=monke },
+    {.name="color", .builtin=1, .programFunction=color },
     {.name="testsync", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_sync },
     {.name="testmm", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_mm },
     {.name="testprio", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_prio },
@@ -115,7 +117,6 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
 }
 
 
-//builtin commands help, mem, ps, kill, nice, block, sem, pipe (TODO: borrar)
 int8_t bizcocho(uint8_t argc, void** argv)
 {   
     sys_clear_screen();

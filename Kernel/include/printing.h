@@ -43,7 +43,7 @@ uint8_t printChar(char character, color_t backgroundColor, color_t characterColo
 
 char *print(const char *string, const struct format_t *format);
 
-uint8_t newLine(color_t backgroundColor);
+uint8_t newLine();
 
 void scrollUp(uint8_t rows);
 

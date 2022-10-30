@@ -260,6 +260,7 @@ void exit(int8_t statusCode)
 {
     schedule.nowRunning->process->statusCode = statusCode;
     _killProcess(schedule.nowRunning);
+    _int20();
 }
 
 static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo, uint32_t ppid)
