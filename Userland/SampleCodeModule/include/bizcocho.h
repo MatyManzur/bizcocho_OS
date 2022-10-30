@@ -1,8 +1,7 @@
 #ifndef BIZCOCHO_H_
 #define BIZCOCHO_H_
 
-#include <syslib.h>
-#include <userlib.h>
+#include <commands.h>
 
 #define BUFFER_DIM 128
 #define MAX_PIPE_TOKEN_LENGTH 30
@@ -19,5 +18,6 @@ typedef struct command_info{
 
 }commandInfo;
 int8_t bizcocho(uint8_t argc, void** argv);
-
+int8_t kill(uint8_t argc, void* argv[]);
+int8_t block(uint8_t argc, void* argv[]);
 #endif 

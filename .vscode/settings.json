@@ -30,6 +30,11 @@
         "semaphore.h": "c",
         "userlib.h": "c",
         "time.h": "c",
-        "keyboard.h": "c"
+        "keyboard.h": "c",
+        "commands.h": "c",
+        "tests.h": "c",
+        "testing_utils.h": "c",
+        "stddef.h": "c",
+        "stdarg.h": "c"
     }
 }

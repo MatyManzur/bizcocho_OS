@@ -21,13 +21,13 @@ int64_t test_processes(uint64_t argc, char *argv[]){
   printf("max processes: %d argv[0]: %s\n", max_processes, argv[0]);
   p_rq p_rqs[max_processes];
 
-  char * string = "aasdfasdfasdfasdfasdfasdfasdf";
-  int i =0;
+  // char * string = "aasdfasdfasdfasdfasdfasdfasdf";
+  // int i =0;
   while (1){
 
     // Create max_processes processes
     for(rq = 0; rq < max_processes; rq++){
-      p_rqs[rq].pid = sys_start_child_process("endless_loop", 0, argvAux, (int8_t (*)(uint8_t,  void **)) endless_loop_print);
+      p_rqs[rq].pid = sys_start_child_process("endless_loop", 0, (void**) argvAux, (int8_t (*)(uint8_t,  void **)) endless_loop_print);
       if (p_rqs[rq].pid == -1){
         printf("test_processes: ERROR creating process\n");
         sys_exit(-1);

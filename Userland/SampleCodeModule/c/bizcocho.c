@@ -1,29 +1,15 @@
 #include <bizcocho.h>
 #include "tests.h"
-#include "testing_utils.h"
+
 #define COMMAND_COUNT 18
-#define CHECK_ARGC(argc,amount){\
-    if(argc != amount){\
-        fprintf(STDERR, "Error! Invalid argument count, Received %d when %d was necessary\n",argc,amount);\
-        return -1;}};
+
 #define NO_CHANGE_FD -2
 
 #define IS_PIPE(c) ((c)==2)
 
-#define IS_VOWEL(c) ((c)=='A' || (c)=='E' || (c)=='I' || (c)=='O' || (c)=='U' || (c)=='a' || (c)=='e' || (c)=='i' || (c)=='o' || (c)=='u')
 
 #define GET_TOKEN_POINTER(tokens,index,length) ( ( (char *) (tokens) ) + (index) * (length) )
-int8_t bizcochito_dummy(uint8_t argc, void** argv);
-int8_t cat(uint8_t argc, void** argv);
-int8_t wc(uint8_t argc, void** argv);
-int8_t filter(uint8_t argc, void** argv);
 
-int8_t kill(uint8_t argc, void* argv[]);
-int8_t block(uint8_t argc, void* argv[]);
-int8_t nice(uint8_t argc, void* argv[]);
-int8_t ps(uint8_t argc, void* argv[]);
-int8_t mem(uint8_t argc, void* argv[]);
-int8_t loop(uint8_t argc, void* argv[]);
 char* promptMessage="Bizcocho $>";
 
 static uint32_t bizcochoPid = 0;
@@ -46,7 +32,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="testmm", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_mm },
     {.name="testprio", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_prio },
     {.name="testproc", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**)) test_processes },
-    {.name="clear", .builtin=1, .programFunction=sys_clear_screen},
+    {.name="clear", .builtin=1, .programFunction=(int8_t (*)(uint8_t, void**)) sys_clear_screen},
 };
 
 void readUntilEnter(char buffer[])
@@ -198,13 +184,13 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 }
 
                 uint8_t leftBackground = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - leftBackground, argv[0], NO_CHANGE_FD, writeFd, leftBackground);
+                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - leftBackground,(void**)argv[0], NO_CHANGE_FD, writeFd, leftBackground);
                 sys_close(writeFd);
                 if(leftPid == 0)
                     continue;
                 
                 uint8_t rightBackground = (argc[1] > 0) && (strcmp(argv[1][argc[1] - 1], "&") == 0);
-                uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1] - rightBackground, argv[1], readFd, NO_CHANGE_FD, rightBackground);
+                uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1] - rightBackground,(void**) argv[1], readFd, NO_CHANGE_FD, rightBackground);
                 sys_close(readFd);
                 if(rightPid == 0)
                 {
@@ -232,7 +218,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
                 {
                     //Chequeamos si se pidio que se ejecute en background con un & al final
                     uint8_t background = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background, argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD, background);
+                    uint32_t pid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - background,(void**)argv[0], background? EMPTY : NO_CHANGE_FD, NO_CHANGE_FD, background);
                     if(!background)
                     {
                         int8_t statusCode = sys_wait_child(pid);
@@ -243,55 +229,6 @@ int8_t bizcocho(uint8_t argc, void** argv)
         }
     }
 }
-
-int8_t bizcochito_dummy(uint8_t argc, void** argv)
-{
-    printf("HOLA\n");
-    return 0;
-}
-
-int8_t cat(uint8_t argc, void** argv)
-{
-    char c = 1;
-    while(c!=0)
-    {
-        sys_read(STDIN, &c, 1);
-        printf("%c", c);
-    }
-    sys_exit(0);
-    return 0;
-}
-
-int8_t wc(uint8_t argc, void** argv)
-{
-    char c = 1;
-    uint16_t lines = 0;
-    while(c!=0)
-    {
-        sys_read(STDIN, &c, 1);
-        if(c=='\n')
-            lines++;
-    }
-    printf("Total lines count: %d\n", lines);
-    sys_exit(0);
-    return 0;
-}
-
-int8_t filter(uint8_t argc, void** argv)
-{
-    char c = 1;
-    while(c!=0)
-    {
-        sys_read(STDIN, &c, 1);
-        if(!IS_VOWEL(c))
-        {
-            printf("%c", c);
-        }
-    }
-    sys_exit(0);
-    return 0;
-}
-
 int8_t kill(uint8_t argc, void* argv[])
 {
     CHECK_ARGC(argc,1)
@@ -312,13 +249,6 @@ int8_t kill(uint8_t argc, void* argv[])
     }
     return 0;
 }
-
-int8_t ps(uint8_t argc, void* argv[])
-{
-    printProcessesTable();
-    return 0;
-}
-
 int8_t block(uint8_t argc, void* argv[]){
     CHECK_ARGC(argc,1)
     uint32_t pid= satoi((char*)argv[0]);
@@ -333,38 +263,4 @@ int8_t block(uint8_t argc, void* argv[]){
         return -1;
     }
     return 0;
-}
-
-int8_t nice(uint8_t argc, void* argv[])
-{
-    CHECK_ARGC(argc,2)
-    uint32_t pid = satoi((char *) argv[0]);
-    uint8_t priority = satoi((char *) argv[1]);
-    if(!sys_change_priority(pid,priority))
-    {
-        fprintf(STDERR,"Error! Couldn't find process with PID: %d or given priority value is invalid: should be [0-4]\n",pid);
-        return -1;
-    }
-    return 0;
-}
-int8_t mem(uint8_t argc, void* argv[]){
-    printMemState();
-    return 0;
-}
-int8_t loop(uint8_t argc, void* argv[]){
-    uint32_t pid=sys_get_pid();
-    struct datetime_t previousTime;
-    struct datetime_t timeAtCheck={0};
-    struct timezone_t timezone;
-    sys_get_current_date_time(&timeAtCheck,&timezone);
-    previousTime.secs=timeAtCheck.secs;
-    while(1){
-        sys_get_current_date_time(&timeAtCheck,&timezone);
-        if( ( previousTime.secs+5 )<timeAtCheck.secs || previousTime.secs > timeAtCheck.secs)
-        {
-            previousTime.secs=timeAtCheck.secs;
-            printf("Hola soy el Loop con PID:%d \n",pid);
-        }
-        sys_yield();
-    }
 }

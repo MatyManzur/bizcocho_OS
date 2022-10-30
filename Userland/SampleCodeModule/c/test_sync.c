@@ -41,6 +41,7 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
   if (use_sem) sys_close_sem(semId);
 
   sys_exit(0);
+  return 0;
 }
 
 uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
@@ -55,8 +56,8 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
   uint64_t i;
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
-    pids[i] = sys_start_child_process("my_process_inc", 3, argvDec, (int8_t (*)(uint8_t,  void **))my_process_inc);
-    pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, argvInc, (int8_t (*)(uint8_t,  void **)) my_process_inc);
+    pids[i] = sys_start_child_process("my_process_inc", 3,(void **) argvDec, (int8_t (*)(uint8_t,  void **))my_process_inc);
+    pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, (void **) argvInc, (int8_t (*)(uint8_t,  void **)) my_process_inc);
   }
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
@@ -66,4 +67,5 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
   printf("Final value: %d\n", global);
 
   sys_exit(0);
+  return 0;
 }
