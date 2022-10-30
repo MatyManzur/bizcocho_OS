@@ -30,7 +30,7 @@ EXTERN blockProcess
 EXTERN changePriority
 EXTERN exit
 EXTERN yield
-EXTERN printAllProcesses
+EXTERN getProcessInfo
 
 EXTERN read
 EXTERN write
@@ -43,6 +43,7 @@ EXTERN open
 EXTERN close
 EXTERN dup2
 EXTERN revertFdReplacements
+EXTERN getPipeInfo
 
 EXTERN cleanBuffer
 
@@ -59,10 +60,10 @@ EXTERN getLastRegisters
 EXTERN getMemState
 
 EXTERN initializeSemaphore
-EXTERN wait_sem
-EXTERN post_sem
-EXTERN close_sem
-EXTERN print_all_semaphores
+EXTERN waitSem
+EXTERN postSem
+EXTERN closeSem
+EXTERN getSemaphoreInfo
 
 SECTION .text
 
@@ -284,7 +285,7 @@ _syscallHandler:
 	call yield
 	jmp .end
 .C9:
-	call printAllProcesses
+	call getProcessInfo
 	jmp .end
 .C10:
 	call read
@@ -318,6 +319,9 @@ _syscallHandler:
 	jmp .end
 .C20:
 	call revertFdReplacements
+	jmp .end
+.C21:
+	call getPipeInfo
 	jmp .end
 .C22:
 	call cleanBuffer
@@ -356,16 +360,16 @@ _syscallHandler:
 	call initializeSemaphore
 	jmp .end
 .C41:
-	call wait_sem
+	call waitSem
 	jmp .end
 .C42:
-	call post_sem
+	call postSem
 	jmp .end
 .C43:
-	call close_sem
+	call closeSem
 	jmp .end
 .C44:
-	call print_all_semaphores
+	call getSemaphoreInfo
 	jmp .end
 	
 .end:

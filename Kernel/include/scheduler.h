@@ -108,7 +108,7 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd);
 
 void revertFdReplacements();
 
-processInfoPointer * printAllProcesses(uint32_t * procAmount);
+processInfoPointer * getProcessInfo(uint32_t * procAmount);
 
 //KERNEL ONLY
 void initializeScheduler();
@@ -126,6 +126,8 @@ int16_t fdToFileId(uint8_t fd, uint8_t* mode);
 int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd);
 
 int8_t closeFile(uint8_t fd);
+
+ddlADT getBlockedList(uint8_t blockedSource);
 
 void killAllInDeathList();
 

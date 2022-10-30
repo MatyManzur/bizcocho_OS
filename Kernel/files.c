@@ -352,3 +352,68 @@ void fprintf(int fd, char *format, ...)
     //Closing argument list to necessary clean-up
     va_end(arg);
 }
+pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
+{
+
+    uint32_t pipeSize=getSize(pipeFilesList);
+    toBegin(pipeFilesList);
+    pipeInfoPointer * informationPointer = memalloc(sizeof(pipeInfoPointer)*pipeSize);
+    *pipeAmount=0;
+
+    pipeFile_t * current;
+    ddlADT blockedReadList=getBlockedList(PIPE_READ);
+    ddlADT blockedWriteList=getBlockedList(PIPE_WRITE);
+
+    uint32_t blockedAmount=0;
+    uint32_t blockedIndex=0;
+    PCB_t* currentProcess;
+    while(hasNext(pipeFilesList)){
+        
+        current=(pipeFile_t *) next(pipeFilesList);
+        strncpy(informationPointer[*pipeAmount]->name,current->name,MAX_PIPE_NAME_SIZE);
+
+        if(current->writingIndex%MAX_PIPE_BUFFER_SIZE < current->readingIndex %MAX_PIPE_BUFFER_SIZE){
+            informationPointer[*pipeAmount]->charactersLeftToRead=MAX_PIPE_BUFFER_SIZE-(current->writingIndex %MAX_PIPE_BUFFER_SIZE);
+        }else{
+            informationPointer[*pipeAmount]->charactersLeftToRead=(current->writingIndex%MAX_PIPE_BUFFER_SIZE)-(current->readingIndex%MAX_PIPE_BUFFER_SIZE);
+        }
+        toBegin(blockedReadList);
+        blockedAmount=0;
+        while(hasNext(blockedReadList)){
+            if( ((PCB_t *) next(blockedReadList))->blockedReason.id == current->fileId){
+                blockedAmount++;
+            }
+        }
+        informationPointer[*pipeAmount]->blockedByReading=memalloc(blockedAmount*sizeof(uint32_t));
+        uint32_t blockedIndex=0;
+        toBegin(blockedReadList);
+        while(hasNext(blockedReadList)){
+            currentProcess=(PCB_t*) next(blockedReadList);
+            if(currentProcess->blockedReason.id == current->fileId){
+                informationPointer[*pipeAmount]->blockedByReading[blockedIndex++]=currentProcess->pid;
+            }
+        }
+        informationPointer[*pipeAmount]->blockedByReading[blockedIndex]=0; //Lo terminamos
+
+        toBegin(blockedWriteList);
+        blockedAmount=0;
+        while(hasNext(blockedWriteList)){
+            if( ((PCB_t *) next(blockedReadList))->blockedReason.id == current->fileId){
+                blockedAmount++;
+            }
+        }
+        informationPointer[*pipeAmount]->blockedByWriting=memalloc(blockedAmount*sizeof(uint32_t));
+        uint32_t blockedIndex=0;
+        toBegin(blockedWriteList);
+        while(hasNext(blockedWriteList)){
+            currentProcess=(PCB_t*) next(blockedWriteList);
+            if(currentProcess->blockedReason.id == current->fileId){
+                informationPointer[*pipeAmount]->blockedByWriting[blockedIndex++]=currentProcess->pid;
+            }
+        }
+        informationPointer[*pipeAmount]->blockedByReading[blockedIndex]=0;
+
+        *pipeAmount+=1;
+    }
+    return informationPointer;
+}

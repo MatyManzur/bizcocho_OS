@@ -7,7 +7,7 @@ GLOBAL sys_get_pid
 GLOBAL sys_wait_child
 GLOBAL sys_change_priority
 GLOBAL sys_yield
-GLOBAL sys_print_all_processes
+GLOBAL sys_get_process_info
 GLOBAL sys_read
 GLOBAL sys_write
 GLOBAL sys_clear_screen
@@ -19,6 +19,7 @@ GLOBAL sys_open
 GLOBAL sys_close
 GLOBAL sys_dup2
 GLOBAL sys_revert_fd_replacements
+GLOBAL sys_get_pipe_info
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
 GLOBAL sys_get_mem_state
@@ -34,7 +35,7 @@ GLOBAL sys_initialize_semaphore
 GLOBAL sys_wait_sem
 GLOBAL sys_post_sem
 GLOBAL sys_close_sem
-GLOBAL sys_print_all_semaphores
+GLOBAL sys_get_sem_info
 
 SECTION .text
 
@@ -77,7 +78,7 @@ sys_change_priority:
 sys_yield:
 	make_syscall 8
 
-sys_print_all_processes:
+sys_get_process_info:
 	make_syscall 9
 	
 sys_read:
@@ -112,7 +113,10 @@ sys_dup2:
 
 sys_revert_fd_replacements:
 	make_syscall 20
-	
+
+sys_get_pipe_info:
+	make_syscall 21
+
 sys_clean_buffer:
 	make_syscall 22
 
@@ -158,7 +162,7 @@ sys_post_sem:
 sys_close_sem:
 	make_syscall 43
 
-sys_print_all_semaphores:
+sys_get_sem_info:
 	make_syscall 44
 
 

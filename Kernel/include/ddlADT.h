@@ -37,4 +37,6 @@ void freeList(ddlADT list);
 
 elemType find(ddlADT list, int (cmpfunction(void * a, void * b)), void * toCmp);
 
+uint32_t getSize(ddlADT list);
+
 #endif

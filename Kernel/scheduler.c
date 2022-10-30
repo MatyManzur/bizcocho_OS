@@ -629,7 +629,7 @@ static char getStateChar(State_t state, BlockedSource_t blockedSource)
     }
 }
 
-processInfoPointer * printAllProcesses(uint32_t * procAmount)
+processInfoPointer * getProcessInfo(uint32_t * procAmount)
 {
     *procAmount = 0;
     processInfoPointer * procInfo = memalloc(sizeof(processInfoPointer)*MAX_SHOWN);
@@ -655,5 +655,11 @@ processInfoPointer * printAllProcesses(uint32_t * procAmount)
     }
     
     return procInfo;
+}
+ddlADT getBlockedList(uint8_t blockedSource){
+    if(blockedSource>BLOCK_REASON_COUNT){
+        return NULL;
+    }
+    return blockedProcesses[blockedSource];
 }
 

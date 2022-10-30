@@ -58,7 +58,7 @@ uint32_t initializeSemaphore(char * name, uint64_t initialValue)
     return curr->id;
 }
 
-uint64_t wait_sem(uint32_t id)
+uint64_t waitSem(uint32_t id)
 {
     semPointer curr = (semPointer) find(hub.semBlockList, cmpById, &id);
 
@@ -84,7 +84,7 @@ uint64_t wait_sem(uint32_t id)
     return curr->value;
 }
 
-void post_sem(uint32_t id)
+void postSem(uint32_t id)
 {
     semPointer curr = (semPointer) find(hub.semBlockList, cmpById, &id);
     if(curr!=NULL)
@@ -114,7 +114,7 @@ void post_sem(uint32_t id)
     }
 }
 
-int8_t close_sem(uint32_t id)
+int8_t closeSem(uint32_t id)
 {
     acquire(&lockList);
     toBegin(hub.semBlockList);
@@ -143,7 +143,7 @@ uint32_t getSemCount()
 
 
 // desde userland se deben realizar los malloc
-semInfoPointer print_all_semaphores(uint32_t * semAmount)
+semInfoPointer getSemaphoreInfo(uint32_t * semAmount)
 {
     acquire(&lockList);
     toBegin(hub.semBlockList);
@@ -154,7 +154,7 @@ semInfoPointer print_all_semaphores(uint32_t * semAmount)
     {
         informationPointer[*semAmount] = memalloc(sizeof(semInfo));
         informationPointer[*semAmount]->id = curr->id;
-        strcpy(informationPointer[*semAmount]->name, curr->name);
+        strncpy(informationPointer[*semAmount]->name, curr->name,MAX_SEM_NAME);
         informationPointer[*semAmount]->value = curr->value;
         acquire(&(curr->semLock));
         informationPointer[*semAmount]->blocked = memalloc(sizeof(uint32_t)*(curr->amountBlocked+1));

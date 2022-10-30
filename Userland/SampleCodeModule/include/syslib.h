@@ -12,6 +12,7 @@
 
 #define MAX_PROC_NAME 64
 #define MAX_SEM_NAME 32
+#define MAX_PIPE_NAME_SIZE 32
 
 typedef struct registers_t
 {
@@ -112,6 +113,17 @@ typedef struct memInfo{
     uint32_t blockSize;
     uint32_t freeBlocks; 
 }memInfo;
+typedef memInfo* memInfoPointer;
+
+typedef struct pipeInfo
+{
+    char name[MAX_PIPE_NAME_SIZE];
+    uint16_t charactersLeftToRead;
+    uint32_t * blockedByReading;
+    uint32_t* blockedByWriting;
+} pipeInfo;
+
+typedef pipeInfo* pipeInfoPointer;
 
 void sys_exit(int8_t statusCode);
 
@@ -131,7 +143,7 @@ uint8_t sys_change_priority(uint32_t pid, uint8_t newPriority);
 
 void sys_yield();
 
-processInfoPointer * sys_print_all_processes(uint32_t * procAmount);
+processInfoPointer * sys_get_process_info(uint32_t * procAmount);
 
 uint8_t sys_read(int fd, char* buf, uint8_t n);
 
@@ -155,6 +167,8 @@ int8_t sys_dup2(uint8_t fromFd, uint8_t toFd);
 
 void sys_revert_fd_replacements();
 
+pipeInfoPointer * sys_get_pipe_info(uint32_t* pipeAmount);
+
 void sys_clean_buffer();
 
 void sys_get_current_date_time(struct datetime_t *datetime, struct timezone_t *tzone);
@@ -173,7 +187,7 @@ void sys_mem_free(void *ptr );
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
-memInfo* sys_get_mem_state();
+memInfoPointer sys_get_mem_state();
 
 void sys_get_last_registers(struct registers_t *registers);
 
@@ -185,7 +199,7 @@ void sys_post_sem(int id);
 
 int sys_close_sem(int id);
 
-semInfoPointer * sys_print_all_semaphores(uint32_t * semAmount);
+semInfoPointer * sys_get_sem_info(uint32_t * semAmount);
 
 
 #endif

@@ -29,6 +29,15 @@ typedef struct pipeFile_t {
     size_t currentOpenCount;
 } pipeFile_t;
 
+typedef struct pipeInfo
+{
+    char name[MAX_PIPE_NAME_SIZE];
+    uint16_t charactersLeftToRead;
+    uint32_t * blockedByReading;
+    uint32_t* blockedByWriting;
+} pipeInfo;
+
+typedef pipeInfo* pipeInfoPointer;
 //KERNEL
 
 void initializeFiles();
@@ -49,5 +58,7 @@ int8_t mkpipe(char* name);
 int8_t open(char* name, uint8_t mode, uint8_t* fd);
 
 int8_t close(uint8_t fd);
+
+pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount);
 
 #endif

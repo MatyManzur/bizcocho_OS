@@ -365,7 +365,7 @@ int removeBackspaces(char str[]){
 void printSemaphoreTable()
 {
     uint32_t semAmount;
-    semInfoPointer * semInfo = sys_print_all_semaphores(&semAmount);
+    semInfoPointer * semInfo = sys_get_sem_info(&semAmount);
     printf("|---------------|----|-------|---------------------------|\n");
     printf("| semaphoreName | id | value | blocked by this semaphore |\n");
     printf("|---------------|----|-------|---------------------------|\n");

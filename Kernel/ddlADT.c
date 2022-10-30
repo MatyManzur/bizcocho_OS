@@ -14,6 +14,7 @@ struct ddlCDT
     TList first; //El primero de la lista
     TList current;//El current node por el que se esta iterando
     TList toRemove;
+    uint32_t size;
 };
 
 ddlADT newList()
@@ -34,6 +35,7 @@ void add(ddlADT list, elemType elem) //agrega al principio
     list->first->prev = NULL;
     if(second!=NULL)
         second->prev = list->first;
+    list->size+=1;
 }
 
 void toBegin(ddlADT list)
@@ -76,6 +78,7 @@ void remove(ddlADT list)
         }
         memfree(list->toRemove);
         list->toRemove = NULL;
+        list->size-=1;
     }
 }
 
@@ -102,4 +105,7 @@ elemType find(ddlADT list, int (cmpfunction(void * a, void * b)), void * toCmp)
         searcher = searcher->next;
     }
     return NULL;
+}
+uint32_t getSize(ddlADT list){
+    return list->size;
 }

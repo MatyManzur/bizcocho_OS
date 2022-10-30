@@ -44,14 +44,14 @@ void initSemaphoreHub();
 //SYSCALLS
 uint32_t initializeSemaphore(char * name, uint64_t initialValue);
 
-uint64_t wait_sem(uint32_t id);
+uint64_t waitSem(uint32_t id);
 
 uint32_t getSemCount();
 
-void post_sem(uint32_t id);
+void postSem(uint32_t id);
 
-int8_t close_sem(uint32_t id);
+int8_t closeSem(uint32_t id);
 
-semInfoPointer print_all_semaphores(uint32_t * semAmount);
+semInfoPointer getSemaphoreInfo(uint32_t * semAmount);
 
 #endif
