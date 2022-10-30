@@ -107,6 +107,12 @@ typedef struct processInfo
     void *processMemStart;
 } processInfo;
 
+typedef struct memInfo{
+    uint32_t memSize;
+    uint32_t blockSize;
+    uint32_t freeBlocks; 
+}memInfo;
+
 void sys_exit(int8_t statusCode);
 
 uint32_t sys_start_parent_process(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
@@ -167,7 +173,7 @@ void sys_mem_free(void *ptr );
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
-void sys_print_mem_state();
+memInfo* sys_get_mem_state();
 
 void sys_get_last_registers(struct registers_t *registers);
 

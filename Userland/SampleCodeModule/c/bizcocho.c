@@ -23,6 +23,7 @@ int8_t kill(uint8_t argc, void* argv[]);
 int8_t block(uint8_t argc, void* argv[]);
 int8_t nice(uint8_t argc, void* argv[]);
 int8_t ps(uint8_t argc, void* argv[]);
+int8_t mem(uint8_t argc, void* argv[]);
 int8_t loop(uint8_t argc, void* argv[]);
 char* promptMessage="Bizcocho $>";
 
@@ -30,7 +31,7 @@ static uint32_t bizcochoPid = 0;
 static size_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=bizcochito_dummy },
-    {.name="mem", .builtin=1, .programFunction=sys_print_mem_state },
+    {.name="mem", .builtin=1, .programFunction=mem },
     {.name="ps", .builtin=1, .programFunction=ps },
     {.name="loop", .builtin=0, .programFunction=loop },
     {.name="kill", .builtin=1, .programFunction=kill },
@@ -389,6 +390,10 @@ int8_t nice(uint8_t argc, void* argv[])
         fprintf(STDERR,"Error! Couldn't find process with PID: %d or given priority value is invalid: should be [0-4]\n",pid);
         return -1;
     }
+    return 0;
+}
+int8_t mem(uint8_t argc, void* argv[]){
+    printMemState();
     return 0;
 }
 int8_t loop(uint8_t argc, void* argv[]){

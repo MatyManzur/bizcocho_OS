@@ -6,11 +6,16 @@
     write(STDERR, "Out of memory!\n");\
     return (ret);};
 
+typedef struct memInfo{
+    uint32_t memSize;
+    uint32_t blockSize;
+    uint32_t freeBlocks; 
+}memInfo;
 void memInitialize(void * memBase,uint32_t memSize);
 
 void* memalloc(uint32_t nbytes);
 
 void memfree(void * ap);
 
-void printMemState();
+memInfo* getMemState();
 #endif

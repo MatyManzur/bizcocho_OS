@@ -409,4 +409,20 @@ void printProcessesTable()
     printf("|-------------------------------------------------------------------|\n");
     sys_mem_free(processesInfo);
 }
+void printMemState(){
+    memInfo* meminfo=sys_get_mem_state();
+    uint32_t totalBlocks=(meminfo->memSize / meminfo->blockSize);
+    uint32_t occupiedBlocks=totalBlocks-meminfo->freeBlocks;
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "| Free Blocks | Used Blocks | Total Blocks |\n");
+    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "|    %d    |    %d    |    %d    |\n",meminfo->freeBlocks,occupiedBlocks,totalBlocks);
+    fprintf(STDOUT, "|------------------------------------------|\n");
+    fprintf(STDOUT, "| Block Size= %d Bytes                     |\n",meminfo->blockSize);
+    fprintf(STDOUT, "|------------|------------|-------------|\n");
+    fprintf(STDOUT, "| Free Bytes | Used Bytes | Total Bytes |\n");
+    fprintf(STDOUT, "|------------|------------|-------------|\n");
+    fprintf(STDOUT,"|   %d   |   %d   |   %d   |\n",meminfo->freeBlocks*meminfo->blockSize,occupiedBlocks*meminfo->blockSize,totalBlocks*meminfo->blockSize);
+    sys_mem_free(meminfo);
+}
 

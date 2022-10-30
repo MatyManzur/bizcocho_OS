@@ -56,7 +56,7 @@ EXTERN memalloc
 EXTERN memfree
 EXTERN memdump
 EXTERN getLastRegisters
-EXTERN printMemState
+EXTERN getMemState
 
 EXTERN initializeSemaphore
 EXTERN wait_sem
@@ -350,7 +350,7 @@ _syscallHandler:
 	call getLastRegisters	
 	jmp .end
 .C39:
-	call printMemState
+	call getMemState
 	jmp .end
 .C40:
 	call initializeSemaphore

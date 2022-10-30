@@ -129,9 +129,9 @@ void memfree(void * ap){
     }
 }
 
-void printMemState(){
+memInfo* getMemState(){
     uint32_t amountOfFreeBlocks=0;
-
+    memInfo * meminfo=memalloc( sizeof(memInfo) );
     Header * mem=freep;
     if(mem != NULL){
         do{
@@ -139,14 +139,8 @@ void printMemState(){
             mem=mem->s.next;
         }while(mem->s.next!=NULL);
     }
-    uint32_t amountOfOccupiedBlocks = BLOCK_AMOUNT-amountOfFreeBlocks;
-    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
-    fprintf(STDOUT, "| Free Blocks | Used Blocks | Total Blocks |\n");
-    fprintf(STDOUT, "|-------------|-------------|--------------|\n");
-    fprintf(STDOUT,"| %d | %d | %d |\n",amountOfFreeBlocks,amountOfOccupiedBlocks,BLOCK_AMOUNT);
-    fprintf(STDOUT, "| Block Size= %d Bytes |\n",BLOCK_SIZE);
-    fprintf(STDOUT, "|------------|------------|-------------|\n");
-    fprintf(STDOUT, "| Free Bytes | Used Bytes | Total Bytes |\n");
-    fprintf(STDOUT, "|------------|------------|-------------|\n");
-    fprintf(STDOUT,"| %d | %d | %d |\n",amountOfFreeBlocks*BLOCK_SIZE,amountOfOccupiedBlocks*BLOCK_SIZE,BLOCK_AMOUNT*BLOCK_SIZE);
+    meminfo->blockSize=BLOCK_SIZE;
+    meminfo->freeBlocks=amountOfFreeBlocks;
+    meminfo->memSize=baseSize;
+    return meminfo;
 }
