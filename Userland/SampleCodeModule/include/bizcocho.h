@@ -2,6 +2,7 @@
 #define BIZCOCHO_H_
 
 #include <commands.h>
+#include <phylo.h>
 
 #define BUFFER_DIM 128
 #define MAX_PIPE_TOKEN_LENGTH 30

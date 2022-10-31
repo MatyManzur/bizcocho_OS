@@ -27,7 +27,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="filter", .builtin=0, .programFunction=filter },
     {.name="pipe", .builtin=1, .programFunction=help },
     {.name="sem", .builtin=1, .programFunction=printSemaphoreTable },
-    {.name="phylo", .builtin=0, .programFunction=help },
+    {.name="phylo", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**)) startPhylo },
     {.name="monke", .builtin=1, .programFunction=monke },
     {.name="color", .builtin=1, .programFunction=color },
     {.name="testsync", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**))test_sync },

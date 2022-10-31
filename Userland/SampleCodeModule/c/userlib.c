@@ -372,7 +372,7 @@ void printSemaphoreTable()
     for(int i = 0; i < semAmount ; i++)
     {
         printf("|---------------|----|-------|---------------------------|\n");
-        printf("|   %s     | %d |   %d  |", semInfo[i]->name, semInfo[i]->id, semInfo[i]->value);
+        printf("|    %9s  | %2d |   %2d  |", semInfo[i]->name, semInfo[i]->id, semInfo[i]->value);
         int j=0;
         while(semInfo[i]->blocked[j])
             printf("  %d  ", semInfo[i]->blocked[j++]);

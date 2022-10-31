@@ -1,35 +1,45 @@
-#include <syslib.h>
-#include <userlib.h>
-#include <testing_utils.h>
+#include <phylo.h>
 
 #define MAX_PHIL 10
 
+static uint8_t forSeat;
 static uint8_t table[MAX_PHIL];
 static uint8_t tableSize;
+static uint32_t semForSeat;
+
 uint32_t eatingSemaphores[MAX_PHIL];
 
-uint8_t eatingPhylo(uint8_t argc, uint8_t argv)
+uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
 {
-    // esto quizás explote
-    uint8_t seat = argv;
+    uint8_t seat;
+
+    sys_wait_sem(semForSeat);
+
+    seat = forSeat++;
+    
+    sys_post_sem(semForSeat);
+    uint8_t left;
+    uint8_t right;
 
     while(1){
+        left = eatingSemaphores[seat];
+        right = eatingSemaphores[(seat+1)%tableSize];
         switch (seat%2)
         {
             // par, primero izq
-        case 0:
-            sys_wait_sem(eatingSemaphores[seat]);
-            sys_wait_sem(eatingSemaphores[(seat+1)%tableSize]);
-            break;
-            // impar, primero der
-        case 1:
-            sys_wait_sem(eatingSemaphores[(seat+1)%tableSize]);
-            sys_wait_sem(eatingSemaphores[seat]);
-            break;
-        default:
-            break;
+            case 0:
+                sys_wait_sem(left);
+                sys_wait_sem(right);
+                break;
+                // impar, primero der
+            case 1:
+                sys_wait_sem(right);
+                sys_wait_sem(left);
+                break;
+            default:
+                break;
         }
-
+        printf("Seat number: %d taken\n", seat);
     // quizás un semáforo de printeo para que no se vea raro, pero las chances son muy bajas
         table[seat] = 'E';
         int j = 0;
@@ -37,20 +47,21 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t argv)
             printf("%c ", table[j]);
             j++;
         }
-        sys_sleep(25);
+        printf("\n");
+        sys_sleep(17 + 5*seat);
         table[seat] = '-';
 
         switch (seat%2)
         {
                 // par, primero izq
             case 0:
-                sys_post_sem(eatingSemaphores[seat]);
-                sys_post_sem(eatingSemaphores[(seat+1)%tableSize]);
+                sys_post_sem(left);
+                sys_post_sem(right);
                 break;
                 // impar, primero der
             case 1:
-                sys_post_sem(eatingSemaphores[(seat+1)%tableSize]);
-                sys_post_sem(eatingSemaphores[seat]);
+                sys_post_sem(right);
+                sys_post_sem(left);
                 break;
             default:
                 break;
@@ -64,6 +75,14 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
 
     uint8_t initialAmount = satoi(argv[0]);
     
+    if(initialAmount<3 || initialAmount>MAX_PHIL-1){
+        fprintf(STDERR, "Please choose an amount between 3 and %d\n", MAX_PHIL-1);
+        sys_exit(1);
+    }
+
+    printf("a to add, r to remove, q to quit\n");
+    
+    semForSeat = sys_initialize_semaphore("To initialize", 1);
 
     char * semNames[MAX_PHIL] = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
     initialAmount %= 10;
@@ -77,32 +96,36 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
         i++; 
     }
 
+    forSeat = 0;
     uint8_t index = 0;
     uint32_t pids[MAX_PHIL];
 
     while(index < initialAmount)
     {
-        pids[i] = sys_start_child_process("eatingPhylo", 1, index, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
+        pids[index] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
         index++;
     }
-     uint32_t semToStop;
+
+    uint32_t semToStop;
     uint8_t character;
     while(1)
     {
-        sys_sleep(30);
+        character=0;
+        while(character!='a' && character!='r' && character!='q')
+        {
+            sys_read(STDIN, &character, 1);
+        }
         //se fija si escribieron una letra
-        if(character == 'a' && tableSize < MAX_PHIL)
+        if(character == 'a' && tableSize < MAX_PHIL-1)
         {
             semToStop = (tableSize%2)?  eatingSemaphores[tableSize-1] : eatingSemaphores[0];
-            sys_wait_sem(eatingSemaphores[0]);
-            // si hay uno esperando en el último semáforo, habría que hacer que empiece en 0, no 1
+            sys_wait_sem(semToStop);
             eatingSemaphores[tableSize] = sys_initialize_semaphore(semNames[tableSize], 1);
-            pids[tableSize] = sys_start_child_process("eatingPhylo", 1, index++, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
+            pids[tableSize] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
             tableSize++;
-            sys_post_sem(eatingSemaphores[0]);
-
+            sys_post_sem(semToStop);
         }
-        else if(character == 'd' && tableSize>2)
+        else if(character == 'r' && tableSize>2)
         {
             semToStop = (tableSize%2)? eatingSemaphores[tableSize-1] : eatingSemaphores[0];
             sys_wait_sem(semToStop);
@@ -110,12 +133,21 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             sys_kill_process(pids[tableSize-1]);
             tableSize--;
             index--;
-            sys_close_sem(eatingSemaphores[tableSize]);
+            forSeat--;
             sys_post_sem(semToStop);
+            sys_post_sem(semToStop);
+            sys_close_sem(eatingSemaphores[tableSize]);
+        } else if(character == 'q')
+        {
+            for(int i = 0; i < tableSize ; i++)
+            {
+                printf("Killing: %d\n", pids[i]);
+                sys_kill_process(pids[i]);
+                sys_close_sem(eatingSemaphores[i]);
+            }
+            sys_exit(0);
         }
     }
 
-
-    sys_exit(0);
     
 }
