@@ -171,10 +171,15 @@ uint8_t read(int fd, char* buf, uint8_t n)
     uint8_t mode = 'R';
     int16_t fileId = fdToFileId(fd, &mode);
     pipeFile_t* pipe;
+    BlockedReason_t blockRead;
+    BlockedReason_t unblockWrite;
     switch (fileId)
     {
         case EMPTY:
-            SEND_ERROR("read from this file");
+            
+            blockRead.id = -1;
+            blockRead.source = PIPE_READ;
+            blockProcessWithReason(getPid(), blockRead);
             break;
 
         case STDIN:
@@ -187,10 +192,9 @@ uint8_t read(int fd, char* buf, uint8_t n)
                 }
                 if(totalChars < n)
                 {
-                    BlockedReason_t block;
-                    block.id = 0;
-                    block.source = PIPE_READ;
-                    blockProcessWithReason(getPid(), block);
+                    blockRead.id = 0;
+                    blockRead.source = PIPE_READ;
+                    blockProcessWithReason(getPid(), blockRead);
                 }
             }
             return totalChars;
@@ -210,11 +214,9 @@ uint8_t read(int fd, char* buf, uint8_t n)
                 SEND_ERROR("read from non-existent PIPE");
                 break;
             }
-            BlockedReason_t blockRead;
             blockRead.id = fileId;
             blockRead.source = PIPE_READ;
 
-            BlockedReason_t unblockWrite;
             unblockWrite.id = fileId;
             unblockWrite.source = PIPE_WRITE;
             while(totalChars < n)

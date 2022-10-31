@@ -236,12 +236,15 @@ int8_t kill(uint8_t argc, void* argv[])
     uint32_t pid= satoi((char*)argv[0]);
     if(pid==bizcochoPid)
     {
-        fprintf(STDERR, "HA! You think I'd let you beat me so easily?!\n");
+        fprintf(STDERR, "HA! You thought I'd let you beat me so easily?!\n");
         return -1;
     }
     if(!sys_kill_process(pid))
     {
-        fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
+        if(pid==1)
+            fprintf(STDERR, "Don't mess with poor init! He's just doing his job\n");
+        else
+            fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
         return -1;
     }
     else
@@ -250,7 +253,9 @@ int8_t kill(uint8_t argc, void* argv[])
     }
     return 0;
 }
-int8_t block(uint8_t argc, void* argv[]){
+
+int8_t block(uint8_t argc, void* argv[])
+{
     CHECK_ARGC(argc,1)
     uint32_t pid= satoi((char*)argv[0]);
     if(pid==bizcochoPid)
@@ -260,7 +265,10 @@ int8_t block(uint8_t argc, void* argv[]){
     }
     if(!sys_block_process(pid))
     {
-        fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
+        if(pid==1)
+            fprintf(STDERR, "Don't mess with poor init! He's just doing his job\n");
+        else
+            fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
         return -1;
     }
     return 0;

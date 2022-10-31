@@ -18,6 +18,7 @@ typedef struct pbrr_t
 {
     pointerPCBNODE_t processes[PRIORITY_COUNT];
     pointerPCBNODE_t nowRunning;
+    uint32_t processCount;
 } pbrr_t;
 
 static int schedulerRunning = 0;
@@ -157,6 +158,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     {
         add(deathList, pnode);
     }
+    schedule.processCount++;
     return pnode;
 }
 
@@ -190,6 +192,7 @@ void initializeScheduler()
     {
         blockedProcesses[i] = newList();
     }
+    schedule.processCount = 0;
     init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL, 0);
     schedule.nowRunning = NULL;
     deathList = newList();
@@ -303,6 +306,7 @@ static void removeFromList(pointerPCBNODE_t node)
     }
     inheritChildren(&node->children, &init->children, init->process->pid);
     freeNode(node);
+    schedule.processCount--;
 }
 
 static inline void setProcessReady(PCB_t *process)
@@ -354,6 +358,8 @@ static uint8_t _killProcess(pointerPCBNODE_t head)
 
 uint8_t killProcess(uint32_t pid)
 {
+    if(pid == init->process->pid)
+        return 0;
     pointerPCBNODE_t head = findByPid(pid);
     uint8_t ans = _killProcess(head);
     _int20();
@@ -458,6 +464,8 @@ void unblockAllProcessesBecauseReason(BlockedReason_t blockReason)
 // syscall: bloquea o desbloquea el proceso segun corresponda
 uint8_t blockProcess(uint32_t pid)
 {
+    if(pid==init->process->pid)
+        return 0;
     BlockedReason_t reason;
     reason.source = ASKED_TO;
     reason.id = 0;
@@ -633,29 +641,27 @@ static char getStateChar(State_t state, BlockedSource_t blockedSource)
 
 processInfoPointer * getProcessInfo(uint32_t * procAmount)
 {
-    *procAmount = 0;
-    processInfoPointer * procInfo = memalloc(sizeof(processInfoPointer)*MAX_SHOWN);
+    uint32_t j = 0;
+    processInfoPointer * procInfo = memalloc(sizeof(processInfoPointer) * schedule.processCount);
     for(int i=0 ; i<PRIORITY_COUNT ; i++)
     {
         pointerPCBNODE_t head = schedule.processes[i];
         while(head!=NULL)
         {
             PCB_t* process = head->process;
-            procInfo[*procAmount] = memalloc(sizeof(processInfo));
-            strcpy(procInfo[*procAmount]->name, process->name);
-            procInfo[*procAmount]->pid = process->pid;
-            procInfo[*procAmount]->ppid = process->ppid;
-            procInfo[*procAmount]->status = getStateChar(process->state, process->blockedReason.source);
-            procInfo[*procAmount]->priority = process->priority;
-            procInfo[*procAmount]->stackPointer = process->stackPointer;
-            procInfo[*procAmount]->processMemStart = process->processMemStart;
+            procInfo[j] = memalloc(sizeof(processInfo));
+            strcpy(procInfo[j]->name, process->name);
+            procInfo[j]->pid = process->pid;
+            procInfo[j]->ppid = process->ppid;
+            procInfo[j]->status = getStateChar(process->state, process->blockedReason.source);
+            procInfo[j]->priority = process->priority;
+            procInfo[j]->stackPointer = process->stackPointer;
+            procInfo[j]->processMemStart = process->processMemStart;
             head = head->next;
-            (*procAmount)++;
-            if(*procAmount == MAX_SHOWN)
-                return procInfo;
+            j++;
         }
     }
-    
+    *procAmount = schedule.processCount;
     return procInfo;
 }
 ddlADT getBlockedList(uint8_t blockedSource){

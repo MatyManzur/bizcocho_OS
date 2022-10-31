@@ -194,15 +194,17 @@ int8_t loop(uint8_t argc, void** argv){
     uint32_t pid=sys_get_pid();
     struct datetime_t previousTime;
     struct datetime_t timeAtCheck={0};
-    struct timezone_t timezone;
+    struct timezone_t timezone = {.hours=-3, .minutes=0};
+    sys_set_time_zone(&timezone);
     sys_get_current_date_time(&timeAtCheck,&timezone);
     previousTime.secs=timeAtCheck.secs;
     while(1){
         sys_get_current_date_time(&timeAtCheck,&timezone);
-        if( ( previousTime.secs+5 )<timeAtCheck.secs || previousTime.secs > timeAtCheck.secs)
+        if( ( previousTime.secs+5 ) <= timeAtCheck.secs || previousTime.secs > timeAtCheck.secs)
         {
             previousTime.secs=timeAtCheck.secs;
-            printf("Hola soy el Loop con PID:%d \n",pid);
+            printf("Hi! I'm loop with PID:%d. It's: %2d:%2d:%2d - %2d/%2d/%4d  UTC%d\n",pid, timeAtCheck.hours, timeAtCheck.mins, timeAtCheck.secs,
+                                                                    timeAtCheck.day, timeAtCheck.month, timeAtCheck.year, timezone.hours);
         }
         sys_yield();
     }

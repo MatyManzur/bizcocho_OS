@@ -10,7 +10,7 @@
 #define PRIORITY_COUNT 5
 #define NAME_MAX 64
 #define PROCESS_MEM_SIZE 4096
-#define MAX_SHOWN 30
+
 enum state
 {
     BLOCKED,

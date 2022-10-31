@@ -9,23 +9,20 @@ typedef struct P_rq{
 }p_rq;
 
 int64_t test_processes(uint64_t argc, char *argv[]){
-  uint8_t rq;
-  uint8_t alive = 0;
+  uint64_t rq;
+  uint64_t alive = 0;
   uint8_t action;
   uint64_t max_processes;
-  char * argvAux[] = {0};
 
   if (argc != 1) sys_exit(-1);
 
   if ((max_processes = satoi(argv[0])) <= 0) sys_exit(-1);
-  printf("max processes: %d argv[0]: %s\n", max_processes, argv[0]);
-  p_rq p_rqs[max_processes];
+  p_rq* p_rqs = sys_mem_alloc(max_processes * sizeof(p_rq));
 
   while (1){
-
     // Create max_processes processes
     for(rq = 0; rq < max_processes; rq++){
-      p_rqs[rq].pid = sys_start_child_process("endless_loop", 0, (void**) argvAux, (int8_t (*)(uint8_t,  void **)) endless_loop_print, 0);
+      p_rqs[rq].pid = sys_start_child_process("endless_loop", 0, NULL, (int8_t (*)(uint8_t,  void **)) endless_loop_print, 0);
       if (p_rqs[rq].pid == -1){
         printf("test_processes: ERROR creating process\n");
         sys_exit(-1);
@@ -78,6 +75,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
           }
           p_rqs[rq].state = RUNNING; 
         }
-    } 
+    }
   }
+  // sys_mem_free(p_rqs); no va a salir del while(1), pero si p_rqs era un array[] provocaba que el stack sea demasiado grande y se pase de su zona de memoria
 }
