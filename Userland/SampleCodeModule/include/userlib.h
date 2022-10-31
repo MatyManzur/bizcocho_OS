@@ -40,5 +40,5 @@ void printProcessesTable();
 
 void printSemaphoreTable();
 
-void printMemState();
+void printMemInfo();
 #endif

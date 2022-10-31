@@ -367,7 +367,6 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
     ddlADT blockedWriteList=getBlockedList(PIPE_WRITE);
 
     uint32_t blockedAmount=0;
-    uint32_t blockedIndex=0;
     PCB_t* currentProcess;
     while(hasNext(pipeFilesList)){
         

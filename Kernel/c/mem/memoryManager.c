@@ -129,7 +129,7 @@ void memfree(void * ap){
     }
 }
 
-memInfoPointer getMemState(){
+memInfoPointer getMemInfo(){
     uint32_t amountOfFreeBlocks=0;
     memInfoPointer meminfo=memalloc( sizeof(memInfo) );
     Header * mem=freep;
@@ -137,7 +137,7 @@ memInfoPointer getMemState(){
         do{
             amountOfFreeBlocks+=mem->s.size;
             mem=mem->s.next;
-        }while(mem->s.next!=NULL);
+        }while(mem!=NULL);
     }
     meminfo->blockSize=BLOCK_SIZE;
     meminfo->freeBlocks=amountOfFreeBlocks;

@@ -187,7 +187,7 @@ void sys_mem_free(void *ptr );
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
-memInfoPointer sys_get_mem_state();
+memInfoPointer sys_get_mem_info();
 
 void sys_get_last_registers(struct registers_t *registers);
 

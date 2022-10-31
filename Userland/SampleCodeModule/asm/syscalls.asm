@@ -22,7 +22,7 @@ GLOBAL sys_revert_fd_replacements
 GLOBAL sys_get_pipe_info
 GLOBAL sys_memory_dump
 GLOBAL sys_get_last_registers
-GLOBAL sys_get_mem_state
+GLOBAL sys_get_mem_info
 GLOBAL sys_clean_buffer
 GLOBAL sys_get_current_date_time
 GLOBAL sys_set_time_zone
@@ -147,7 +147,7 @@ sys_memory_dump:
 sys_get_last_registers:
 	make_syscall 38
 
-sys_get_mem_state:
+sys_get_mem_info:
 	make_syscall 39
 
 sys_initialize_semaphore:

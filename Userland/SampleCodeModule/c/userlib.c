@@ -409,8 +409,8 @@ void printProcessesTable()
     printf("|-------------------------------------------------------------------|\n");
     sys_mem_free(processesInfo);
 }
-void printMemState(){
-    memInfo* meminfo=sys_get_mem_state();
+void printMemInfo(){
+    memInfoPointer meminfo=sys_get_mem_info();
     uint32_t totalBlocks=(meminfo->memSize / meminfo->blockSize);
     uint32_t occupiedBlocks=totalBlocks-meminfo->freeBlocks;
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
