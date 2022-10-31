@@ -121,10 +121,12 @@ uint8_t readPrintables(char *bufferString, uint8_t count)
                 char printableChar = printableKeys[shifted][kbEvent.key];
                 //si esa tecla tenía un caracter printeable, lo ponemos en el string e i++
                 if (printableChar != 0)
+                {
                     bufferString[i] = printableChar;
+                    if(bufferString[i++] == '\n')
+                        return i;
+                }
                 //si no era un caracter printeable, no hacemos nada y no incrementamos i
-                if(bufferString[i++] == '\n')
-                    return i;
             }
         } else    //si todavía no hay nada para leer
         {

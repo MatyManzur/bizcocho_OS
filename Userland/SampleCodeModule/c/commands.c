@@ -3,6 +3,7 @@
 
 int8_t help(uint8_t argc, void** argv)
 {
+    format_t highlightColor= {.backgroundColor=DEFAULT, .characterColor=PINK};
     if(argc >= 1)
     {
         if(!strcmp((char*) argv[0], "1"))
@@ -16,11 +17,14 @@ int8_t help(uint8_t argc, void** argv)
             printf("  PROCESS commands:  \n");
             for(int i=0;i<80;i++)
                 printf("-");
-            printf("NOTE: With all of these you can use '<name> &' to run them in background,\n");
+            sys_print_to_stdout_color("NOTE:", highlightColor);
+            printf(" With all of these you can use '<name> &' to run them in background,\n");
             printf("or '<name1> | <name2>' to connect the output of the first with input of the second with a pipe, ");
             printf("or combine both as in '<name1> & | <name2> &' \n");
-            printf("NOTE 2: If the process is not sent to background, Bizcocho will block until the process is finished or KILLED with [ESC] key\n");
-            printf("NOTE 3: To send an EOF to STDIN press [Ctrl + D]\n");
+            sys_print_to_stdout_color("NOTE 2:", highlightColor);
+            printf(" If the process is not sent to background, Bizcocho will block until the process is finished or KILLED with [ESC] key\n");
+            sys_print_to_stdout_color("NOTE 3:", highlightColor);
+            printf(" To send an EOF to STDIN press [Ctrl + D]\n");
             for(int i=0;i<80;i++)
                 printf("-");
             printf("%c 'loop': sends a message every 5 seconds \n", 7);
@@ -76,7 +80,9 @@ int8_t help(uint8_t argc, void** argv)
             printf("-");
         }
         
-        printf("  For Process commands see FOLLOWING HELP PAGE with 'help 2'!! \n");
+        printf("  For Process commands see following help page with '");
+        sys_print_to_stdout_color("help 2", highlightColor);
+        printf("'!! \n");
         printf("  List of BUILT-IN commands (not processes): \n");
         for(int i=0;i<80;i++)
             printf("-");

@@ -12,6 +12,8 @@
 
 char* promptMessage="Bizcocho $>";
 
+format_t promptColor= {.backgroundColor=DEFAULT, .characterColor=L_RED};
+
 static uint32_t bizcochoPid = 0;
 static size_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT]={
@@ -124,7 +126,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
     while (1)
     {   
         char buffer[BUFFER_DIM]={0};
-        printf(promptMessage);
+        sys_print_to_stdout_color(promptMessage, promptColor);
         sys_clean_buffer();
         sys_set_backspace_base();
         readUntilEnter(buffer);
