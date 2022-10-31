@@ -23,12 +23,10 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
   if (argc != 3) sys_exit(1);
 
 
-  //printf("%d %d %d\n", satoi(argv[0]), satoi(argv[1]), satoi(argv[2]));
-
   if ((n = satoi(argv[0])) <= 0) sys_exit(1);
   if ((inc = satoi(argv[1])) == 0) sys_exit(1);
   if ((use_sem = satoi(argv[2])) < 0) sys_exit(1);
-  int semId;
+  uint32_t semId;
 
   if (use_sem && !(semId = sys_initialize_semaphore(SEM_ID, 1))) sys_exit(1);
   
