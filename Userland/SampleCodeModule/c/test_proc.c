@@ -21,8 +21,6 @@ int64_t test_processes(uint64_t argc, char *argv[]){
   printf("max processes: %d argv[0]: %s\n", max_processes, argv[0]);
   p_rq p_rqs[max_processes];
 
-  // char * string = "aasdfasdfasdfasdfasdfasdfasdf";
-  // int i =0;
   while (1){
 
     // Create max_processes processes
@@ -39,7 +37,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
 
     // Randomly kills, blocks or unblocks processes until every one has been killed
     while (alive > 0){
-      bussy_wait(0x10000000);
+      bussy_wait(0x3000000);
       for(rq = 0; rq < max_processes; rq++){
         action = GetUniform(100) % 2; 
 

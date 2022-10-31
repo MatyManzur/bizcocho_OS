@@ -177,7 +177,7 @@ size_t snprintf(char* buffer,size_t n, char *format, ...)
     return _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
 }
 
-void printf(char *format, ...)//Codigo repetido???? TODO
+void printf(char *format, ...)
 {
     va_list args;
     va_start(args, format);

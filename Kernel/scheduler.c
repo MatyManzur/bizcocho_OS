@@ -60,15 +60,6 @@ static uint8_t getCockatoo(uint32_t pid)
     return (pid * ticks_elapsed()) % 256;
 }
 
-static pointerPCBNODE_t findByPidRec(uint32_t pid, pointerPCBNODE_t head)
-{
-    if (head == NULL)
-        return NULL;
-    if (head->process->pid == pid)
-        return head;
-    return findByPidRec(pid, head->next);
-}
-
 static pointerPCBNODE_t findByPid(uint32_t pid)
 {
     if(pid == schedule.nowRunning->process->pid)
@@ -76,7 +67,14 @@ static pointerPCBNODE_t findByPid(uint32_t pid)
     pointerPCBNODE_t foundPointer = NULL;
     for (int i = 0; i < PRIORITY_COUNT && foundPointer == NULL; i++)
     {
-        foundPointer = findByPidRec(pid, schedule.processes[i]);
+        pointerPCBNODE_t head = schedule.processes[i];
+        while(head!=NULL && foundPointer == NULL)
+        {
+            if (head->process->pid == pid)
+                foundPointer = head;
+            else
+                head = head->next;
+        }
     }
     return foundPointer;
 }
@@ -131,7 +129,10 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     pnode->nextSibling = NULL;
     pnode->remainingQuantum = PRIORITY_COUNT - priority;
     pnode->next = schedule.processes[priority];
-    schedule.processes[priority]->previous = pnode;
+    if(schedule.processes[priority] != NULL)
+    {
+        schedule.processes[priority]->previous = pnode;
+    }
     schedule.processes[priority] = pnode;
     //Agregamos el child a la lista del padre
     if(parent!=NULL)
