@@ -40,7 +40,6 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
                 break;
         }
         printf("Seat number: %d taken\n", seat);
-    // quizás un semáforo de printeo para que no se vea raro, pero las chances son muy bajas
         table[seat] = 'E';
         int j = 0;
         while(j<tableSize){
@@ -82,10 +81,10 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
 
     printf("a to add, r to remove, q to quit\n");
     
-    semForSeat = sys_initialize_semaphore("To initialize", 1);
+    semForSeat = sys_initialize_semaphore("semForSeat", 1);
 
     char * semNames[MAX_PHIL] = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
-    initialAmount %= 10;
+    
     tableSize = initialAmount;
     int i = 0;
 
@@ -115,9 +114,9 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
         {
             sys_read(STDIN, &character, 1);
         }
-        //se fija si escribieron una letra
         if(character == 'a' && tableSize < MAX_PHIL-1)
         {
+            //estoy bloqueando el primer tenedor que va a agarrar el ultimo filosofo actual
             semToStop = (tableSize%2)?  eatingSemaphores[tableSize-1] : eatingSemaphores[0];
             sys_wait_sem(semToStop);
             eatingSemaphores[tableSize] = sys_initialize_semaphore(semNames[tableSize], 1);
