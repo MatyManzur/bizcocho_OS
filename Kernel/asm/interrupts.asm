@@ -240,6 +240,7 @@ _syscallHandler:
 	caseSyscall 18, .C18
 	caseSyscall 19, .C19
 	caseSyscall 20, .C20
+	caseSyscall 21, .C21
 	caseSyscall 22, .C22
 	caseSyscall 30, .C30
 	caseSyscall 31, .C31

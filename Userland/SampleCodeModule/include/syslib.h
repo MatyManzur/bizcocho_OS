@@ -120,7 +120,9 @@ typedef struct pipeInfo
     char name[MAX_PIPE_NAME_SIZE];
     uint16_t charactersLeftToRead;
     uint32_t * blockedByReading;
+    uint32_t amountBlockedRead;
     uint32_t* blockedByWriting;
+    uint32_t amountBlockedWrite;
 } pipeInfo;
 
 typedef pipeInfo* pipeInfoPointer;

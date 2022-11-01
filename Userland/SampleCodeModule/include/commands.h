@@ -21,6 +21,6 @@ int8_t loop(uint8_t argc, void** argv);
 int8_t nice(uint8_t argc, void** argv);
 int8_t ps(uint8_t argc, void** argv);
 int8_t mem(uint8_t argc, void** argv);
-
+int8_t pipe(uint8_t argc, void** argv);
 
 #endif

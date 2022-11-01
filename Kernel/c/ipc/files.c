@@ -360,7 +360,7 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
     uint32_t pipeSize=getSize(pipeFilesList);
     toBegin(pipeFilesList);
     pipeInfoPointer * informationPointer = memalloc(sizeof(pipeInfoPointer)*pipeSize);
-    *pipeAmount=0;
+    uint32_t pipeIndex=0;
 
     pipeFile_t * current;
     ddlADT blockedReadList=getBlockedList(PIPE_READ);
@@ -371,12 +371,12 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
     while(hasNext(pipeFilesList)){
         
         current=(pipeFile_t *) next(pipeFilesList);
-        strncpy(informationPointer[*pipeAmount]->name,current->name,MAX_PIPE_NAME_SIZE);
-
+        informationPointer[pipeIndex]=memalloc(sizeof(pipeInfo));
+        strncpy(informationPointer[pipeIndex]->name,current->name,MAX_PIPE_NAME_SIZE);
         if(current->writingIndex%MAX_PIPE_BUFFER_SIZE < current->readingIndex %MAX_PIPE_BUFFER_SIZE){
-            informationPointer[*pipeAmount]->charactersLeftToRead=MAX_PIPE_BUFFER_SIZE-(current->writingIndex %MAX_PIPE_BUFFER_SIZE);
+            informationPointer[pipeIndex]->charactersLeftToRead=MAX_PIPE_BUFFER_SIZE-(current->writingIndex %MAX_PIPE_BUFFER_SIZE);
         }else{
-            informationPointer[*pipeAmount]->charactersLeftToRead=(current->writingIndex%MAX_PIPE_BUFFER_SIZE)-(current->readingIndex%MAX_PIPE_BUFFER_SIZE);
+            informationPointer[pipeIndex]->charactersLeftToRead=(current->writingIndex%MAX_PIPE_BUFFER_SIZE)-(current->readingIndex%MAX_PIPE_BUFFER_SIZE);
         }
         toBegin(blockedReadList);
         blockedAmount=0;
@@ -385,17 +385,16 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
                 blockedAmount++;
             }
         }
-        informationPointer[*pipeAmount]->blockedByReading=memalloc(blockedAmount*sizeof(uint32_t));
+        informationPointer[pipeIndex]->blockedByReading=memalloc( (blockedAmount) * sizeof(uint32_t));
         uint32_t blockedIndex=0;
         toBegin(blockedReadList);
         while(hasNext(blockedReadList)){
             currentProcess=(PCB_t*) next(blockedReadList);
             if(currentProcess->blockedReason.id == current->fileId){
-                informationPointer[*pipeAmount]->blockedByReading[blockedIndex++]=currentProcess->pid;
+                informationPointer[pipeIndex]->blockedByReading[blockedIndex++]=currentProcess->pid;
             }
         }
-        informationPointer[*pipeAmount]->blockedByReading[blockedIndex]=0; //Lo terminamos
-
+        informationPointer[pipeIndex]->amountBlockedRead=blockedAmount;
         toBegin(blockedWriteList);
         blockedAmount=0;
         while(hasNext(blockedWriteList)){
@@ -403,18 +402,19 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
                 blockedAmount++;
             }
         }
-        informationPointer[*pipeAmount]->blockedByWriting=memalloc(blockedAmount*sizeof(uint32_t));
+        informationPointer[pipeIndex]->blockedByWriting=memalloc((blockedAmount)*sizeof(uint32_t));
         blockedIndex=0;
         toBegin(blockedWriteList);
         while(hasNext(blockedWriteList)){
             currentProcess=(PCB_t*) next(blockedWriteList);
             if(currentProcess->blockedReason.id == current->fileId){
-                informationPointer[*pipeAmount]->blockedByWriting[blockedIndex++]=currentProcess->pid;
+                informationPointer[pipeIndex]->blockedByWriting[blockedIndex++]=currentProcess->pid;
             }
         }
-        informationPointer[*pipeAmount]->blockedByReading[blockedIndex]=0;
+        informationPointer[pipeIndex]->amountBlockedWrite=blockedAmount;
 
-        *pipeAmount+=1;
+        pipeIndex++;
     }
+    *pipeAmount=pipeSize;
     return informationPointer;
 }

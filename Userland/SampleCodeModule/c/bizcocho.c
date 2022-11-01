@@ -15,7 +15,7 @@ char* promptMessage="Bizcocho $>";
 format_t promptColor= {.backgroundColor=DEFAULT, .characterColor=L_RED};
 
 static uint32_t bizcochoPid = 0;
-static size_t pipesCreated = 1;
+static uint32_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT]={
     {.name="help", .builtin=1, .programFunction=help },
     {.name="mem", .builtin=1, .programFunction=mem },
@@ -27,7 +27,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="cat", .builtin=0, .programFunction=cat },
     {.name="wc", .builtin=0, .programFunction=wc },
     {.name="filter", .builtin=0, .programFunction=filter },
-    {.name="pipe", .builtin=1, .programFunction=help },
+    {.name="pipe", .builtin=1, .programFunction=pipe },
     {.name="sem", .builtin=1, .programFunction=printSemaphoreTable },
     {.name="phylo", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**)) startPhylo },
     {.name="monke", .builtin=1, .programFunction=monke },

@@ -196,6 +196,10 @@ int8_t mem(uint8_t argc, void** argv){
     printMemInfo();
     return 0;
 }
+int8_t pipe(uint8_t argc, void** argv){
+    printPipeTable();
+    return 0;
+}
 int8_t loop(uint8_t argc, void** argv){
     uint32_t pid=sys_get_pid();
     struct datetime_t previousTime;

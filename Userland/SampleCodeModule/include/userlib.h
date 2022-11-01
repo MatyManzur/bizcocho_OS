@@ -40,5 +40,7 @@ void printProcessesTable();
 
 void printSemaphoreTable();
 
+void printPipeTable();
+
 void printMemInfo();
 #endif
