@@ -124,7 +124,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             tableSize++;
             sys_post_sem(semToStop);
         }
-        else if(character == 'r' && tableSize>2)
+        else if(character == 'r' && tableSize>3)
         {
             semToStop = (tableSize%2)? eatingSemaphores[tableSize-1] : eatingSemaphores[0];
             sys_wait_sem(semToStop);

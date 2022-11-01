@@ -94,7 +94,10 @@ void postSem(uint32_t id)
         {
             acquire(&lockListPid);
             toBegin(curr->blockedProcessList);
-            uint32_t * pid = (uint32_t *) next(curr->blockedProcessList);
+            uint32_t * pid = NULL;
+            while(hasNext(curr->blockedProcessList)){
+                pid = (uint32_t *) next(curr->blockedProcessList);
+            }
             if(pid!=NULL){
                 memfree(pid);
                 remove(curr->blockedProcessList);
