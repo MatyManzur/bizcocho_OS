@@ -33,6 +33,7 @@ static ddlADT deathList;
 static int8_t initProcess(uint8_t argc, void **argv);
 
 static uint8_t _killProcess(pointerPCBNODE_t head);
+static void _unblockProcessWithReason(pointerPCBNODE_t head, BlockedReason_t blockReason);
 
 static char stateChars[] = {'?', 'R', 'F'};
 static char blockedReasonChars[] = {'?', 'B', 'P', 'p', 'C', 'S'};
@@ -129,6 +130,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     pnode->prevSibling = NULL;
     pnode->nextSibling = NULL;
     pnode->remainingQuantum = PRIORITY_COUNT - priority;
+    pnode->previous = NULL;
     pnode->next = schedule.processes[priority];
     if(schedule.processes[priority] != NULL)
     {
@@ -348,7 +350,7 @@ static uint8_t _killProcess(pointerPCBNODE_t head)
         // si el padre estaba esperando por él (en específico o por cualquier hijo)
         if (parentHead->process->blockedReason.source == WAIT_CHILD && (parentHead->process->blockedReason.id == head->process->pid || parentHead->process->blockedReason.id == 0))
         {
-            setProcessReady(parentHead->process);
+            _unblockProcessWithReason(parentHead, parentHead->process->blockedReason);
             // le decimos que no espere más, el statusCode lo puede agarrar de nuestro struct
         }
         head->process->state = FINISHED;
@@ -425,12 +427,9 @@ uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
     return found; 
 }
 
-// Para uso del kernel, no es syscall
-uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
+static void _unblockProcessWithReason(pointerPCBNODE_t head, BlockedReason_t blockReason)
 {
-    pointerPCBNODE_t head = findByPid(pid);
-    uint8_t found = head != NULL && head->process->blockedReason.source == blockReason.source && head->process->blockedReason.id == blockReason.id && head->process->state == BLOCKED;
-    if (found)
+    if(head!=NULL)
     {
         setProcessReady(head->process);
         toBegin(blockedProcesses[blockReason.source]);
@@ -440,9 +439,20 @@ uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
             if(current->pid == head->process->pid)
             {
                 remove(blockedProcesses[blockReason.source]);
-                return found;
+                return;
             }
         }
+    }
+}
+
+// Para uso del kernel, no es syscall
+uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
+{
+    pointerPCBNODE_t head = findByPid(pid);
+    uint8_t found = head != NULL && head->process->blockedReason.source == blockReason.source && head->process->blockedReason.id == blockReason.id && head->process->state == BLOCKED;
+    if (found)
+    {
+        _unblockProcessWithReason(head, blockReason);
     }
     return found;
 }

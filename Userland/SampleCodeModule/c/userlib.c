@@ -430,34 +430,33 @@ void printPipeTable(){
     uint32_t pipeamount=0;
     pipeInfoPointer* infopipe=sys_get_pipe_info(&pipeamount);
 
-    fprintf(STDOUT, "|-----------|-------------------------|\n");
-    fprintf(STDOUT, "| Pipe Name | Characters Left To Read |\n");
-    fprintf(STDOUT, "|-----------|-------------------------|\n");
+    fprintf(STDOUT, "|------------|--------------------------|\n");
+    fprintf(STDOUT, "| Pipe Name  | Characters Left To Read  |\n");
+    fprintf(STDOUT, "|------------|--------------------------|\n");
     for (uint32_t i = 0; i < pipeamount; i++)
     {
-       fprintf(STDOUT, "|  %7s  |           %4d          |\n",infopipe[i]->name,infopipe[i]->charactersLeftToRead);
+       fprintf(STDOUT, "| %10s |       %4d               |\n",infopipe[i]->name,infopipe[i]->charactersLeftToRead);
     }
-    fprintf(STDOUT, "|-----------|-------------------------|\n");
 
-    fprintf(STDOUT, "|-----------|-----|-------------------|\n");
-    fprintf(STDOUT, "| Pipe Name | PID |     Blocked by    |\n");
-    fprintf(STDOUT, "|-----------|-----|-------------------|\n");
-   for (uint32_t i = 0; i < pipeamount; i++)
-   {
-        for (uint32_t j = 0; j<infopipe[i]->amountBlockedRead; j++)
-        {
-            fprintf(STDOUT, "|  %7s  | %3d |       Read        |\n",infopipe[i]->name,infopipe[i]->blockedByReading[j]);
-        }
-        
-        for (uint32_t j = 0; j<infopipe[i]->amountBlockedWrite; j++)
-        {
-            fprintf(STDOUT, "|  %7s  | %3d |      Write        |\n",infopipe[i]->name,infopipe[i]->blockedByWriting[j]);
-        }
-        sys_mem_free(infopipe[i]->blockedByReading);
-        sys_mem_free(infopipe[i]->blockedByWriting);
-        sys_mem_free(infopipe[i]);
-   }
+    fprintf(STDOUT, "|------------|-------------|------------|\n");
+    fprintf(STDOUT, "| Pipe Name  | Blocked PID | Blocked by |\n");
+    fprintf(STDOUT, "|------------|-------------|------------|\n");
+    for (uint32_t i = 0; i < pipeamount; i++)
+    {
+            for (uint32_t j = 0; j<infopipe[i]->amountBlockedRead; j++)
+            {
+                fprintf(STDOUT, "| %10s |     %3d     |    Read    |\n",infopipe[i]->name,infopipe[i]->blockedByReading[j]);
+            }
+            
+            for (uint32_t j = 0; j<infopipe[i]->amountBlockedWrite; j++)
+            {
+                fprintf(STDOUT, "| %10s |     %3d     |    Write   |\n",infopipe[i]->name,infopipe[i]->blockedByWriting[j]);
+            }
+            sys_mem_free(infopipe[i]->blockedByReading);
+            sys_mem_free(infopipe[i]->blockedByWriting);
+            sys_mem_free(infopipe[i]);
+    }
     sys_mem_free(infopipe);
-    fprintf(STDOUT, "|-----------|-------------------------|\n");
+    fprintf(STDOUT, "|------------|-------------|------------|\n");
 }
 
