@@ -64,6 +64,39 @@ int8_t open(char* name, uint8_t mode, uint8_t* fd)
     return 0;
 }
 
+//Para que la llame el scheduler cuando está matando un proceso
+int8_t closeForKilling(uint16_t fileId, uint8_t mode)
+{
+    pipeFile_t* file;
+    toBegin(pipeFilesList);
+    while(hasNext(pipeFilesList))
+    {
+        file = (pipeFile_t *) next(pipeFilesList);
+        if(file->fileId == fileId)
+        {
+            file->currentOpenCount--;
+            if(mode=='W')
+            {
+                file->writeOpenCount--;
+                if(file->writeOpenCount == 0)
+                {
+                    BlockedReason_t unblockRead;
+                    unblockRead.id = fileId;
+                    unblockRead.source = PIPE_READ;
+                    unblockAllProcessesBecauseReason(unblockRead);
+                }
+            }
+            if(!file->currentOpenCount)
+            {
+                memfree(file);
+                remove(pipeFilesList);
+            }
+            return 0;
+        }
+    }
+    return -1;
+}
+
 int8_t close(uint8_t fd)
 {   
     uint8_t mode = 0;
@@ -398,7 +431,7 @@ pipeInfoPointer* getPipeInfo(uint32_t* pipeAmount)
         toBegin(blockedWriteList);
         blockedAmount=0;
         while(hasNext(blockedWriteList)){
-            if( ((PCB_t *) next(blockedReadList))->blockedReason.id == current->fileId){
+            if( ((PCB_t *) next(blockedWriteList))->blockedReason.id == current->fileId){
                 blockedAmount++;
             }
         }

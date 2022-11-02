@@ -4,7 +4,6 @@
 #include <lib.h>
 #include <interrupts.h>
 #include <files.h>
-#include <time.h>
 
 #define MAX_FD_COUNT 64
 #define PRIORITY_COUNT 5
@@ -53,7 +52,6 @@ typedef struct PCB_t
     int8_t (*processCodeStart)(uint8_t argc, void **argv);
     void *processMemStart;
     void *processMemEnd;
-    uint8_t cockatoo;      // un canary medio trucho que ponemos al final de la memoria para ver que no se pase (pero podría saltarlo tranquilamente)
     uint64_t stackPointer; // valor del stackPointer que guarda para poder restablecer todos los registros al volver a esta task. Si es la primera vez que se llamó, stackPointer = 0
     State_t state;
     int8_t statusCode;

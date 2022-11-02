@@ -48,6 +48,8 @@ int8_t modifyOpenCount(uint16_t fileID, int8_t units, uint8_t mode);
 
 void fprintf(int fd, char *format, ...);
 
+int8_t closeForKilling(uint16_t fileId, uint8_t mode);
+
 //SYSCALLS
 int write(int fd,char* s);
 

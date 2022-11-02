@@ -79,10 +79,9 @@ int8_t help(uint8_t argc, void** argv)
             printf("%c", (i%2)+1);
             printf("-");
         }
-        
-        printf("  For Process commands see following help page with '");
+        printf("  See '");
         sys_print_to_stdout_color("help 2", highlightColor);
-        printf("'!! \n");
+        printf("' for Process commands in following help page!! \n");
         printf("  List of BUILT-IN commands (not processes): \n");
         for(int i=0;i<80;i++)
             printf("-");
@@ -115,6 +114,7 @@ int8_t monke(uint8_t argc, void** argv)
     sys_print_to_stdout_color("  \\ \\_/`\"\"\"`\\_/ /  \\ \\_/`\"\"\"`\\_/ /      /`\\ /`\\         /`\"\"\"`\\                \n", fmt);
     sys_print_to_stdout_color("   \\           /    \\           /      /  /|\\  \\       /       \\               \n", fmt);
     sys_print_to_stdout_color("-={ see no evil }={ hear no evil }={ speak no evil }={ have no fun }=-         \n", fmt);
+    return 0;
 }
 
 int8_t cat(uint8_t argc, void** argv)
@@ -209,6 +209,7 @@ int8_t loop(uint8_t argc, void** argv){
     sys_get_current_date_time(&timeAtCheck,&timezone);
     previousTime.secs=timeAtCheck.secs;
     while(1){
+        printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); //TODO: borrar
         sys_get_current_date_time(&timeAtCheck,&timezone);
         if( ( previousTime.secs+5 ) <= timeAtCheck.secs || previousTime.secs > timeAtCheck.secs)
         {

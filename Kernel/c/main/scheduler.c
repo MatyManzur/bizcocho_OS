@@ -57,11 +57,6 @@ static pointerPCBNODE_t findNextProcess()
     return head;
 }
 
-static uint8_t getCockatoo(uint32_t pid)
-{
-    return (pid * ticks_elapsed()) % 256;
-}
-
 static pointerPCBNODE_t findByPid(uint32_t pid)
 {
     if(pid == schedule.nowRunning->process->pid)
@@ -92,8 +87,6 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     processPCB->argv = argv;
     processPCB->processCodeStart = processCodeStart;
     processPCB->processMemEnd = memalloc(PROCESS_MEM_SIZE);
-    processPCB->cockatoo = getCockatoo(processPCB->pid);
-    *(uint8_t *)(processPCB->processMemEnd) = processPCB->cockatoo;
     processPCB->processMemStart = processPCB->processMemEnd + PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
     processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
@@ -215,11 +208,6 @@ void scheduler()
                        schedule.nowRunning->process->processMemStart);
         return;
     }
-    // chequeamos si se piso el cockatoo
-    if (*(uint8_t *)(schedule.nowRunning->process->processMemStart - PROCESS_MEM_SIZE + 1) != schedule.nowRunning->process->cockatoo)
-    {
-        // perdiste capo -> tirar algun tipo de error y matar el proceso? todo
-    }
     uint8_t canContinue = (schedule.nowRunning->remainingQuantum > 0);
     if (schedule.nowRunning->process->state == READY && canContinue)
     {
@@ -322,11 +310,11 @@ static uint8_t _killProcess(pointerPCBNODE_t head)
 {
     if (head != NULL) // si lo encontró
     {
-        for(uint8_t i; i<MAX_FD_COUNT;i++) //cerramos los files que haya dejado abiertos
+        for(uint8_t i=0; i<MAX_FD_COUNT;i++) //cerramos los files que haya dejado abiertos
         {
             if(head->process->fds[i].mode != 'N' && head->process->fds[i].fileID > STDERR)
             {
-                close(i);
+                closeForKilling(head->process->fds[i].fileID, head->process->fds[i].mode);
             }
         }
         if(head->process->inDeathList)

@@ -94,6 +94,7 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
             fprintf(STDERR, "Error in replacing fileDescriptors!\n");
             return 0;
         }
+        sys_close(stdinChange);
     }
     if(stdoutChange != NO_CHANGE_FD)
     {
@@ -102,6 +103,7 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
             fprintf(STDERR, "Error in replacing fileDescriptors!\n");
             return 0;
         }
+        sys_close(stdoutChange);
     }
     uint32_t pid;
     if(background)
@@ -178,23 +180,22 @@ int8_t bizcocho(uint8_t argc, void** argv)
                     fprintf(STDERR, "Error in opening writing end of pipe!\n");
                     continue;
                 }
+
+                uint8_t leftBackground = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
+                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - leftBackground,(void**)argv[0], NO_CHANGE_FD, writeFd, leftBackground);
+                if(leftPid == 0)
+                    continue;
+                
                 uint8_t readFd;
                 if(sys_open(namepipe, 'R', &readFd) != 0)
                 {
                     fprintf(STDERR, "Error in opening reading end of pipe!\n");
-                    sys_close(writeFd);
+                    sys_kill_process(leftPid);
                     continue;
                 }
 
-                uint8_t leftBackground = (argc[0] > 0) && (strcmp(argv[0][argc[0] - 1], "&") == 0);
-                uint32_t leftPid = executeNonBuiltIn(commands[foundCommand[0]].name, commands[foundCommand[0]].programFunction, argc[0] - leftBackground,(void**)argv[0], NO_CHANGE_FD, writeFd, leftBackground);
-                sys_close(writeFd);
-                if(leftPid == 0)
-                    continue;
-                
                 uint8_t rightBackground = (argc[1] > 0) && (strcmp(argv[1][argc[1] - 1], "&") == 0);
                 uint32_t rightPid = executeNonBuiltIn(commands[foundCommand[1]].name, commands[foundCommand[1]].programFunction, argc[1] - rightBackground,(void**) argv[1], readFd, NO_CHANGE_FD, rightBackground);
-                sys_close(readFd);
                 if(rightPid == 0)
                 {
                     sys_kill_process(leftPid);
