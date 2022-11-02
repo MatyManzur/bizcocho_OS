@@ -6,7 +6,7 @@
 
 #define MAX_SEM_NAME 32
 
-int _xchg(uint8_t *lock, int value);
+int _xchg(/*uint8_t*/ int *lock, int value);
 
 typedef struct blockHub
 {

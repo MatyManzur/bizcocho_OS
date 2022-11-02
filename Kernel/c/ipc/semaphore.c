@@ -127,6 +127,7 @@ int8_t closeSem(uint32_t id)
         if(curr->id == id)
         {
             remove(hub.semBlockList);
+            freeList(curr->blockedProcessList);
             memfree(curr);
             acquire(&lock);
             semCount--;
