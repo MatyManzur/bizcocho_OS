@@ -34,7 +34,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
             mm_rqs[rq].address = sys_mem_alloc(mm_rqs[rq].size);
 
             //Out of blocks
-            if(mm_rqs[rq].address== NULL){
+            if(mm_rqs[rq].address == NULL){
                 break;
             }
 

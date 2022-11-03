@@ -1,6 +1,7 @@
 #include <phylo.h>
 
 #define MAX_PHIL 10
+#define MIN_PHIL 3
 
 static uint8_t forSeat;
 static uint8_t table[MAX_PHIL];
@@ -11,6 +12,8 @@ static uint8_t mustSkip;
 static uint8_t lastOneWaitingInFirstSem;
 
 uint32_t eatingSemaphores[MAX_PHIL];
+
+static format_t highlightColor= {.backgroundColor=DEFAULT, .characterColor=PINK};
 
 uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
 {
@@ -36,15 +39,13 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
 
-                if(sys_wait_sem(left)<0)
-                    sys_exit(1);
+                sys_wait_sem(left);
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
 
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 1;
-                if(sys_wait_sem(right)<0)
-                    sys_exit(1);
+                sys_wait_sem(right);
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 0;
                 break;
@@ -52,15 +53,13 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
             case 1:
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 1;
-                if(sys_wait_sem(right)<0)
-                    sys_exit(1);
+                sys_wait_sem(right);
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 0;
 
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
-                if(sys_wait_sem(left)<0)
-                    sys_exit(1);
+                sys_wait_sem(left);
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
                 break;
@@ -105,16 +104,22 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
 
 uint8_t startPhylo(uint8_t argc, char * argv[])
 {
-    if(argc != 1) sys_exit(1);
-
-    uint8_t initialAmount = satoi(argv[0]);
-    
-    if(initialAmount<3 || initialAmount>MAX_PHIL-1){
-        fprintf(STDERR, "Please choose an amount between 3 and %d\n", MAX_PHIL-1);
+    if(argc != 1) 
+    {
+        fprintf(STDERR, "Phylo must receive one argument!\n");
         sys_exit(1);
     }
 
-    printf("a to add, r to remove, q to quit\n");
+    uint8_t initialAmount = satoi(argv[0]);
+    
+    if(initialAmount<MIN_PHIL || initialAmount>MAX_PHIL-1){
+        fprintf(STDERR, "Please choose an amount between %d and %d\n", MIN_PHIL, MAX_PHIL-1);
+        sys_exit(1);
+    }
+
+
+    sys_print_to_stdout_color("CONTROLS: \n", highlightColor);
+    sys_print_to_stdout_color("'a' to add, 'r' to remove, 'q' to quit\n", highlightColor);
     
     semForSeat = sys_initialize_semaphore("semForSeat", 1);
     if(semForSeat==0)
@@ -160,8 +165,14 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
         {
             sys_read(STDIN, &character, 1);
         }
-        if(character == 'a' && tableSize < MAX_PHIL-1)
+        if(character == 'a')
         {
+            if(tableSize >= MAX_PHIL-1)
+            {
+                fprintf(STDERR, "Reached philosopher limit. Max: %d\n", MAX_PHIL-1);
+                continue;
+            }
+            sys_print_to_stdout_color("Adding philosopher...\n", highlightColor);
             //estoy bloqueando el primer tenedor que va a agarrar el ultimo filosofo actual
             semToStop = (tableSize%2)?  eatingSemaphores[tableSize-1] : eatingSemaphores[0];
             if(sys_wait_sem(semToStop)<0)
@@ -175,8 +186,14 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             tableSize++;
             sys_post_sem(semToStop);
         }
-        else if(character == 'r' && tableSize>3)
+        else if(character == 'r')
         {
+            if(tableSize <= MIN_PHIL)
+            {
+                fprintf(STDERR, "There must be at least %d philosophers\n", MIN_PHIL);
+                continue;
+            }
+            sys_print_to_stdout_color("Removing philosopher...\n", highlightColor);
             if(sys_wait_sem(eatingSemaphores[0])<0)
                 sys_exit(1);
             if(sys_wait_sem(eatingSemaphores[tableSize-2])<0)
@@ -206,6 +223,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
 
         } else if(character == 'q')
         {
+            sys_print_to_stdout_color("Ending...\n", highlightColor);
             for(int i = 0; i < tableSize ; i++)
             {
                 printf("Killing: %d\n", pids[i]);
