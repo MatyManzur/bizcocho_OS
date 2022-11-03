@@ -177,21 +177,15 @@ void sys_get_current_date_time(struct datetime_t *datetime, struct timezone_t *t
 
 void sys_set_time_zone(const struct timezone_t *tzone);
 
-unsigned long sys_ticks_elapsed();
-
-unsigned long sys_seconds_elapsed();
-
 void sys_sleep(uint64_t sleepTicks);
 
-void *sys_mem_alloc(uint32_t nbytes);
+void* sys_mem_alloc(uint32_t nbytes);
 
 void sys_mem_free(void *ptr );
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
 memInfoPointer sys_get_mem_info();
-
-void sys_get_last_registers(struct registers_t *registers);
 
 uint32_t sys_initialize_semaphore(char * name, uint64_t initialValue);
 

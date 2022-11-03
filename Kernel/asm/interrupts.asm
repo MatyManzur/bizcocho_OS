@@ -49,14 +49,10 @@ EXTERN cleanBuffer
 
 EXTERN getCurrentDateTime
 EXTERN setTimeZone
-EXTERN ticks_elapsed
-EXTERN seconds_elapsed
 EXTERN sleep
 
 EXTERN memalloc
 EXTERN memfree
-EXTERN memdump
-EXTERN getLastRegisters
 EXTERN getMemInfo
 
 EXTERN initializeSemaphore
@@ -248,10 +244,6 @@ _syscallHandler:
 	caseSyscall 33, .C33
 	caseSyscall 34, .C34
 	caseSyscall 35, .C35
-	caseSyscall 36, .C36
-	caseSyscall 37, .C37
-	caseSyscall 38, .C38
-	caseSyscall 39, .C39
 	caseSyscall 40, .C40
 	caseSyscall 41, .C41
 	caseSyscall 42, .C42
@@ -334,29 +326,17 @@ _syscallHandler:
 	call setTimeZone
 	jmp .end
 .C32:
-	call ticks_elapsed
-	jmp .end
-.C33:
-	call seconds_elapsed
-	jmp .end
-.C34:
 	call sleep
 	jmp .end
-.C35:
+.C33:
 	call memalloc
 	jmp .end
-.C36:
+.C34:
 	call memfree
 	jmp .end
-.C37:
-	call memdump
-	jmp .end
-.C38:
-	call getLastRegisters	
-	jmp .end
-.C39:
+.C35:
 	call getMemInfo
-	jmp .end
+	jmp .end 
 .C40:
 	call initializeSemaphore
 	jmp .end

@@ -20,14 +20,10 @@ GLOBAL sys_close
 GLOBAL sys_dup2
 GLOBAL sys_revert_fd_replacements
 GLOBAL sys_get_pipe_info
-GLOBAL sys_memory_dump
-GLOBAL sys_get_last_registers
 GLOBAL sys_get_mem_info
 GLOBAL sys_clean_buffer
 GLOBAL sys_get_current_date_time
 GLOBAL sys_set_time_zone
-GLOBAL sys_ticks_elapsed
-GLOBAL sys_seconds_elapsed
 GLOBAL sys_sleep
 GLOBAL sys_mem_alloc
 GLOBAL sys_mem_free
@@ -126,29 +122,17 @@ sys_get_current_date_time:
 sys_set_time_zone:
 	make_syscall 31
 
-sys_ticks_elapsed:
-	make_syscall 32
-	
-sys_seconds_elapsed:
-	make_syscall 33
-	
 sys_sleep:
-	make_syscall 34
+	make_syscall 32
 
 sys_mem_alloc:
-	make_syscall 35
+	make_syscall 33
 
 sys_mem_free:
-	make_syscall 36
-
-sys_memory_dump:
-	make_syscall 37
-	
-sys_get_last_registers:
-	make_syscall 38
+	make_syscall 34
 
 sys_get_mem_info:
-	make_syscall 39
+	make_syscall 35
 
 sys_initialize_semaphore:
 	make_syscall 40

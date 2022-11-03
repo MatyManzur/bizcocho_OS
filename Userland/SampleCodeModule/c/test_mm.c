@@ -29,9 +29,14 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
         total = 0;
 
         // Request as many blocks as we can
-        while(rq < MAX_BLOCKS && total < max_memory){
+        while(rq < MAX_BLOCKS && total < max_memory ){
             mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
             mm_rqs[rq].address = sys_mem_alloc(mm_rqs[rq].size);
+
+            //Out of blocks
+            if(mm_rqs[rq].address== NULL){
+                break;
+            }
 
             if(mm_rqs[rq].address)
             {
@@ -52,7 +57,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]){
             if (mm_rqs[i].address)
                 if(!memcheck(mm_rqs[i].address, i, mm_rqs[i].size))
                 {
-                    printf("test_mm ERROR\n");
+                    fprintf(STDERR,"test_mm ERROR\n");
                     sys_exit(1);
                 }
         
