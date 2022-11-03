@@ -80,6 +80,8 @@ static pointerPCBNODE_t findByPid(uint32_t pid)
 static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid, fileDescriptor_t fds[MAX_FD_COUNT], pointerPCBNODE_t parent, uint8_t diesOnEsc)
 {
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
+    if(processPCB==NULL)
+        OUT_OF_MEM_ERROR(NULL);
     processPCB->pid = pidToGive++;
     processPCB->ppid = ppid; //El parent provisto
     strncpy(processPCB->name, name, NAME_MAX);
@@ -87,6 +89,8 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     processPCB->argv = argv;
     processPCB->processCodeStart = processCodeStart;
     processPCB->processMemEnd = memalloc(PROCESS_MEM_SIZE);
+    if(processPCB->processMemEnd == NULL)
+        OUT_OF_MEM_ERROR(NULL);
     processPCB->processMemStart = processPCB->processMemEnd + PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
     processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
@@ -110,6 +114,8 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
         }
     }
     processPCB->fdReplacements = newList();
+    if(processPCB->fdReplacements == NULL)
+        return NULL;
     processPCB->priority = priority;
     processPCB->blockedReason.source = NO_BLOCK;
     processPCB->blockedReason.id = 0;
@@ -118,6 +124,8 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     
     // Agrega a las listas este PCB creado
     pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
+    if(pnode==NULL)
+        OUT_OF_MEM_ERROR(NULL);
     pnode->process = processPCB;
     pnode->children = NULL;
     pnode->prevSibling = NULL;
@@ -151,7 +159,8 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     }
     if(diesOnEsc)
     {
-        add(deathList, pnode);
+        if(add(deathList, pnode)<0)
+            return NULL;
     }
     schedule.processCount++;
     return pnode;
@@ -166,6 +175,8 @@ uint32_t startParentProcess(char *name, uint8_t argc, void ** argv, int8_t (*pro
         fdsToCopy=processToCopyFds->process->fds;
     }
     pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,fdsToCopy,init, 0);
+    if(pnode==NULL)
+        return 0;
     schedulerRunning = 1;
     return pnode->process->pid;
 }
@@ -177,7 +188,8 @@ uint32_t startChildProcess(char *name, uint8_t argc, void ** argv, int8_t (*proc
     pointerPCBNODE_t parent= schedule.nowRunning;
 
     pointerPCBNODE_t pnode= startProcess(name,argc,argv,processCodeStart,priority,schedule.nowRunning->process->pid,schedule.nowRunning->process->fds,parent, diesOnEsc);
-
+    if(pnode==NULL)
+        return 0;
     return pnode->process->pid;
 }
 
@@ -585,12 +597,13 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd)
     }
     lostFd_t* lost=memalloc(sizeof(lostFd_t));
     if(lost==NULL){
-        return -1;
+        OUT_OF_MEM_ERROR(-1);
     }
     lost->index=toFd;
     lost->lostID=schedule.nowRunning->process->fds[toFd].fileID;
     lost->lostMode=schedule.nowRunning->process->fds[toFd].mode;
-    add(schedule.nowRunning->process->fdReplacements,(void *) lost);
+    if(add(schedule.nowRunning->process->fdReplacements,(void *) lost)<0)
+        return -1;
 
     schedule.nowRunning->process->fds[toFd].fileID = schedule.nowRunning->process->fds[fromFd].fileID;
     schedule.nowRunning->process->fds[toFd].mode = schedule.nowRunning->process->fds[fromFd].mode;
@@ -641,6 +654,8 @@ processInfoPointer * getProcessInfo(uint32_t * procAmount)
 {
     uint32_t j = 0;
     processInfoPointer * procInfo = memalloc(sizeof(processInfoPointer) * schedule.processCount);
+    if(procInfo==NULL && schedule.processCount > 0)
+        OUT_OF_MEM_ERROR(NULL);
     for(int i=0 ; i<PRIORITY_COUNT ; i++)
     {
         pointerPCBNODE_t head = schedule.processes[i];
@@ -648,6 +663,8 @@ processInfoPointer * getProcessInfo(uint32_t * procAmount)
         {
             PCB_t* process = head->process;
             procInfo[j] = memalloc(sizeof(processInfo));
+            if(procInfo[j]==NULL)
+                OUT_OF_MEM_ERROR(NULL);
             strcpy(procInfo[j]->name, process->name);
             procInfo[j]->pid = process->pid;
             procInfo[j]->ppid = process->ppid;

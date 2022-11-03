@@ -10,7 +10,7 @@ int _xchg(/*uint8_t*/ int *lock, int value);
 
 typedef struct blockHub
 {
-    int globalid; // se inicializa en 0 al principio de todo, también podría ser un static
+    int globalid;
     ddlADT semBlockList;
 } blockHub;
 
@@ -44,7 +44,7 @@ void initSemaphoreHub();
 //SYSCALLS
 uint32_t initializeSemaphore(char * name, uint64_t initialValue);
 
-uint64_t waitSem(uint32_t id);
+int64_t waitSem(uint32_t id);
 
 uint32_t getSemCount();
 
@@ -52,6 +52,6 @@ void postSem(uint32_t id);
 
 int8_t closeSem(uint32_t id);
 
-semInfoPointer getSemaphoreInfo(uint32_t * semAmount);
+semInfoPointer* getSemaphoreInfo(uint32_t * semAmount);
 
 #endif

@@ -41,8 +41,8 @@ uint32_t initializeSemaphore(char * name, uint64_t initialValue)
     if(curr==NULL)
     {
         curr = memalloc(sizeof(struct semBlock));
-        if(curr==NULL)
-            return 0;
+        if(curr == NULL)
+            OUT_OF_MEM_ERROR(0);
         strncpy(curr->name, name, 32); 
         curr->next = NULL;
         curr->amountBlocked = 0;
@@ -50,15 +50,18 @@ uint32_t initializeSemaphore(char * name, uint64_t initialValue)
         curr->value = initialValue;
         curr->semLock = 0;
         curr->blockedProcessList = newList();
+        if(curr->blockedProcessList == NULL)
+            return 0;
         acquire(&lock);  
         semCount++; 
-        add(hub.semBlockList, curr);
+        if(add(hub.semBlockList, curr)<0)
+            return 0;
         _xchg(&lock,0);
     }
     return curr->id;
 }
 
-uint64_t waitSem(uint32_t id)
+int64_t waitSem(uint32_t id)
 {
     semPointer curr = (semPointer) find(hub.semBlockList, cmpById, &id);
 
@@ -72,12 +75,15 @@ uint64_t waitSem(uint32_t id)
     }
     else{
         uint32_t * pid = memalloc(sizeof(uint32_t));
+        if(pid==NULL)
+            OUT_OF_MEM_ERROR(-1);
         *pid = getPid();
         curr->amountBlocked++;
         BlockedReason_t reason;
         reason.id = curr->id;
         reason.source = WAIT_SEM;
-        add(curr->blockedProcessList, pid);
+        if(add(curr->blockedProcessList, pid)<0)
+            return -1;
         _xchg(&(curr->semLock),0);
         blockProcessWithReason(*pid, reason);
     }
@@ -147,21 +153,27 @@ uint32_t getSemCount()
 
 
 // desde userland se deben realizar los malloc
-semInfoPointer getSemaphoreInfo(uint32_t * semAmount)
+semInfoPointer* getSemaphoreInfo(uint32_t * semAmount)
 {
     acquire(&lockList);
     toBegin(hub.semBlockList);
     *semAmount = 0;
-    semInfoPointer * informationPointer = memalloc(sizeof(semInfoPointer)*semCount);
+    semInfoPointer* informationPointer = memalloc(sizeof(semInfoPointer)*semCount);
+    if(informationPointer == NULL && semCount > 0)
+        OUT_OF_MEM_ERROR(NULL);
     semPointer curr;
     while((curr = (semPointer) next(hub.semBlockList))!=NULL)
     {
         informationPointer[*semAmount] = memalloc(sizeof(semInfo));
+        if(informationPointer[*semAmount] == NULL)
+            OUT_OF_MEM_ERROR(NULL);
         informationPointer[*semAmount]->id = curr->id;
         strncpy(informationPointer[*semAmount]->name, curr->name,MAX_SEM_NAME);
         informationPointer[*semAmount]->value = curr->value;
         acquire(&(curr->semLock));
         informationPointer[*semAmount]->blocked = memalloc(sizeof(uint32_t)*(curr->amountBlocked+1));
+        if(informationPointer[*semAmount]->blocked == NULL)
+            OUT_OF_MEM_ERROR(NULL);
         toBegin(curr->blockedProcessList);
         uint32_t * blockedPid;
         int i=0;

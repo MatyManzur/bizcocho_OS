@@ -1,4 +1,5 @@
 #include <ddlADT.h>
+#include <files.h>
 
 typedef struct node
 {
@@ -20,22 +21,27 @@ struct ddlCDT
 ddlADT newList()
 {
     ddlADT ans = memalloc(sizeof(struct ddlCDT));
+    if(ans == NULL)
+        OUT_OF_MEM_ERROR(NULL);
     ans->first=NULL;
     ans->current=NULL;
     ans->toRemove=NULL;
     return ans;
 }
 
-void add(ddlADT list, elemType elem) //agrega al principio
+int8_t add(ddlADT list, elemType elem) //agrega al principio
 {
     TList second = list->first;
     list->first = memalloc(sizeof(struct node));
+    if(list->first == NULL)
+        OUT_OF_MEM_ERROR(-1);
     list->first->elem = elem;
     list->first->next = second;
     list->first->prev = NULL;
     if(second!=NULL)
         second->prev = list->first;
     list->size+=1;
+    return 0;
 }
 
 void toBegin(ddlADT list)

@@ -19,6 +19,8 @@ void test_prio(){
     for(i = 0; i < TOTAL_PROCESSES; i++)
     {
         pids[i] = sys_start_child_process("endless_loop_print", 0, NULL, (int8_t (*)(uint8_t,  void **)) endless_loop_print, 0);
+        if(pids[i]==0)
+            sys_exit(1);
     }
 
     bussy_wait(WAIT);

@@ -4,6 +4,7 @@
 #include <lib.h>
 #include <memoryManager.h>
 
+
 typedef struct ddlCDT * ddlADT;
 
 typedef void * elemType;
@@ -12,7 +13,7 @@ typedef void * elemType;
 ddlADT newList();
 
 // Agrega un elemento.
-void add(ddlADT list, elemType elem);
+int8_t add(ddlADT list, elemType elem);
 
 /* Resetea el iterador que recorre la lista en el orden de inserción */
 void toBegin(ddlADT list);

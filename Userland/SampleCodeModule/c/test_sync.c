@@ -38,7 +38,11 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
 
   uint64_t i;
   for (i = 0; i < n; i++){
-    if (use_sem) sys_wait_sem(semId);
+    if (use_sem) 
+    {
+      if(sys_wait_sem(semId)<0)
+        sys_exit(1);
+    }
     slowInc(&global, inc);
     if (use_sem) sys_post_sem(semId);
   }
@@ -62,7 +66,11 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
     pids[i] = sys_start_child_process("my_process_inc", 3,(void **) argvDec, (int8_t (*)(uint8_t,  void **))my_process_inc, 0);
+    if(pids[i]==0)
+      sys_exit(1);
     pids[i + TOTAL_PAIR_PROCESSES] = sys_start_child_process("my_process_inc", 3, (void **) argvInc, (int8_t (*)(uint8_t,  void **)) my_process_inc, 0);
+    if(pids[i + TOTAL_PAIR_PROCESSES]==0)
+      sys_exit(1);
   }
   
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){

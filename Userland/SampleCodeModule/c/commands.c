@@ -179,6 +179,12 @@ int8_t ps(uint8_t argc, void** argv)
     return 0;
 }
 
+int8_t sem(uint8_t argc, void** argv)
+{
+    printSemaphoreTable();
+    return 0;
+}
+
 
 int8_t nice(uint8_t argc, void** argv)
 {
@@ -209,7 +215,6 @@ int8_t loop(uint8_t argc, void** argv){
     sys_get_current_date_time(&timeAtCheck,&timezone);
     previousTime.secs=timeAtCheck.secs;
     while(1){
-        printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); //TODO: borrar
         sys_get_current_date_time(&timeAtCheck,&timezone);
         if( ( previousTime.secs+5 ) <= timeAtCheck.secs || previousTime.secs > timeAtCheck.secs)
         {

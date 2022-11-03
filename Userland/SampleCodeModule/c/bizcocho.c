@@ -28,7 +28,7 @@ static commandInfo commands[COMMAND_COUNT]={
     {.name="wc", .builtin=0, .programFunction=wc },
     {.name="filter", .builtin=0, .programFunction=filter },
     {.name="pipe", .builtin=1, .programFunction=pipe },
-    {.name="sem", .builtin=1, .programFunction=printSemaphoreTable },
+    {.name="sem", .builtin=1, .programFunction=sem },
     {.name="phylo", .builtin=0, .programFunction=(int8_t (*)(uint8_t, void**)) startPhylo },
     {.name="monke", .builtin=1, .programFunction=monke },
     {.name="color", .builtin=1, .programFunction=color },
@@ -115,7 +115,6 @@ uint32_t executeNonBuiltIn(char* name,int8_t (*programFunction)(uint8_t argc, vo
         pid = sys_start_child_process(name,argc,argv,programFunction, 1);
         sys_change_priority(pid, 2);
     }
-    
     sys_revert_fd_replacements();
     return pid;
 }

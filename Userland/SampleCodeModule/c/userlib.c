@@ -364,8 +364,10 @@ int removeBackspaces(char str[]){
 
 void printSemaphoreTable()
 {
-    uint32_t semAmount;
+    uint32_t semAmount = 0;
     semInfoPointer * semInfo = sys_get_sem_info(&semAmount);
+    if(semInfo==NULL && semAmount > 0)
+        return;
     printf("|---------------|----|-------|---------------------------|\n");
     printf("| semaphoreName | id | value | blocked by this semaphore |\n");
     printf("|---------------|----|-------|---------------------------|\n");
@@ -385,8 +387,10 @@ void printSemaphoreTable()
 
 void printProcessesTable()
 {
-    uint32_t procAmount;
+    uint32_t procAmount = 0;
     processInfoPointer * processesInfo = sys_get_process_info(&procAmount);
+    if(processesInfo==NULL && procAmount > 0)
+        return;
     printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
     printf("| processName | pid | ppid | state | prior |  stackPtr  |  basePtr  |\n");
     printf("|-------------|-----|------|-------|-------|------------|-----------|\n");
@@ -411,6 +415,8 @@ void printProcessesTable()
 }
 void printMemInfo(){
     memInfoPointer meminfo=sys_get_mem_info();
+    if(meminfo==NULL)
+        return;
     uint32_t totalBlocks=(meminfo->memSize / meminfo->blockSize);
     uint32_t occupiedBlocks=totalBlocks-meminfo->freeBlocks;
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
@@ -429,6 +435,8 @@ void printMemInfo(){
 void printPipeTable(){
     uint32_t pipeamount=0;
     pipeInfoPointer* infopipe=sys_get_pipe_info(&pipeamount);
+    if(infopipe==NULL && pipeamount > 0)
+        return;
 
     fprintf(STDOUT, "|------------|--------------------------|\n");
     fprintf(STDOUT, "| Pipe Name  | Characters Left To Read  |\n");

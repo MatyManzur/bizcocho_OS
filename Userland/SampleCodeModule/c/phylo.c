@@ -17,7 +17,8 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
     uint8_t seat;
     uint32_t pidLocal = sys_get_pid();
 
-    sys_wait_sem(semForSeat);
+    if(sys_wait_sem(semForSeat)<0)
+        sys_exit(1);
 
     seat = forSeat++;
     
@@ -34,13 +35,16 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
             case 0:
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
-                sys_wait_sem(left);
+
+                if(sys_wait_sem(left)<0)
+                    sys_exit(1);
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
 
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 1;
-                sys_wait_sem(right);
+                if(sys_wait_sem(right)<0)
+                    sys_exit(1);
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 0;
                 break;
@@ -48,13 +52,15 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
             case 1:
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 1;
-                sys_wait_sem(right);
+                if(sys_wait_sem(right)<0)
+                    sys_exit(1);
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 0;
 
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
-                sys_wait_sem(left);
+                if(sys_wait_sem(left)<0)
+                    sys_exit(1);
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
                 break;
@@ -111,6 +117,8 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
     printf("a to add, r to remove, q to quit\n");
     
     semForSeat = sys_initialize_semaphore("semForSeat", 1);
+    if(semForSeat==0)
+        sys_exit(1);
 
     char * semNames[MAX_PHIL] = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
     
@@ -120,6 +128,8 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
     while(i < initialAmount)
     {
         eatingSemaphores[i] = sys_initialize_semaphore(semNames[i], 1);
+        if(eatingSemaphores[i]==0)
+            sys_exit(1);
         table[i] = '-';
         i++; 
     }
@@ -135,11 +145,13 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
     {
         // para que aquel que se encuentra en el último asiento sea el de pids[tableSize-1]
         pids[initialAmount-1-index] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
+        if(pids[initialAmount-1-index]==0)
+            sys_exit(1);
         index++;
     }
 
     uint32_t semToStop;
-    uint8_t character;
+    char character;
     while(1)
     {
         //sys_yield(); para que no puedan agregar más de 1 en un quantum porque se me hace mierda me parece
@@ -152,16 +164,23 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
         {
             //estoy bloqueando el primer tenedor que va a agarrar el ultimo filosofo actual
             semToStop = (tableSize%2)?  eatingSemaphores[tableSize-1] : eatingSemaphores[0];
-            sys_wait_sem(semToStop);
+            if(sys_wait_sem(semToStop)<0)
+                    sys_exit(1);
             eatingSemaphores[tableSize] = sys_initialize_semaphore(semNames[tableSize], 1);
+            if(eatingSemaphores[tableSize]==0)
+                sys_exit(1);
             pids[tableSize] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
+            if(pids[tableSize]==0)
+                sys_exit(1);
             tableSize++;
             sys_post_sem(semToStop);
         }
         else if(character == 'r' && tableSize>3)
         {
-            sys_wait_sem(eatingSemaphores[0]);
-            sys_wait_sem(eatingSemaphores[tableSize-2]);
+            if(sys_wait_sem(eatingSemaphores[0])<0)
+                sys_exit(1);
+            if(sys_wait_sem(eatingSemaphores[tableSize-2])<0)
+                sys_exit(1);
             sys_post_sem(eatingSemaphores[tableSize-1]);
             sys_post_sem(eatingSemaphores[tableSize-1]);
             sys_close_sem(eatingSemaphores[tableSize-1]);

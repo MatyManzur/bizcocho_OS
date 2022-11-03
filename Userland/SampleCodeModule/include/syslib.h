@@ -191,7 +191,7 @@ uint32_t sys_initialize_semaphore(char * name, uint64_t initialValue);
 
 semInfoPointer * sys_get_sem_info(uint32_t * semAmount);
 
-uint64_t sys_wait_sem(uint32_t id);
+int64_t sys_wait_sem(uint32_t id);
 
 void sys_post_sem(uint32_t id);
 
