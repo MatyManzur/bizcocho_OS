@@ -27,6 +27,8 @@ typedef theBase * basePointer;
 
 static basePointer myBase;
 
+static uint64_t memUsed;
+
 
 static void setOccupiedToZero(buddyPointer occupied[])
 {
@@ -41,6 +43,7 @@ void memInitialize(void * memBase, uint32_t memSize)
     myBase = (basePointer) memBase;
     myBase->start = ((void*)myBase + sizeof(struct base));
     myBase->memSize = memSize;
+    memUsed = 0;
     setOccupiedToZero(myBase->occupied);
 }
 
@@ -125,6 +128,7 @@ void * memalloc(uint32_t nbytes)
     nbytes = (nbytes<MIN_SIZE)? MIN_SIZE: nbytes;
     uint8_t divisionSelected = DIVISIONS - logBase2Ceil(nbytes) + 1;
 
+    memUsed += (1<<DIVISIONS-divisionSelected);
     uint8_t * mem = updatingLists(divisionSelected);
 
     return (void*) (mem + 1);
@@ -160,6 +164,8 @@ static int8_t findAndRemove(uint8_t division, void * beginningBlockWithBuddy, ui
 
 static void restoreToList(uint8_t division, void * pointerToStart)
 {
+    if(division>=DIVISIONS)
+        return;
     uint64_t sizeWithBuddy = 1<<(DIVISIONS - division + 1);
     pointerToStart -= (((uint64_t)pointerToStart)%sizeWithBuddy == 0)? 0 : sizeWithBuddy/2;
     if(!findAndRemove(division, pointerToStart, sizeWithBuddy))
@@ -167,6 +173,8 @@ static void restoreToList(uint8_t division, void * pointerToStart)
         addToList(division, (buddyPointer) pointerToStart);
         return;
     }
+    if(division==0)
+        return;
     restoreToList(division-1, pointerToStart);
 }
 
@@ -177,5 +185,6 @@ void memfree(void * ap)
     if(division<0 || division >= DIVISIONS)
         return;
     restoreToList(division, (void *) pointerToStart); 
+    memUsed -= (1<<(DIVISIONS-division));
 }
 
