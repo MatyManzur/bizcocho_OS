@@ -5,7 +5,7 @@
 #define OUT_OF_MEM_ERROR(ret) {\
     write(STDERR, "Out of memory!\n");\
     return (ret);};
-
+#define TWO_TO_POWER_OF(X) 1ull << (X) ;
 typedef struct memInfo{
     uint32_t memSize;
     uint32_t blockSize;

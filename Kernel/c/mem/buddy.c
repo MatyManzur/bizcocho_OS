@@ -144,7 +144,7 @@ void * memalloc(uint32_t nbytes)
     if(mem==NULL)
         return NULL;
     
-    memUsed += (1 << divisionSelected);
+    memUsed += TWO_TO_POWER_OF(divisionSelected)
     return(void*) (mem + 1);
 }
 
@@ -180,7 +180,7 @@ static void restoreToList(uint8_t division, void * pointerToBlock)
 {
     if(division > myBase->largestDivision)
         return;
-    uint64_t buddyPairSize = 1 << (division + 1);
+    uint64_t buddyPairSize =TWO_TO_POWER_OF(division + 1)
     void* pointerToBuddyPair = pointerToBlock - ((((uint64_t)(pointerToBlock - myBase->start)) % buddyPairSize == 0) ? 0 : buddyPairSize / 2);
     if(!findAndRemove(division, pointerToBuddyPair, buddyPairSize))
     {
@@ -202,7 +202,7 @@ void memfree(void * ap)
     if(division<0 || division > myBase->largestDivision)
         return;
     restoreToList(division, (void *) pointerToStart);
-    memUsed -= (1 << division);
+    memUsed -= TWO_TO_POWER_OF(division)
 }
 
 memInfoPointer getMemInfo()
