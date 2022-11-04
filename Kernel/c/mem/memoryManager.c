@@ -73,16 +73,16 @@ void* memalloc(uint32_t nbytes)
     return NULL;
 }
 
-//TODO revisar caso de borde cuando la lista esta toda usada, es decir todos los bloques sin espacio
-void memfree(void * ap){
-    Header* insertp;
-    insertp=(Header*)ap - 1;//Miramos el header de la direccion provista
-    //Si el insertp esta dentro de estos valores permitidos entonces nunca deberiamos no encontrarlo, entonces currp no llegaria a ser NULL
-    if(insertp == NULL || (void*) insertp < (void*) base || (void*) insertp >= (void*) base + baseSize)
+void memfree(void * ap)
+{
+    if(ap == NULL || ap < (void*) base || ap >= (void*) base + baseSize)
     {
         return; // Error en parametros, fuera de rango
     }
-    
+
+    Header* insertp;
+    insertp=(Header*)ap - 1;//Miramos el header de la direccion provista
+    //Si el insertp esta dentro de estos valores permitidos entonces nunca deberiamos no encontrarlo, entonces currp no llegaria a ser NULL
 
     if(freep==NULL)
     {   
@@ -147,6 +147,7 @@ memInfoPointer getMemInfo(){
     meminfo->blockSize=BLOCK_SIZE;
     meminfo->freeBlocks=amountOfFreeBlocks;
     meminfo->memSize=baseSize;
+    meminfo->system = "K&R heap malloc";
     return meminfo;
 }
 #endif

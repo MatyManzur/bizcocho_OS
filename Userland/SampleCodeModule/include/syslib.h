@@ -112,6 +112,7 @@ typedef struct memInfo{
     uint32_t memSize;
     uint32_t blockSize;
     uint32_t freeBlocks; 
+    char* system;
 }memInfo;
 typedef memInfo* memInfoPointer;
 

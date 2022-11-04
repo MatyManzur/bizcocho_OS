@@ -400,6 +400,8 @@ void printMemInfo(){
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     fprintf(STDOUT, "|  %8d   |  %8d   |   %8d   |\n",meminfo->freeBlocks*meminfo->blockSize,occupiedBlocks*meminfo->blockSize,totalBlocks*meminfo->blockSize);
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
+    fprintf(STDOUT, "| Memalloc implemtation: %17s |\n", meminfo->system);
+    fprintf(STDOUT, "|------------------------------------------|\n");
     sys_mem_free(meminfo);
 }
 void printPipeTable(){

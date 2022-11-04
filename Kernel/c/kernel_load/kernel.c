@@ -9,7 +9,7 @@
 #include <naiveConsole.h>
 
 #define MEMBASE 0x900000
-#define MEMSIZE 64000000
+#define MEMSIZE 67110000
 
 extern uint8_t text;
 extern uint8_t rodata;
