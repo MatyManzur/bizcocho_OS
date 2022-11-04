@@ -7,7 +7,7 @@
 
 #define BUFFER_DIM 128
 
-//cada tecla tiene su nombre para poder ser identificada facilmente
+// cada tecla tiene su nombre para poder ser identificada facilmente
 typedef enum key_t
 {
     VK_ESCAPE = 0x1,
@@ -164,21 +164,22 @@ typedef enum key_t
 
 typedef enum action_t
 {
-    PRESSED, RELEASED
+    PRESSED,
+    RELEASED
 } action_t;
 
-typedef struct kbEvent_t    //struct de un evento del teclado, almacena que tecla fue y si se apreto o no
+typedef struct kbEvent_t // struct de un evento del teclado, almacena que tecla fue y si se apreto o no
 {
     key_t key;
     action_t action;
 } kbEvent_t;
 
-//rutina de atención
+// rutina de atención
 void keyboard_handler();
 
 uint8_t readPrintables(char *bufferString, uint8_t count);
 
-//syscalls
+// syscalls
 
 void cleanBuffer();
 

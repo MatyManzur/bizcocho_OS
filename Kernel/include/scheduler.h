@@ -20,8 +20,8 @@ typedef enum state State_t;
 
 enum blockedSource
 {
-    NO_BLOCK = 0,//Poner ID en 0
-    ASKED_TO,//Igual con este
+    NO_BLOCK = 0, // Poner ID en 0
+    ASKED_TO,     // Igual con este
     PIPE_READ,
     PIPE_WRITE,
     WAIT_CHILD,
@@ -62,15 +62,16 @@ typedef struct PCB_t
     uint8_t inDeathList;
 } PCB_t;
 
-typedef struct lostFd_t{
+typedef struct lostFd_t
+{
 
     int16_t lostID;
     uint8_t lostMode;
 
     uint8_t index;
-}lostFd_t; 
+} lostFd_t;
 
-typedef struct processInfo * processInfoPointer;
+typedef struct processInfo *processInfoPointer;
 
 typedef struct processInfo
 {
@@ -83,7 +84,7 @@ typedef struct processInfo
     void *processMemStart;
 } processInfo;
 
-//SYSCALLS
+// SYSCALLS
 uint32_t startParentProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds);
 
 uint32_t startChildProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t diesOnEsc);
@@ -106,9 +107,9 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd);
 
 void revertFdReplacements();
 
-processInfoPointer * getProcessInfo(uint32_t * procAmount);
+processInfoPointer *getProcessInfo(uint32_t *procAmount);
 
-//KERNEL ONLY
+// KERNEL ONLY
 void initializeScheduler();
 
 void scheduler();
@@ -119,9 +120,9 @@ uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason);
 
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason);
 
-int16_t fdToFileId(uint8_t fd, uint8_t* mode);
+int16_t fdToFileId(uint8_t fd, uint8_t *mode);
 
-int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd);
+int8_t openFile(int16_t fileId, uint8_t mode, uint8_t *fd);
 
 int8_t closeFile(uint8_t fd);
 

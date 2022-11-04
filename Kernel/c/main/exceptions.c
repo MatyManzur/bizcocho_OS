@@ -12,7 +12,7 @@ static void zero_division();
 
 static void invalid_opcode();
 
-void exceptionDispatcher(int exception, uint64_t *registers) //llamado desde interrupts.asm
+void exceptionDispatcher(int exception, uint64_t *registers) // llamado desde interrupts.asm
 {
     if (exception == ZERO_EXCEPTION_ID)
         zero_division(registers);

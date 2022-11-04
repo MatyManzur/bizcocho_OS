@@ -20,11 +20,10 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-static void *const sampleCodeModuleAddress = (void *) 0x400000;
-static void *const sampleDataModuleAddress = (void *) 0x500000;
+static void *const sampleCodeModuleAddress = (void *)0x400000;
+static void *const sampleDataModuleAddress = (void *)0x500000;
 
 typedef int (*EntryPoint)();
-
 
 void clearBSS(void *bssAddress, uint64_t bssSize)
 {
@@ -33,10 +32,8 @@ void clearBSS(void *bssAddress, uint64_t bssSize)
 
 void *getStackBase()
 {
-    return (void *) (
-            (uint64_t) & endOfKernel
-                         + PageSize * 8                //The size of the stack itself, 32KiB
-                         - sizeof(uint64_t)            //Begin at the top of the stack
+    return (void *)((uint64_t)&endOfKernel + PageSize * 8 // The size of the stack itself, 32KiB
+                    - sizeof(uint64_t)                    // Begin at the top of the stack
     );
 }
 
@@ -54,9 +51,8 @@ void *initializeKernelBinary()
     ncPrint("[Loading modules]");
     ncNewline();
     void *moduleAddresses[] = {
-            sampleCodeModuleAddress,
-            sampleDataModuleAddress
-    };
+        sampleCodeModuleAddress,
+        sampleDataModuleAddress};
 
     loadModules(&endOfKernelBinary, moduleAddresses);
     ncPrint("[Done]");
@@ -69,16 +65,16 @@ void *initializeKernelBinary()
     clearBSS(&bss, &endOfKernel - &bss);
 
     ncPrint("  text: 0x");
-    ncPrintHex((uint64_t) & text);
+    ncPrintHex((uint64_t)&text);
     ncNewline();
     ncPrint("  rodata: 0x");
-    ncPrintHex((uint64_t) & rodata);
+    ncPrintHex((uint64_t)&rodata);
     ncNewline();
     ncPrint("  data: 0x");
-    ncPrintHex((uint64_t) & data);
+    ncPrintHex((uint64_t)&data);
     ncNewline();
     ncPrint("  bss: 0x");
-    ncPrintHex((uint64_t) & bss);
+    ncPrintHex((uint64_t)&bss);
     ncNewline();
 
     ncPrint("[Donely done]");
@@ -88,16 +84,15 @@ void *initializeKernelBinary()
 }
 
 int main()
-{   
-    _cli(); //No queremos interrupciones por ahora mientras setupeamos todo
+{
+    _cli(); // No queremos interrupciones por ahora mientras setupeamos todo
     load_idt();
-    memInitialize((void*) MEMBASE, MEMSIZE);   
-    initializeScheduler(); 
+    memInitialize((void *)MEMBASE, MEMSIZE);
+    initializeScheduler();
     initializeFiles();
     initSemaphoreHub();
     _sti();
-    ((EntryPoint) sampleCodeModuleAddress)();
-    
+    ((EntryPoint)sampleCodeModuleAddress)();
 
     while (1)
     {

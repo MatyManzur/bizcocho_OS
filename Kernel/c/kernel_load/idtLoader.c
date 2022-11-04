@@ -5,8 +5,8 @@
 #include <defs.h>
 #include <interrupts.h>
 
-#pragma pack(push)        /* Push de la alineación actual */
-#pragma pack (1)        /* Alinear las siguiente estructuras a 1 byte */
+#pragma pack(push) /* Push de la alineación actual */
+#pragma pack(1)    /* Alinear las siguiente estructuras a 1 byte */
 
 /* Descriptor de interrupcion */
 typedef struct
@@ -17,24 +17,23 @@ typedef struct
     uint32_t offset_h, other_cero;
 } DESCR_INT;
 
-#pragma pack(pop)        /* Reestablece la alineación actual */
+#pragma pack(pop) /* Reestablece la alineación actual */
 
-
-DESCR_INT *idt = (DESCR_INT *) 0;    // IDT de 255 entradas
+DESCR_INT *idt = (DESCR_INT *)0; // IDT de 255 entradas
 
 static void setup_IDT_entry(int index, uint64_t offset);
 
-//Arma la IDT
+// Arma la IDT
 void load_idt()
 {
-    //Agregamos las interrupciones y excepciones deseadas a la IDT
-    setup_IDT_entry(0x20, (uint64_t) & _irq00Handler);        //teclado
-    setup_IDT_entry(0x21, (uint64_t) & _irq01Handler);        //timer tick
-    setup_IDT_entry(0x88, (uint64_t) & _syscallHandler);        //syscalls
-    setup_IDT_entry(0x00, (uint64_t) & _exception0Handler);    //excepcion: division por cero
-    setup_IDT_entry(0x06, (uint64_t) & _exception6Handler);    //excepcion: invalid opcode
+    // Agregamos las interrupciones y excepciones deseadas a la IDT
+    setup_IDT_entry(0x20, (uint64_t)&_irq00Handler);      // teclado
+    setup_IDT_entry(0x21, (uint64_t)&_irq01Handler);      // timer tick
+    setup_IDT_entry(0x88, (uint64_t)&_syscallHandler);    // syscalls
+    setup_IDT_entry(0x00, (uint64_t)&_exception0Handler); // excepcion: division por cero
+    setup_IDT_entry(0x06, (uint64_t)&_exception6Handler); // excepcion: invalid opcode
 
-    //enmascaramos las interrupciones no utilizadas del PIC
+    // enmascaramos las interrupciones no utilizadas del PIC
     picMasterMask(0xFC);
     picSlaveMask(0xFF);
 
@@ -49,5 +48,5 @@ static void setup_IDT_entry(int index, uint64_t offset)
     idt[index].offset_h = (offset >> 32) & 0xFFFFFFFF;
     idt[index].access = ACS_INT;
     idt[index].cero = 0;
-    idt[index].other_cero = (uint64_t) 0;
+    idt[index].other_cero = (uint64_t)0;
 }

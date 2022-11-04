@@ -14,7 +14,7 @@ typedef struct blockHub
     ddlADT semBlockList;
 } blockHub;
 
-typedef struct semBlock * semPointer;
+typedef struct semBlock *semPointer;
 
 typedef struct semBlock
 {
@@ -27,22 +27,20 @@ typedef struct semBlock
     semPointer next;
 } semBlock;
 
-
-typedef struct semInfo * semInfoPointer;
+typedef struct semInfo *semInfoPointer;
 
 typedef struct semInfo
 {
     char name[MAX_SEM_NAME];
     uint32_t id;
     uint64_t value;
-    uint32_t * blocked;
+    uint32_t *blocked;
 } semInfo;
-
 
 void initSemaphoreHub();
 
-//SYSCALLS
-uint32_t initializeSemaphore(char * name, uint64_t initialValue);
+// SYSCALLS
+uint32_t initializeSemaphore(char *name, uint64_t initialValue);
 
 int64_t waitSem(uint32_t id);
 
@@ -52,6 +50,6 @@ void postSem(uint32_t id);
 
 int8_t closeSem(uint32_t id);
 
-semInfoPointer* getSemaphoreInfo(uint32_t * semAmount);
+semInfoPointer *getSemaphoreInfo(uint32_t *semAmount);
 
 #endif

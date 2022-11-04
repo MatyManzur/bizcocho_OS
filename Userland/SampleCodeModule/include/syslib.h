@@ -61,7 +61,7 @@ typedef struct format_t
 {
     color_t backgroundColor;
     color_t characterColor;
-}format_t;
+} format_t;
 
 typedef struct point_t
 {
@@ -85,17 +85,17 @@ struct timezone_t
     int8_t minutes;
 };
 
-typedef struct semInfo * semInfoPointer;
+typedef struct semInfo *semInfoPointer;
 
 typedef struct semInfo
 {
     char name[MAX_SEM_NAME];
     uint32_t id;
     uint64_t value;
-    uint32_t * blocked;
+    uint32_t *blocked;
 } semInfo;
 
-typedef struct processInfo * processInfoPointer;
+typedef struct processInfo *processInfoPointer;
 
 typedef struct processInfo
 {
@@ -108,25 +108,26 @@ typedef struct processInfo
     void *processMemStart;
 } processInfo;
 
-typedef struct memInfo{
+typedef struct memInfo
+{
     uint32_t memSize;
     uint32_t blockSize;
-    uint32_t freeBlocks; 
-    char* system;
-}memInfo;
-typedef memInfo* memInfoPointer;
+    uint32_t freeBlocks;
+    char *system;
+} memInfo;
+typedef memInfo *memInfoPointer;
 
 typedef struct pipeInfo
 {
     char name[MAX_PIPE_NAME_SIZE];
     uint16_t charactersLeftToRead;
-    uint32_t * blockedByReading;
+    uint32_t *blockedByReading;
     uint32_t amountBlockedRead;
-    uint32_t* blockedByWriting;
+    uint32_t *blockedByWriting;
     uint32_t amountBlockedWrite;
 } pipeInfo;
 
-typedef pipeInfo* pipeInfoPointer;
+typedef pipeInfo *pipeInfoPointer;
 
 void sys_exit(int8_t statusCode);
 
@@ -146,23 +147,23 @@ uint8_t sys_change_priority(uint32_t pid, uint8_t newPriority);
 
 void sys_yield();
 
-processInfoPointer * sys_get_process_info(uint32_t * procAmount);
+processInfoPointer *sys_get_process_info(uint32_t *procAmount);
 
-uint8_t sys_read(int fd, char* buf, uint8_t n);
+uint8_t sys_read(int fd, char *buf, uint8_t n);
 
-int sys_write(int fd,char* s);
+int sys_write(int fd, char *s);
 
 void sys_clear_screen();
 
 format_t sys_change_color(color_t backgroundColor, color_t characterColor);
 
-int sys_print_to_stdout_color(char* s,format_t fmt);
+int sys_print_to_stdout_color(char *s, format_t fmt);
 
 void sys_set_backspace_base();
 
-int8_t sys_mkpipe(char* name);
+int8_t sys_mkpipe(char *name);
 
-int8_t sys_open(char* name, uint8_t mode, uint8_t* fd);
+int8_t sys_open(char *name, uint8_t mode, uint8_t *fd);
 
 int8_t sys_close(uint8_t fd);
 
@@ -170,7 +171,7 @@ int8_t sys_dup2(uint8_t fromFd, uint8_t toFd);
 
 void sys_revert_fd_replacements();
 
-pipeInfoPointer * sys_get_pipe_info(uint32_t* pipeAmount);
+pipeInfoPointer *sys_get_pipe_info(uint32_t *pipeAmount);
 
 void sys_clean_buffer();
 
@@ -180,17 +181,17 @@ void sys_set_time_zone(const struct timezone_t *tzone);
 
 void sys_sleep(uint64_t sleepTicks);
 
-void* sys_mem_alloc(uint32_t nbytes);
+void *sys_mem_alloc(uint32_t nbytes);
 
-void sys_mem_free(void *ptr );
+void sys_mem_free(void *ptr);
 
 int sys_memory_dump(uint64_t address, uint8_t buffer[]);
 
 memInfoPointer sys_get_mem_info();
 
-uint32_t sys_initialize_semaphore(char * name, uint64_t initialValue);
+uint32_t sys_initialize_semaphore(char *name, uint64_t initialValue);
 
-semInfoPointer * sys_get_sem_info(uint32_t * semAmount);
+semInfoPointer *sys_get_sem_info(uint32_t *semAmount);
 
 int64_t sys_wait_sem(uint32_t id);
 

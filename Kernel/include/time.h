@@ -19,10 +19,10 @@ struct timezone_t
     int8_t minutes;
 };
 
-//rutina de atencion
+// rutina de atencion
 void timer_handler();
 
-//syscalls
+// syscalls
 unsigned long ticks_elapsed();
 
 unsigned long seconds_elapsed();
@@ -33,7 +33,7 @@ void setTimeZone(const struct timezone_t *tzone);
 
 void sleep(uint64_t sleepTicks);
 
-//implementadas en time.asm
+// implementadas en time.asm
 uint8_t getSeconds();
 
 uint8_t getMinutes();
@@ -47,6 +47,5 @@ uint8_t getMonth();
 uint8_t getYear();
 
 uint8_t getCentury();
-
 
 #endif

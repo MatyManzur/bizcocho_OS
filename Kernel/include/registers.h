@@ -26,14 +26,13 @@ typedef struct registers_t
     uint64_t flags;
 } registers_t;
 
-void getRegisters(uint64_t *registers); //en ASM
+void getRegisters(uint64_t *registers); // en ASM
 
-void saveRegisters(); //para que lo llame el keyboard handler
-void printRegisters(); //para que lo llamen las exceptions
+void saveRegisters();  // para que lo llame el keyboard handler
+void printRegisters(); // para que lo llamen las exceptions
 
-//syscalls
+// syscalls
 
 void getLastRegisters(struct registers_t *registers);
-
 
 #endif

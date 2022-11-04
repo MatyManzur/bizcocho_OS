@@ -8,11 +8,11 @@ uint32_t GetUint();
 
 uint32_t GetUniform(uint32_t max);
 
-void memseter(void * beginning, uint32_t value, uint32_t size);
+void memseter(void *beginning, uint32_t value, uint32_t size);
 
-int memcheck(void * beginning, uint32_t value, uint32_t size);
+int memcheck(void *beginning, uint32_t value, uint32_t size);
 
-int64_t satoi(char* str);
+int64_t satoi(char *str);
 
 void bussy_wait(uint64_t n);
 

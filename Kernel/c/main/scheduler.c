@@ -2,7 +2,6 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <scheduler.h>
 
-
 typedef struct nodePCB_t *pointerPCBNODE_t;
 
 typedef struct nodePCB_t
@@ -61,13 +60,13 @@ static pointerPCBNODE_t findNextProcess()
 
 static pointerPCBNODE_t findByPid(uint32_t pid)
 {
-    if(pid == schedule.nowRunning->process->pid)
+    if (pid == schedule.nowRunning->process->pid)
         return schedule.nowRunning;
     pointerPCBNODE_t foundPointer = NULL;
     for (int i = 0; i < PRIORITY_COUNT && foundPointer == NULL; i++)
     {
         pointerPCBNODE_t head = schedule.processes[i];
-        while(head!=NULL && foundPointer == NULL)
+        while (head != NULL && foundPointer == NULL)
         {
             if (head->process->pid == pid)
                 foundPointer = head;
@@ -78,55 +77,55 @@ static pointerPCBNODE_t findByPid(uint32_t pid)
     return foundPointer;
 }
 
-
 static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint8_t ppid, fileDescriptor_t fds[MAX_FD_COUNT], pointerPCBNODE_t parent, uint8_t diesOnEsc)
 {
     PCB_t *processPCB = memalloc(sizeof(struct PCB_t));
-    if(processPCB==NULL)
+    if (processPCB == NULL)
         OUT_OF_MEM_ERROR(NULL);
     processPCB->pid = pidToGive++;
-    processPCB->ppid = ppid; //El parent provisto
+    processPCB->ppid = ppid; // El parent provisto
     strncpy(processPCB->name, name, NAME_MAX);
     processPCB->argc = argc;
     processPCB->argv = argv;
     processPCB->processCodeStart = processCodeStart;
     processPCB->processMemEnd = memalloc(PROCESS_MEM_SIZE);
-    if(processPCB->processMemEnd == NULL)
+    if (processPCB->processMemEnd == NULL)
         OUT_OF_MEM_ERROR(NULL);
     processPCB->processMemStart = processPCB->processMemEnd + PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
-    processPCB->stackPointer = 0;                        // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
+    processPCB->stackPointer = 0;                                                   // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
     processPCB->state = READY;
     processPCB->statusCode = -1;
-    if(fds==NULL)
+    if (fds == NULL)
     {
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
             processPCB->fds[i].fileID = (i < 3) ? i : -1;
-            processPCB->fds[i].mode = (i==0)? 'R':( (i < 3)? 'W':'N' ); 
+            processPCB->fds[i].mode = (i == 0) ? 'R' : ((i < 3) ? 'W' : 'N');
         }
     }
-    else{
+    else
+    {
         for (int i = 0; i < MAX_FD_COUNT; i++)
         {
             processPCB->fds[i].fileID = fds[i].fileID;
             processPCB->fds[i].mode = fds[i].mode;
-            if(fds[i].fileID > 2 && fds[i].mode != 'N'){
+            if (fds[i].fileID > 2 && fds[i].mode != 'N')
+            {
                 modifyOpenCount(fds[i].fileID, 1, fds[i].mode);
             }
         }
     }
     processPCB->fdReplacements = newList();
-    if(processPCB->fdReplacements == NULL)
+    if (processPCB->fdReplacements == NULL)
         return NULL;
     processPCB->priority = priority;
     processPCB->blockedReason.source = NO_BLOCK;
     processPCB->blockedReason.id = 0;
     processPCB->inDeathList = diesOnEsc;
-    
-    
+
     // Agrega a las listas este PCB creado
     pointerPCBNODE_t pnode = memalloc(sizeof(struct nodePCB_t));
-    if(pnode==NULL)
+    if (pnode == NULL)
         OUT_OF_MEM_ERROR(NULL);
     pnode->process = processPCB;
     pnode->children = NULL;
@@ -135,74 +134,74 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     pnode->remainingQuantum = PRIORITY_COUNT - priority;
     pnode->previous = NULL;
     pnode->next = schedule.processes[priority];
-    if(schedule.processes[priority] != NULL)
+    if (schedule.processes[priority] != NULL)
     {
         schedule.processes[priority]->previous = pnode;
     }
     schedule.processes[priority] = pnode;
-    //Agregamos el child a la lista del padre
-    if(parent!=NULL)
+    // Agregamos el child a la lista del padre
+    if (parent != NULL)
     {
         pointerPCBNODE_t aux;
-        if(parent->children==NULL)
+        if (parent->children == NULL)
         {
-            parent->children=pnode;
+            parent->children = pnode;
         }
         else
         {
-            aux=parent->children;
-            while(aux->nextSibling!=NULL)
+            aux = parent->children;
+            while (aux->nextSibling != NULL)
             {
-                aux=aux->nextSibling;
+                aux = aux->nextSibling;
             }
-            aux->nextSibling=pnode;
-            pnode->prevSibling=aux;
+            aux->nextSibling = pnode;
+            pnode->prevSibling = aux;
         }
     }
-    if(diesOnEsc)
+    if (diesOnEsc)
     {
-        if(add(deathList, pnode)<0)
+        if (add(deathList, pnode) < 0)
             return NULL;
     }
     schedule.processCount++;
     return pnode;
 }
 
-uint32_t startParentProcess(char *name, uint8_t argc, void ** argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds)
+uint32_t startParentProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t priority, uint32_t pidToCopyFds)
 {
-    pointerPCBNODE_t processToCopyFds= findByPid(pidToCopyFds);
-    fileDescriptor_t* fdsToCopy=NULL;
-    if(processToCopyFds != NULL && pidToCopyFds !=0 )
+    pointerPCBNODE_t processToCopyFds = findByPid(pidToCopyFds);
+    fileDescriptor_t *fdsToCopy = NULL;
+    if (processToCopyFds != NULL && pidToCopyFds != 0)
     {
-        fdsToCopy=processToCopyFds->process->fds;
+        fdsToCopy = processToCopyFds->process->fds;
     }
-    pointerPCBNODE_t pnode = startProcess(name,argc,argv,processCodeStart,priority,init->process->pid,fdsToCopy,init, 0);
-    if(pnode==NULL)
+    pointerPCBNODE_t pnode = startProcess(name, argc, argv, processCodeStart, priority, init->process->pid, fdsToCopy, init, 0);
+    if (pnode == NULL)
         return 0;
     schedulerRunning = 1;
     return pnode->process->pid;
 }
 
 // Hacer un startChild (equivalente a un fork exec)
-uint32_t startChildProcess(char *name, uint8_t argc, void ** argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t diesOnEsc)
+uint32_t startChildProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t diesOnEsc)
 {
     uint8_t priority = schedule.nowRunning->process->priority;
-    pointerPCBNODE_t parent= schedule.nowRunning;
+    pointerPCBNODE_t parent = schedule.nowRunning;
 
-    pointerPCBNODE_t pnode= startProcess(name,argc,argv,processCodeStart,priority,schedule.nowRunning->process->pid,schedule.nowRunning->process->fds,parent, diesOnEsc);
-    if(pnode==NULL)
+    pointerPCBNODE_t pnode = startProcess(name, argc, argv, processCodeStart, priority, schedule.nowRunning->process->pid, schedule.nowRunning->process->fds, parent, diesOnEsc);
+    if (pnode == NULL)
         return 0;
     return pnode->process->pid;
 }
 
 void initializeScheduler()
 {
-    for(int i = 0; i< BLOCK_REASON_COUNT; i++)
+    for (int i = 0; i < BLOCK_REASON_COUNT; i++)
     {
         blockedProcesses[i] = newList();
     }
     schedule.processCount = 0;
-    init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1,0,NULL,NULL, 0);
+    init = startProcess("init", 0, NULL, initProcess, PRIORITY_COUNT - 1, 0, NULL, NULL, 0);
     schedule.nowRunning = NULL;
     deathList = newList();
     return;
@@ -210,11 +209,11 @@ void initializeScheduler()
 
 void scheduler()
 {
-    if (!schedulerRunning)  //No se agregó nada aparte del init
+    if (!schedulerRunning) // No se agregó nada aparte del init
     {
         return;
     }
-    if(schedule.nowRunning == NULL)
+    if (schedule.nowRunning == NULL)
     {
         schedule.nowRunning = init;
         initializeTask(schedule.nowRunning->process->argc, schedule.nowRunning->process->argv,
@@ -272,14 +271,14 @@ void exit(int8_t statusCode)
 static void inheritChildren(pointerPCBNODE_t *childrenListFrom, pointerPCBNODE_t *childrenListTo, uint32_t ppid)
 {
     pointerPCBNODE_t lastChild = NULL;
-    while(*childrenListTo != NULL)
+    while (*childrenListTo != NULL)
     {
         lastChild = *childrenListTo;
         childrenListTo = &((*childrenListTo)->nextSibling);
     }
     *childrenListTo = *childrenListFrom;
     (*childrenListFrom)->prevSibling = lastChild;
-    while(*childrenListFrom != NULL)
+    while (*childrenListFrom != NULL)
     {
         (*childrenListFrom)->process->ppid = ppid;
         childrenListFrom = &((*childrenListFrom)->nextSibling);
@@ -292,7 +291,7 @@ static void removeFromList(pointerPCBNODE_t node)
     {
         node->previous->next = node->next;
     }
-    else //era el primero
+    else // era el primero
     {
         for (int i = 0; i < PRIORITY_COUNT; i++)
         {
@@ -322,26 +321,26 @@ static uint8_t _killProcess(pointerPCBNODE_t head)
 {
     if (head != NULL) // si lo encontró
     {
-        for(uint8_t i=0; i<MAX_FD_COUNT;i++) //cerramos los files que haya dejado abiertos
+        for (uint8_t i = 0; i < MAX_FD_COUNT; i++) // cerramos los files que haya dejado abiertos
         {
-            if(head->process->fds[i].mode != 'N' && head->process->fds[i].fileID > STDERR)
+            if (head->process->fds[i].mode != 'N' && head->process->fds[i].fileID > STDERR)
             {
                 closeForKilling(head->process->fds[i].fileID, head->process->fds[i].mode);
             }
         }
-        if(head->process->inDeathList)
+        if (head->process->inDeathList)
         {
             toBegin(deathList);
-            while(hasNext(deathList))
+            while (hasNext(deathList))
             {
-                if(next(deathList) == head)
+                if (next(deathList) == head)
                 {
                     remove(deathList);
                 }
             }
         }
-        if(head->process->state==BLOCKED)
-        {   //para que no quede en la lista de bloqueados
+        if (head->process->state == BLOCKED)
+        { // para que no quede en la lista de bloqueados
             unblockProcessWithReason(head->process->pid, head->process->blockedReason);
         }
         pointerPCBNODE_t parentHead = findByPid(head->process->ppid);
@@ -360,7 +359,7 @@ static uint8_t _killProcess(pointerPCBNODE_t head)
 
 uint8_t killProcess(uint32_t pid)
 {
-    if(pid == init->process->pid)
+    if (pid == init->process->pid)
         return 0;
     pointerPCBNODE_t head = findByPid(pid);
     uint8_t ans = _killProcess(head);
@@ -375,7 +374,7 @@ int8_t waitchild(uint32_t childpid)
     {
         return -2;
     }
-    pointerPCBNODE_t child = (childpid == 0)? head : NULL;
+    pointerPCBNODE_t child = (childpid == 0) ? head : NULL;
     while (child == NULL && head != NULL)
     {
         if (head->process->pid == childpid)
@@ -395,15 +394,15 @@ int8_t waitchild(uint32_t childpid)
         // cuando vuelva acá es porque ahora sí está FINISHED
     }
     int8_t statusCode = child->process->statusCode;
-    if(child->prevSibling!=NULL)
+    if (child->prevSibling != NULL)
     {
         child->prevSibling->nextSibling = child->nextSibling;
     }
-    else //era el primero
+    else // era el primero
     {
         schedule.nowRunning->children = child->nextSibling;
     }
-    if(child->nextSibling!=NULL)
+    if (child->nextSibling != NULL)
     {
         child->nextSibling->prevSibling = child->prevSibling;
     }
@@ -424,19 +423,19 @@ uint8_t blockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
         add(blockedProcesses[blockReason.source], head->process);
         _int20();
     }
-    return found; 
+    return found;
 }
 
 static void _unblockProcessWithReason(pointerPCBNODE_t head, BlockedReason_t blockReason)
 {
-    if(head!=NULL)
+    if (head != NULL)
     {
         setProcessReady(head->process);
         toBegin(blockedProcesses[blockReason.source]);
-        while(hasNext(blockedProcesses[blockReason.source]))
+        while (hasNext(blockedProcesses[blockReason.source]))
         {
-            PCB_t * current = (PCB_t*) next(blockedProcesses[blockReason.source]);
-            if(current->pid == head->process->pid)
+            PCB_t *current = (PCB_t *)next(blockedProcesses[blockReason.source]);
+            if (current->pid == head->process->pid)
             {
                 remove(blockedProcesses[blockReason.source]);
                 return;
@@ -460,10 +459,10 @@ uint8_t unblockProcessWithReason(uint32_t pid, BlockedReason_t blockReason)
 void unblockAllProcessesBecauseReason(BlockedReason_t blockReason)
 {
     toBegin(blockedProcesses[blockReason.source]);
-    while(hasNext(blockedProcesses[blockReason.source]))
+    while (hasNext(blockedProcesses[blockReason.source]))
     {
-        PCB_t * current = (PCB_t*) next(blockedProcesses[blockReason.source]);
-        if(current->blockedReason.id == blockReason.id)
+        PCB_t *current = (PCB_t *)next(blockedProcesses[blockReason.source]);
+        if (current->blockedReason.id == blockReason.id)
         {
             setProcessReady(current);
             remove(blockedProcesses[blockReason.source]);
@@ -474,13 +473,13 @@ void unblockAllProcessesBecauseReason(BlockedReason_t blockReason)
 // syscall: bloquea o desbloquea el proceso segun corresponda
 uint8_t blockProcess(uint32_t pid)
 {
-    if(pid==init->process->pid)
+    if (pid == init->process->pid)
         return 0;
     BlockedReason_t reason;
     reason.source = ASKED_TO;
     reason.id = 0;
     uint8_t couldBlock = blockProcessWithReason(pid, reason);
-    if(!couldBlock)
+    if (!couldBlock)
     {
         return unblockProcessWithReason(pid, reason);
     }
@@ -498,7 +497,7 @@ uint8_t changePriority(uint32_t pid, uint8_t newPriority)
         {
             head->previous->next = head->next;
         }
-        else //es el primero
+        else // es el primero
         {
             schedule.processes[head->process->priority] = head->next;
         }
@@ -527,10 +526,10 @@ static int8_t initProcess(uint8_t argc, void **argv)
     while (1)
     {
         pointerPCBNODE_t child = init->children;
-        while(child != NULL)
+        while (child != NULL)
         {
             pointerPCBNODE_t nextChild = child->nextSibling;
-            if(child->process->state == FINISHED)
+            if (child->process->state == FINISHED)
             {
                 waitchild(child->process->pid);
             }
@@ -541,32 +540,33 @@ static int8_t initProcess(uint8_t argc, void **argv)
     return 0;
 }
 
-void yield(){
-    schedule.nowRunning->remainingQuantum=0;
+void yield()
+{
+    schedule.nowRunning->remainingQuantum = 0;
     _int20();
 }
 
-int16_t fdToFileId(uint8_t fd, uint8_t* mode)
+int16_t fdToFileId(uint8_t fd, uint8_t *mode)
 {
-    if(fd >= MAX_FD_COUNT)
+    if (fd >= MAX_FD_COUNT)
         return -1;
-    if(mode != NULL && *mode != 0 && *mode != schedule.nowRunning->process->fds[fd].mode)
+    if (mode != NULL && *mode != 0 && *mode != schedule.nowRunning->process->fds[fd].mode)
         return -1;
-    if(mode != NULL && *mode == 0)
+    if (mode != NULL && *mode == 0)
         *mode = schedule.nowRunning->process->fds[fd].mode;
     return schedule.nowRunning->process->fds[fd].fileID;
 }
 
-int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd)
+int8_t openFile(int16_t fileId, uint8_t mode, uint8_t *fd)
 {
     uint8_t ans = 4;
-    while(schedule.nowRunning->process->fds[ans].fileID != -1)
+    while (schedule.nowRunning->process->fds[ans].fileID != -1)
     {
         ans++;
-        if(ans >= MAX_FD_COUNT)
+        if (ans >= MAX_FD_COUNT)
         {
             return -1;
-        }            
+        }
     }
     schedule.nowRunning->process->fds[ans].fileID = fileId;
     schedule.nowRunning->process->fds[ans].mode = mode;
@@ -576,33 +576,34 @@ int8_t openFile(int16_t fileId, uint8_t mode, uint8_t* fd)
 
 int8_t closeFile(uint8_t fd)
 {
-    if(fd >= MAX_FD_COUNT)
+    if (fd >= MAX_FD_COUNT)
     {
         return -1;
     }
-    if(schedule.nowRunning->process->fds[fd].mode=='N')
+    if (schedule.nowRunning->process->fds[fd].mode == 'N')
     {
         return -1;
     }
-    schedule.nowRunning->process->fds[fd].fileID= -1;
-    schedule.nowRunning->process->fds[fd].mode='N';
+    schedule.nowRunning->process->fds[fd].fileID = -1;
+    schedule.nowRunning->process->fds[fd].mode = 'N';
     return 0;
 }
 
 int8_t dup2(uint8_t fromFd, uint8_t toFd)
 {
-    if(fromFd >= MAX_FD_COUNT || toFd >= MAX_FD_COUNT)
+    if (fromFd >= MAX_FD_COUNT || toFd >= MAX_FD_COUNT)
     {
         return -1;
     }
-    lostFd_t* lost=memalloc(sizeof(lostFd_t));
-    if(lost==NULL){
+    lostFd_t *lost = memalloc(sizeof(lostFd_t));
+    if (lost == NULL)
+    {
         OUT_OF_MEM_ERROR(-1);
     }
-    lost->index=toFd;
-    lost->lostID=schedule.nowRunning->process->fds[toFd].fileID;
-    lost->lostMode=schedule.nowRunning->process->fds[toFd].mode;
-    if(add(schedule.nowRunning->process->fdReplacements,(void *) lost)<0)
+    lost->index = toFd;
+    lost->lostID = schedule.nowRunning->process->fds[toFd].fileID;
+    lost->lostMode = schedule.nowRunning->process->fds[toFd].mode;
+    if (add(schedule.nowRunning->process->fdReplacements, (void *)lost) < 0)
         return -1;
 
     schedule.nowRunning->process->fds[toFd].fileID = schedule.nowRunning->process->fds[fromFd].fileID;
@@ -613,15 +614,16 @@ int8_t dup2(uint8_t fromFd, uint8_t toFd)
 
 void revertFdReplacements()
 {
-    lostFd_t* last;
-    ddlADT list=schedule.nowRunning->process->fdReplacements;
+    lostFd_t *last;
+    ddlADT list = schedule.nowRunning->process->fdReplacements;
     toBegin(list);
-    while(hasNext(list)){
-        last=(lostFd_t *)next(list);
-        modifyOpenCount(schedule.nowRunning->process->fds[last->index].fileID,-1, schedule.nowRunning->process->fds[last->index].mode);
-        schedule.nowRunning->process->fds[last->index].fileID=last->index;
-        schedule.nowRunning->process->fds[last->index].mode=last->lostMode;
-        memfree((void *) last);
+    while (hasNext(list))
+    {
+        last = (lostFd_t *)next(list);
+        modifyOpenCount(schedule.nowRunning->process->fds[last->index].fileID, -1, schedule.nowRunning->process->fds[last->index].mode);
+        schedule.nowRunning->process->fds[last->index].fileID = last->index;
+        schedule.nowRunning->process->fds[last->index].mode = last->lostMode;
+        memfree((void *)last);
         remove(list);
     }
 }
@@ -629,7 +631,7 @@ void revertFdReplacements()
 void killAllInDeathList()
 {
     toBegin(deathList);
-    while(hasNext(deathList))
+    while (hasNext(deathList))
     {
         pointerPCBNODE_t pnode = next(deathList);
         pnode->process->inDeathList = 0;
@@ -640,30 +642,30 @@ void killAllInDeathList()
 
 static char getStateChar(State_t state, BlockedSource_t blockedSource)
 {
-    if(state==BLOCKED)
+    if (state == BLOCKED)
     {
-        return blockedReasonChars[(blockedSource > 5)? 0 : blockedSource];
+        return blockedReasonChars[(blockedSource > 5) ? 0 : blockedSource];
     }
     else
     {
-        return stateChars[(state > 2)? 0 : state];
+        return stateChars[(state > 2) ? 0 : state];
     }
 }
 
-processInfoPointer * getProcessInfo(uint32_t * procAmount)
+processInfoPointer *getProcessInfo(uint32_t *procAmount)
 {
     uint32_t j = 0;
-    processInfoPointer * procInfo = memalloc(sizeof(processInfoPointer) * schedule.processCount);
-    if(procInfo==NULL && schedule.processCount > 0)
+    processInfoPointer *procInfo = memalloc(sizeof(processInfoPointer) * schedule.processCount);
+    if (procInfo == NULL && schedule.processCount > 0)
         OUT_OF_MEM_ERROR(NULL);
-    for(int i=0 ; i<PRIORITY_COUNT ; i++)
+    for (int i = 0; i < PRIORITY_COUNT; i++)
     {
         pointerPCBNODE_t head = schedule.processes[i];
-        while(head!=NULL)
+        while (head != NULL)
         {
-            PCB_t* process = head->process;
+            PCB_t *process = head->process;
             procInfo[j] = memalloc(sizeof(processInfo));
-            if(procInfo[j]==NULL)
+            if (procInfo[j] == NULL)
                 OUT_OF_MEM_ERROR(NULL);
             strcpy(procInfo[j]->name, process->name);
             procInfo[j]->pid = process->pid;
@@ -679,11 +681,12 @@ processInfoPointer * getProcessInfo(uint32_t * procAmount)
     *procAmount = schedule.processCount;
     return procInfo;
 }
-ddlADT getBlockedList(uint8_t blockedSource){
+ddlADT getBlockedList(uint8_t blockedSource)
+{
 
-    if(blockedSource >= BLOCK_REASON_COUNT){
+    if (blockedSource >= BLOCK_REASON_COUNT)
+    {
         return NULL;
     }
     return blockedProcesses[blockedSource];
 }
-

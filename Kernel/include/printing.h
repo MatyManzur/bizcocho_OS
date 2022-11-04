@@ -3,7 +3,7 @@
 
 #include <lib.h>
 
-//colores
+// colores
 typedef enum color_t
 {
     DEFAULT = -1,
@@ -25,20 +25,20 @@ typedef enum color_t
     WHITE
 } color_t;
 
-//struct que se guarda color de fondo y color de caracteres
+// struct que se guarda color de fondo y color de caracteres
 typedef struct format_t
 {
     color_t backgroundColor;
     color_t characterColor;
 } format_t;
 
-//struct de un punto en la pantalla
+// struct de un punto en la pantalla
 typedef struct point_t
 {
     uint8_t row;
     uint8_t column;
 } point_t;
-//KERNELs
+// KERNELs
 uint8_t printChar(char character, color_t backgroundColor, color_t characterColor);
 
 char *print(const char *string, const struct format_t *format);
@@ -47,7 +47,7 @@ uint8_t newLine();
 
 void scrollUp(uint8_t rows);
 
-//User
+// User
 
 void clearScreen();
 

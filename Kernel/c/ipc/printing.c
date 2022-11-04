@@ -13,30 +13,30 @@ enum specialFormat
     BG_CH
 };
 
-static uint8_t *const video = (uint8_t *) 0xB8000;
+static uint8_t *const video = (uint8_t *)0xB8000;
 
 format_t currentFormat = {BLACK, L_GRAY};
 
 uint8_t charsWithSpecialFormat[WIDTH][HEIGHT] = {{NONE}};
 
-point_t cursor = {0,0};
+point_t cursor = {0, 0};
 
-point_t backspaceBase = {0,0};
+point_t backspaceBase = {0, 0};
 
-//Funcion auxiliar que recibe un punto y devuelve un puntero a la dirección de memoria correspondiente a ese punto
+// Funcion auxiliar que recibe un punto y devuelve un puntero a la dirección de memoria correspondiente a ese punto
 static uint8_t *pointToCursor(point_t point)
 {
-    return (uint8_t * )(video + 2 * (point.row * WIDTH + point.column));
+    return (uint8_t *)(video + 2 * (point.row * WIDTH + point.column));
 }
 
-//Borra un char siempre que estemos después de la posicion del backspaceBase
+// Borra un char siempre que estemos después de la posicion del backspaceBase
 static void backspace()
 {
-    
-    if(pointToCursor(cursor) > pointToCursor(backspaceBase))
+
+    if (pointToCursor(cursor) > pointToCursor(backspaceBase))
     {
-        //nos movemos uno hacia atras
-        if(cursor.column > 0)
+        // nos movemos uno hacia atras
+        if (cursor.column > 0)
         {
             cursor.column--;
         }
@@ -44,12 +44,12 @@ static void backspace()
         {
             cursor.row--;
             cursor.column = WIDTH - 1;
-            while(*pointToCursor(cursor) == ' ' && cursor.column > 0)
+            while (*pointToCursor(cursor) == ' ' && cursor.column > 0)
             {
                 cursor.column--;
             }
         }
-        //ahora borramos el caracter
+        // ahora borramos el caracter
         uint8_t *cursorPointer = pointToCursor(cursor);
         charsWithSpecialFormat[cursor.column][cursor.row] = NONE;
         *cursorPointer = ' ';
@@ -63,10 +63,10 @@ void setBackspaceBase()
     backspaceBase.column = cursor.column;
 }
 
-//printea el caracter indicado en donde se encuentre el cursor de la pantalla actual con el formato indicado
+// printea el caracter indicado en donde se encuentre el cursor de la pantalla actual con el formato indicado
 uint8_t printChar(char character, color_t backgroundColor, color_t characterColor)
 {
-    //si se pasó dentro de la linea, sigue al principio de la línea siguiente
+    // si se pasó dentro de la linea, sigue al principio de la línea siguiente
     if (cursor.column >= WIDTH)
     {
         cursor.column = 0;
@@ -74,36 +74,36 @@ uint8_t printChar(char character, color_t backgroundColor, color_t characterColo
     }
     if (cursor.row >= HEIGHT)
     {
-        return 1; //se paso de su pantalla
+        return 1; // se paso de su pantalla
     }
 
     format_t fmt;
     fmt.backgroundColor = backgroundColor == DEFAULT ? currentFormat.backgroundColor : backgroundColor;
     fmt.characterColor = characterColor == DEFAULT ? currentFormat.characterColor : characterColor;
 
-    if(character == '\n')
+    if (character == '\n')
     {
         newLine();
         return 0;
     }
-    if(character == '\b')
+    if (character == '\b')
     {
         backspace();
         return 0;
     }
 
-    //escribimos el caracter con los colores indicados en la posicion de la pantalla indicada por el cursor de esta screenState
+    // escribimos el caracter con los colores indicados en la posicion de la pantalla indicada por el cursor de esta screenState
     uint8_t *cursorPointer = pointToCursor(cursor);
     charsWithSpecialFormat[cursor.column][cursor.row] = (backgroundColor != DEFAULT) << 1 | (characterColor != DEFAULT);
-    *cursorPointer = (uint8_t) character;
+    *cursorPointer = (uint8_t)character;
     *(cursorPointer + 1) = fmt.backgroundColor << 4 | fmt.characterColor;
 
-    //movemos el cursor a la siguiente columna para la proxima vez que printee algo
+    // movemos el cursor a la siguiente columna para la proxima vez que printee algo
     cursor.column++;
     return 0;
 }
 
-//printea el string indicado con el formato indicado a partir de donde se encuentre el cursor de la pantalla actual. Si se termina la pantalla a mitad de camino, le devuelve un puntero a la parte del string que quedó por printear
+// printea el string indicado con el formato indicado a partir de donde se encuentre el cursor de la pantalla actual. Si se termina la pantalla a mitad de camino, le devuelve un puntero a la parte del string que quedó por printear
 char *print(const char *string, const struct format_t *format)
 {
     int i;
@@ -111,7 +111,7 @@ char *print(const char *string, const struct format_t *format)
     {
         int error = printChar(string[i], format->backgroundColor, format->characterColor);
         if (error)
-            return (char*)string + i;
+            return (char *)string + i;
     }
     return NULL;
 }
@@ -119,7 +119,7 @@ char *print(const char *string, const struct format_t *format)
 format_t changeColor(color_t backgroundColor, color_t characterColor)
 {
     format_t fmt = {DEFAULT, DEFAULT};
-    if(backgroundColor < BLACK || backgroundColor > WHITE || characterColor < BLACK || characterColor > WHITE)
+    if (backgroundColor < BLACK || backgroundColor > WHITE || characterColor < BLACK || characterColor > WHITE)
         return fmt;
     fmt.backgroundColor = currentFormat.backgroundColor;
     fmt.characterColor = currentFormat.characterColor;
@@ -133,20 +133,20 @@ format_t changeColor(color_t backgroundColor, color_t characterColor)
             uint8_t *cursorPointer = pointToCursor(currentPoint);
             color_t chColor = *(cursorPointer + 1) & 0x0F;
             color_t bgColor = *(cursorPointer + 1) & 0xF0;
-            switch(charsWithSpecialFormat[currentPoint.column][currentPoint.row])
+            switch (charsWithSpecialFormat[currentPoint.column][currentPoint.row])
             {
-                case BG_ONLY:
-                    chColor = characterColor;
-                    break;
-                case CH_ONLY:
-                    bgColor = backgroundColor << 4;
-                    break;
-                case NONE:
-                    chColor = characterColor;
-                    bgColor = backgroundColor << 4;
-                    break;
-                default:
-                    break;             
+            case BG_ONLY:
+                chColor = characterColor;
+                break;
+            case CH_ONLY:
+                bgColor = backgroundColor << 4;
+                break;
+            case NONE:
+                chColor = characterColor;
+                bgColor = backgroundColor << 4;
+                break;
+            default:
+                break;
             }
             *(cursorPointer + 1) = bgColor | chColor;
         }
@@ -154,24 +154,23 @@ format_t changeColor(color_t backgroundColor, color_t characterColor)
     return fmt;
 }
 
-//borra los caracteres que queden en la línea y setea el fondo al color indicado
+// borra los caracteres que queden en la línea y setea el fondo al color indicado
 uint8_t newLine()
 {
     while (cursor.column < WIDTH)
     {
-        int error = printChar(' ', DEFAULT, DEFAULT);    //hacemos esto hasta que lleguemos al fin de la línea
+        int error = printChar(' ', DEFAULT, DEFAULT); // hacemos esto hasta que lleguemos al fin de la línea
         if (error)
-            return 1; //si se paso de la pantalla
+            return 1; // si se paso de la pantalla
     }
-    //y movemos el cursor al principio de la línea siguiente
+    // y movemos el cursor al principio de la línea siguiente
     cursor.column = 0;
     cursor.row++;
     return 0;
 }
 
-
-//borra los caracteres que haya en toda la screen
-//deja el cursor al principio de todo
+// borra los caracteres que haya en toda la screen
+// deja el cursor al principio de todo
 void clearScreen()
 {
     for (int i = 0; i < WIDTH; i++)
@@ -185,14 +184,14 @@ void clearScreen()
             *(cursorPointer + 1) = currentFormat.backgroundColor << 4 | currentFormat.characterColor;
         }
     }
-    //pone el cursor al principio
+    // pone el cursor al principio
     cursor.row = 0;
     cursor.column = 0;
     backspaceBase.row = 0;
     backspaceBase.column = 0;
 }
 
-//copia todas las lineas "rows" líneas hacia arriba. las de abajo las borra para que no se vean repetidas con las que copio hacia arriba
+// copia todas las lineas "rows" líneas hacia arriba. las de abajo las borra para que no se vean repetidas con las que copio hacia arriba
 void scrollUp(uint8_t rows)
 {
     int j;
@@ -207,7 +206,7 @@ void scrollUp(uint8_t rows)
             charsWithSpecialFormat[newPoint.column][newPoint.row] = charsWithSpecialFormat[currentPoint.column][currentPoint.row];
         }
     }
-    //borra los caracteres de las úlimas "rows" líneas
+    // borra los caracteres de las úlimas "rows" líneas
     for (; j < HEIGHT; j++)
     {
         for (int i = 0; i < WIDTH; i++)
@@ -221,7 +220,7 @@ void scrollUp(uint8_t rows)
     }
     cursor.column = 0;
     cursor.row = HEIGHT - rows;
-    if(backspaceBase.row >= rows)
+    if (backspaceBase.row >= rows)
     {
         backspaceBase.row -= rows;
     }

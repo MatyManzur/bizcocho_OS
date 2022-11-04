@@ -4,10 +4,9 @@
 #include <lib.h>
 #include <memoryManager.h>
 
+typedef struct ddlCDT *ddlADT;
 
-typedef struct ddlCDT * ddlADT;
-
-typedef void * elemType;
+typedef void *elemType;
 
 // Retorna una lista vacía.
 ddlADT newList();
@@ -36,7 +35,7 @@ void remove(ddlADT list);
 /* Libera la memoria reservada por la lista */
 void freeList(ddlADT list);
 
-elemType find(ddlADT list, int (cmpfunction(void * a, void * b)), void * toCmp);
+elemType find(ddlADT list, int(cmpfunction(void *a, void *b)), void *toCmp);
 
 uint32_t getSize(ddlADT list);
 
