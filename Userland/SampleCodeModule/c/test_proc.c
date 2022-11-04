@@ -46,7 +46,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
         switch(action){
           case 0:
             if (p_rqs[rq].state == RUNNING || p_rqs[rq].state == BLOCKED){
-              printf("Lo mata a %d\n", p_rqs[rq].pid);
+              printf("KILLS %d\n", p_rqs[rq].pid);
               if (sys_kill_process(p_rqs[rq].pid) == -1){  
                 fprintf(STDERR,"test_processes: ERROR killing process\n");
                 sys_exit(-1);
@@ -58,7 +58,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
 
           case 1:
             if (p_rqs[rq].state == RUNNING){
-              printf("Lo bloquea a %d\n", p_rqs[rq].pid);
+              printf("BLOCKS %d\n", p_rqs[rq].pid);
               if(sys_block_process(p_rqs[rq].pid) == -1){
                 fprintf(STDERR,"test_processes: ERROR blocking process\n");
                 sys_exit(-1);
@@ -73,7 +73,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
       // Randomly unblocks processes
       for(rq = 0; rq < max_processes; rq++)
         if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2){
-          printf("Lo desbloquea a %d\n", p_rqs[rq].pid);
+          printf("UNBLOCKS %d\n", p_rqs[rq].pid);
           if(sys_block_process(p_rqs[rq].pid) == -1){
             fprintf(STDERR,"test_processes: ERROR unblocking process\n");
             sys_exit(-1);

@@ -270,8 +270,9 @@ int8_t block(uint8_t argc, void* argv[])
         if(pid==1)
             fprintf(STDERR, "Don't mess with poor init! He's just doing his job\n");
         else
-            fprintf(STDERR,"Error! Couldn't find process with PID: %d\n",pid);
+            fprintf(STDERR, "Error! Couldn't find process with PID: %d\n",pid);
         return -1;
     }
+    printf("Process of PID %d has been blocked\n", pid);
     return 0;
 }

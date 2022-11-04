@@ -28,10 +28,10 @@ int8_t help(uint8_t argc, void** argv)
             for(int i=0;i<80;i++)
                 printf("-");
             printf("%c 'loop': sends a message every 5 seconds \n", 7);
-            printf("%c 'phylo': phylosophers program \n", 7);
-            printf("%c 'testmm <x>': memory stress test. <x> is the max bytes that it will use \n", 7);
+            printf("%c 'phylo': philosophers program \n", 7);
+            printf("%c 'testmm <x>': memory allocation test. <x> is the max bytes that it will use \n", 7);
             printf("%c 'testprio': priority changing processes test\n", 7);
-            printf("%c 'testproc <x>': process stress test. <x> is the max count of processes\n", 7);
+            printf("%c 'testproc <x>': process creation test. <x> is the max count of processes\n", 7);
             printf("%c 'testsync <x> <y>': semaphore test. <x> is how many inc/decrements each process does, <y>=1 to use semaphores and <y>=0 to not use them\n", 7);
             printf("%c 'cat': prints to output whatever reads from its input until an EOF is found\n", 7);
             printf("%c 'wc': reads from input until an EOF, and then prints the line count of what has read\n", 7);
@@ -196,6 +196,7 @@ int8_t nice(uint8_t argc, void** argv)
         fprintf(STDERR,"Error! Couldn't find process with PID: %d or given priority value is invalid: should be [0-4]\n",pid);
         return -1;
     }
+    printf("Priority of process with PID %d has been changed to %d\n", pid, priority);
     return 0;
 }
 int8_t mem(uint8_t argc, void** argv){

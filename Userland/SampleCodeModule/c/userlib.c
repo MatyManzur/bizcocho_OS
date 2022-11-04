@@ -414,7 +414,7 @@ void printProcessesTable()
     sys_mem_free(processesInfo);
 }
 void printMemInfo(){
-    memInfoPointer meminfo=sys_get_mem_info();
+    memInfoPointer meminfo = sys_get_mem_info();
     if(meminfo==NULL)
         return;
     uint32_t totalBlocks=(meminfo->memSize / meminfo->blockSize);
@@ -422,13 +422,13 @@ void printMemInfo(){
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     fprintf(STDOUT, "| Free Blocks | Used Blocks | Total Blocks |\n");
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
-    fprintf(STDOUT, "|   %6d    |   %6d    |    %6d    |\n",meminfo->freeBlocks,occupiedBlocks,totalBlocks);
+    fprintf(STDOUT, "|   %7d   |   %7d   |   %7d    |\n",meminfo->freeBlocks,occupiedBlocks,totalBlocks);
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     fprintf(STDOUT, "| Block Size= %2d Bytes                     |\n",meminfo->blockSize);
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     fprintf(STDOUT, "|  Free Bytes |  Used Bytes |  Total Bytes |\n");
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
-    fprintf(STDOUT, "|   %7d   |   %7d   |    %7d   |\n",meminfo->freeBlocks*meminfo->blockSize,occupiedBlocks*meminfo->blockSize,totalBlocks*meminfo->blockSize);
+    fprintf(STDOUT, "|  %8d   |  %8d   |   %8d   |\n",meminfo->freeBlocks*meminfo->blockSize,occupiedBlocks*meminfo->blockSize,totalBlocks*meminfo->blockSize);
     fprintf(STDOUT, "|-------------|-------------|--------------|\n");
     sys_mem_free(meminfo);
 }

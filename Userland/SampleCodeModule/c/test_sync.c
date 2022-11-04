@@ -15,7 +15,7 @@ void slowInc(int64_t *p, int64_t inc){
   int64_t aux = *p;
   //my_yield(); This makes the race condition highly probable
   aux += inc;
-  for(int i = 0; i<10000; i++);
+  for(int i = 0; i<20000; i++);
   *p = aux;
 }
 
