@@ -1,87 +1,181 @@
-/*
-#define DIVISIONS 6
+#include <stddef.h>
+#include <stdint.h>
+
+#define DIVISIONS 25
+#define MIN_SIZE 16
+
+
+// espacio mínimo 2^4, espacio total 2^25
+
+struct base
+{
+    void * start;
+    uint32_t memSize;
+    buddyPointer occupied[DIVISIONS];  // empiezan en NULL
+} typedef theBase;
 
 struct buddyNode
 {
-    uint32_t baseSize;
-    uint64_t occupied[DIVISIONS];  //0 for free, 1 for occupied
-    void * start;
-}typedef buddyNode;
+    uint8_t division;
+    buddyPointer prev;
+    buddyPointer next;
+} typedef buddyNode;
 
-typedef buddyNode* buddyp;
+typedef buddyNode * buddyPointer;
 
-static buddyp base;
+typedef theBase * basePointer;
 
-void setOccupiedToZero(uint64_t occupied[])
+static basePointer myBase;
+
+
+static void setOccupiedToZero(buddyPointer occupied[])
 {
-    for(int i=0; i<DIVISIONS; i++){
-        occupied[i]=0;
-    }
+    for(int i=0; i<DIVISIONS; i++)
+        occupied[i]=NULL;
 }
 
 
+// al principio solo la primera división (la más grande) tiene algo
 void memInitialize(void * memBase, uint32_t memSize)
 {
-    base = (buddyp) memBase;
-    base->chunkSize = memSize;
+    myBase = (basePointer) memBase;
+    myBase->start = ((void*)myBase + sizeof(struct base));
+    myBase->memSize = memSize;
+    setOccupiedToZero(myBase->occupied);
 }
 
-static uint32_t closestPow2(uint32_t nbytes, char * times)
+static buddyPointer removeLast(uint8_t division)
 {
-    uint32_t returnValue=1;
-    *times = DIVISIONS-1;
-    while(returnValue<=nbytes)
+    buddyPointer curr = myBase->occupied[division];
+
+    if(curr == NULL)
+        return NULL;
+
+    if(curr->next == NULL)
     {
-        returnValue*=2;
-        (*times)--;
+        myBase->occupied[division] = NULL;
+        return curr;
     }
-    return returnValue;
+
+    while(curr->next != NULL)
+        curr = curr->next;
+    
+    curr->prev->next = NULL;
+
+    return curr;
 }
 
-char pow2(char exponent)
+static void addToList(uint8_t division, buddyPointer bp)
 {
-    char returnValue = 1;
-    while(exponent>0)
-    {
-        returnValue*=2;
-    }
-    return returnValue;
+    buddyPointer aux = myBase->occupied[division];
+    if(aux != NULL)
+        aux->prev = bp;
+    myBase->occupied[division] = bp;
+    return;
 }
 
-static void recursiveFill(uint64_t occupied[], char newindex, char times, char movement)
+static void * updatingLists(uint8_t division)
 {
-    if(newindex<0)
+    if(0 > division || division >= DIVISIONS)
+        return NULL;
+    
+    if(myBase->occupied[division] != NULL)
     {
-        return;
+        return removeLast(division);
     }
-    uint64_t mask=1;
-    mask << times*movement;
-    recursiveFill(occupied, newindex-1, (times-times%2)/2, movement*2);
+
+    void * actualMemory;
+    // TODO hay que ver si se rompe con el llamado recursivo
+    if((actualMemory = updatingLists(division-1)) == NULL)
+        return NULL;
+    
+    uint32_t size = 1<<(DIVISIONS - division);
+    
+    buddyPointer firstHalf = (buddyPointer) actualMemory;
+    uint8_t * secondHalf = ((uint8_t *) actualMemory) + size;
+    firstHalf->division = division;
+    firstHalf->next = NULL;
+    firstHalf->prev = NULL;
+    *secondHalf = division;
+    
+    addToList(division, firstHalf);
+
+    return (void *) (secondHalf);
+}
+
+static uint8_t logBase2Ceil(uint32_t nbytes)
+{
+    uint8_t value = 0;
+    while(nbytes>0)
+    {
+        nbytes /= 2;
+        value++;
+    }
+    return value;
 }
 
 void * memalloc(uint32_t nbytes)
 {
-    if(nbytes>buddyp->baseSize)
+    if(nbytes>myBase->memSize || nbytes == 0)
     {
         return NULL;
     }
 
-    char index;
-    uint32_t powerOf2 = closestPow2(nbytes, &index);
+    // espacio mínimo
+    nbytes = (nbytes<MIN_SIZE)? MIN_SIZE: nbytes;
+    uint8_t divisionSelected = DIVISIONS - logBase2Ceil(nbytes) + 1;
 
-    uint64_t mask;
-    char movement = pow2(((DIVISIONS-1)-index));
-    char i;
+    uint8_t * mem = updatingLists(divisionSelected);
 
-    for(mask=1, i=0;mask!=0; mask<<movement, i++)
-    {
-        if(!(buddyp->occupied[index] & mask))
-        {
-            buddyp->occupied[index] |= mask;
-            recursiveFill(buddyp->occupied, index-1, (i-i%2)/2, movement*2);
-            return buddyp->start + buddyp->baseSize - ((buddyp->baseSize)/pow2(index+1))*i;
-        }
-    }
-    return NULL; // No more memory on that level
+    return (void*) (mem + 1);
 }
-*/
+
+static int8_t findAndRemove(uint8_t division, void * beginningBlockWithBuddy, uint64_t sizeWithBuddy)
+{
+    buddyPointer possibleBuddy = myBase->occupied[division];
+    if(possibleBuddy == NULL)
+        return 0;
+    if(beginningBlockWithBuddy <= possibleBuddy && beginningBlockWithBuddy + sizeWithBuddy > possibleBuddy)
+    {
+        if(possibleBuddy->next!=NULL)
+            possibleBuddy->next->prev = NULL;
+        myBase->occupied[division] = possibleBuddy->next;
+        return 1;
+    }
+    possibleBuddy = possibleBuddy->next;
+    while(possibleBuddy != NULL)
+    {
+        if(beginningBlockWithBuddy <= possibleBuddy && beginningBlockWithBuddy + sizeWithBuddy > possibleBuddy)
+        {
+            if(possibleBuddy->prev != NULL)
+                possibleBuddy->prev->next = possibleBuddy->next;
+            if(possibleBuddy->next != NULL)
+                possibleBuddy->next->prev = possibleBuddy->prev;
+            return 1;
+        }
+        possibleBuddy = possibleBuddy->next;
+    }
+    return 0;
+}
+
+static void restoreToList(uint8_t division, void * pointerToStart)
+{
+    uint64_t sizeWithBuddy = 1<<(DIVISIONS - division + 1);
+    pointerToStart -= (((uint64_t)pointerToStart)%sizeWithBuddy == 0)? 0 : sizeWithBuddy/2;
+    if(!findAndRemove(division, pointerToStart, sizeWithBuddy))
+    {
+        addToList(division, (buddyPointer) pointerToStart);
+        return;
+    }
+    restoreToList(division-1, pointerToStart);
+}
+
+void memfree(void * ap)
+{
+    uint8_t * pointerToStart = (uint8_t * ) ap;
+    uint8_t division = *pointerToStart - 1;
+    if(division<0 || division >= DIVISIONS)
+        return;
+    restoreToList(division, (void *) pointerToStart); 
+}
+
