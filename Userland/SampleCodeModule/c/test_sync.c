@@ -65,7 +65,7 @@ uint64_t my_process_inc(uint64_t argc, char *argv[])
 }
 
 uint64_t test_sync(uint64_t argc, char *argv[])
-{ //{n, use_sem, 0}
+{
     uint8_t pids[2 * TOTAL_PAIR_PROCESSES];
 
     if (argc != 2)

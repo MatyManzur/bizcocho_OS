@@ -12,7 +12,7 @@ static void int_21();
 void irqDispatcher(uint64_t irq) // llamado desde interrupts.asm
 {
     switch (irq)
-    { // llama a la rutina de atención correspondiente
+    {
     case 0:
         int_20();
         break;

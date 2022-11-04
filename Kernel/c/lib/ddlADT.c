@@ -14,8 +14,8 @@ typedef TNode *TList;
 
 struct ddlCDT
 {
-    TList first;   // El primero de la lista
-    TList current; // El current node por el que se esta iterando
+    TList first;   
+    TList current; 
     TList toRemove;
     uint32_t size;
 };

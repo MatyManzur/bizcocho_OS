@@ -131,7 +131,6 @@ void *memalloc(uint32_t nbytes)
         return NULL;
     }
 
-    // espacio mínimo
     nbytes = ((nbytes + 1) < MIN_SIZE) ? MIN_SIZE : nbytes + 1;
     uint8_t divisionSelected = logBase2(nbytes, 1);
 

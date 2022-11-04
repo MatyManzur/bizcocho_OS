@@ -24,8 +24,6 @@ char *convert(unsigned int num, int base, unsigned int minDigitCount);
 
 uint8_t ulongToStr(unsigned long num, char *ans);
 
-int sqrt(int x);
-
 int xtou64(const char *str, uint64_t *ans);
 
 size_t strcpy(char *dest, const char *src);

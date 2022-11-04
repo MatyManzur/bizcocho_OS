@@ -83,7 +83,7 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     if (processPCB == NULL)
         OUT_OF_MEM_ERROR(NULL);
     processPCB->pid = pidToGive++;
-    processPCB->ppid = ppid; // El parent provisto
+    processPCB->ppid = ppid;
     strncpy(processPCB->name, name, NAME_MAX);
     processPCB->argc = argc;
     processPCB->argv = argv;
@@ -91,8 +91,10 @@ static pointerPCBNODE_t startProcess(char *name, uint8_t argc, void **argv, int8
     processPCB->processMemEnd = memalloc(PROCESS_MEM_SIZE);
     if (processPCB->processMemEnd == NULL)
         OUT_OF_MEM_ERROR(NULL);
-    processPCB->processMemStart = processPCB->processMemEnd + PROCESS_MEM_SIZE - 1; // el stack empieza en el final de la memoria y el rsp baja
-    processPCB->stackPointer = 0;                                                   // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
+    // el stack empieza en el final de la memoria y el rsp baja
+    // usamos que el stackPointer == 0 cuando nunca se ejecutó el proceso
+    processPCB->processMemStart = processPCB->processMemEnd + PROCESS_MEM_SIZE - 1;
+    processPCB->stackPointer = 0;
     processPCB->state = READY;
     processPCB->statusCode = -1;
     if (fds == NULL)
@@ -182,7 +184,6 @@ uint32_t startParentProcess(char *name, uint8_t argc, void **argv, int8_t (*proc
     return pnode->process->pid;
 }
 
-// Hacer un startChild (equivalente a un fork exec)
 uint32_t startChildProcess(char *name, uint8_t argc, void **argv, int8_t (*processCodeStart)(uint8_t, void **), uint8_t diesOnEsc)
 {
     uint8_t priority = schedule.nowRunning->process->priority;
@@ -291,7 +292,7 @@ static void removeFromList(pointerPCBNODE_t node)
     {
         node->previous->next = node->next;
     }
-    else // era el primero
+    else 
     {
         for (int i = 0; i < PRIORITY_COUNT; i++)
         {
@@ -398,7 +399,7 @@ int8_t waitchild(uint32_t childpid)
     {
         child->prevSibling->nextSibling = child->nextSibling;
     }
-    else // era el primero
+    else 
     {
         schedule.nowRunning->children = child->nextSibling;
     }
@@ -497,7 +498,7 @@ uint8_t changePriority(uint32_t pid, uint8_t newPriority)
         {
             head->previous->next = head->next;
         }
-        else // es el primero
+        else
         {
             schedule.processes[head->process->priority] = head->next;
         }

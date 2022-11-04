@@ -17,13 +17,13 @@ void timer_handler()
     scheduler();
 }
 
-// devuelve la cantidad total de ticks desde la primera interrupcion del timer tick
+
 unsigned long ticks_elapsed()
 {
     return ticks;
 }
 
-// devuelve la cantidad total de segundos desde la primera interrupcion del timer tick
+
 unsigned long seconds_elapsed()
 {
     return ticks / 18;

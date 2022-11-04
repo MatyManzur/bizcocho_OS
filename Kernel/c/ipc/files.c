@@ -62,8 +62,7 @@ int8_t open(char *name, uint8_t mode, uint8_t *fd)
     if (file == NULL || (mode != 'W' && mode != 'R') || openFile(file->fileId, mode, fd) == -1)
     {
         return -1;
-        // No existe el File/El modo es invalido/Hubo un error al abrir el file osea esta lleno de FDs
-    }
+        }
     file->currentOpenCount++;
     if (mode == 'W')
         file->writeOpenCount++;

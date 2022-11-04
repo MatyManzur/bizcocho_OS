@@ -157,7 +157,7 @@ uint32_t getSemCount()
     return semCount;
 }
 
-// desde userland se deben realizar los malloc
+// desde userland se deben realizar los memfree
 semInfoPointer *getSemaphoreInfo(uint32_t *semAmount)
 {
     acquire(&lockList);

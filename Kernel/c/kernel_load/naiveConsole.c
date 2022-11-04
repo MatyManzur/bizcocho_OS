@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <naiveConsole.h>
 
-// Se mantuvo porque es usada por las funciones internas de Kernel, pero no la usamos para llamar desde userland. Eso está en printing.c
+// Se mantuvo porque es usada por las funciones internas de Kernel, pero no la usamos para llamar desde userland. Eso está en printing.c y files.c
 
 static uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 

@@ -2,13 +2,13 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <userlib.h>
-#
+
 #define PRINTF_BUFFER_MAX_LENGTH 255
 
 #define IS_DIGIT(x) ((x) >= '0' && (x) <= '9')
 
 int strToNum(const char *str)
-{ // Pasa un string a decimal
+{
     int i = 0;
     int neg = 0;
     if (str[i] == '-')
@@ -232,43 +232,25 @@ char *convert(unsigned int num, int base, unsigned int minDigitCount)
     return (ptr);
 }
 
-// pasa un numero entero a string
+
 uint8_t ulongToStr(unsigned long num, char *ans)
 {
-    char aux[20]; // un long puede ocupar hasta 10 caracteres (sin contar - o \0)
-    // podria usar numLength pero asi esta bien
-    int i = 0; // puntero de ans
+    char aux[20]; 
+    
+    int i = 0;
     int k = 0;
     while (num)
     {
         aux[k++] = (num % 10) + '0';
         num /= 10;
     }
-    k--; // para que apunte al ultimo numero desde donde tiene que copiar
+    k--;
     while (k >= 0)
     {
         ans[i++] = aux[k--];
     }
     ans[i] = '\0';
     return i;
-}
-
-/// codigo sacado de:
-// https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Reciprocal_of_the_square_root
-int sqrt(int x)
-{
-    float xhalf = 0.5f * x;
-    union
-    {
-        float x;
-        int i;
-    } u;
-    u.x = x;
-    u.i = 0x5f375a86 - (u.i >> 1);
-    // The next line can be repeated any number of times to increase accuracy
-    u.x = u.x * (1.5f - xhalf * u.x * u.x);
-    return ((int)(u.x * x)) +
-           2; // Esto es para conseguir la raiz ademas SSE esta deshabilitado entonces truncamos y sumamos uno
 }
 
 // Pasa de string en hexadecimal a numero entero
@@ -389,7 +371,6 @@ void printProcessesTable()
     printf("|-------------------------------------------------------------------|\n");
     sys_mem_free(processesInfo);
 }
-
 void printMemInfo()
 {
     memInfoPointer meminfo = sys_get_mem_info();
@@ -412,7 +393,6 @@ void printMemInfo()
     fprintf(STDOUT, "|------------------------------------------|\n");
     sys_mem_free(meminfo);
 }
-
 void printPipeTable()
 {
     uint32_t pipeamount = 0;
