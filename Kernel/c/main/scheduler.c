@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <scheduler.h>
 
 
@@ -230,8 +232,6 @@ void scheduler()
     schedule.nowRunning->remainingQuantum += (canContinue) ? 0 : PRIORITY_COUNT - schedule.nowRunning->process->priority;
 
     pointerPCBNODE_t nextProcess = findNextProcess();
-    if (nextProcess == NULL)
-        return;
 
     if (schedule.nowRunning != NULL)                                     // si hubo un proceso anterior
         saveStackPointer(&(schedule.nowRunning->process->stackPointer)); // deja en el puntero del argumento el rbp viejo
@@ -680,7 +680,8 @@ processInfoPointer * getProcessInfo(uint32_t * procAmount)
     return procInfo;
 }
 ddlADT getBlockedList(uint8_t blockedSource){
-    if(blockedSource>BLOCK_REASON_COUNT){
+
+    if(blockedSource >= BLOCK_REASON_COUNT){
         return NULL;
     }
     return blockedProcesses[blockedSource];

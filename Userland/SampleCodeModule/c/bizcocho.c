@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <bizcocho.h>
 #include "tests.h"
 
@@ -8,7 +10,6 @@
 #define IS_PIPE(c) ((c)==2)
 
 
-#define GET_TOKEN_POINTER(tokens,index,length) ( ( (char *) (tokens) ) + (index) * (length) )
 
 char* promptMessage="Bizcocho $>";
 
@@ -55,14 +56,14 @@ void readUntilEnter(char buffer[])
             }
         }
         sys_read(STDIN, buffer + bufferIndex, 1);
-        printf(buffer + bufferIndex);
+        printf("%s", buffer + bufferIndex);
     } while( buffer[bufferIndex++] !='\n');
 
     buffer[bufferIndex - 1]='\0'; //Ponemos un 0 para terminar el string
     removeBackspaces(buffer);
 }
 
-int8_t lookForCommandInString(char* string, uint8_t* argc, char* argv[], char** tokens){
+int8_t lookForCommandInString(char* string, uint8_t* argc, char* argv[], char tokens[][MAX_TOKEN_LENGTH]){
     char *args;
     int8_t index = -1;
     for (int8_t i = 0; i < COMMAND_COUNT && index == -1; i++)
@@ -76,11 +77,11 @@ int8_t lookForCommandInString(char* string, uint8_t* argc, char* argv[], char** 
     if(index==-1){
         return index;
     }
-    *argc = (uint8_t) parser(args, tokens, ' ', MAX_ARG_COUNT, MAX_TOKEN_LENGTH);
+    *argc = (uint8_t) parser(args, tokens, ' ', MAX_ARG_COUNT);
     
     for (uint8_t i = 0; i < *argc; i++)
     {
-        argv[i] = GET_TOKEN_POINTER(tokens, i, MAX_TOKEN_LENGTH);
+        argv[i] = tokens[i];
     }
     return index;
 }
@@ -132,9 +133,9 @@ int8_t bizcocho(uint8_t argc, void** argv)
         sys_set_backspace_base();
         readUntilEnter(buffer);
         //Parsea por pipe y despues parse por espacio
-        char pipeTokenStrings[2][MAX_PIPE_TOKEN_LENGTH]={{0}};
+        char pipeTokenStrings[2][MAX_TOKEN_LENGTH]={{0}};
 
-        uint8_t pipeTokenCount = parser(buffer, (char**)pipeTokenStrings, '|', 2, MAX_PIPE_TOKEN_LENGTH);
+        uint8_t pipeTokenCount = parser(buffer, pipeTokenStrings, '|', 2);
         
         uint8_t argc[MAX_TOKEN_COUNT];
         char* argv[MAX_TOKEN_COUNT][MAX_ARG_COUNT] = {{NULL}};
@@ -148,7 +149,7 @@ int8_t bizcocho(uint8_t argc, void** argv)
         
         for(int k=0; k < pipeTokenCount && !error; k++)
         {
-            foundCommand[k] = lookForCommandInString(pipeTokenStrings[k], &argc[k], argv[k], (char**) tokens[k]);
+            foundCommand[k] = lookForCommandInString(pipeTokenStrings[k], &argc[k], argv[k],tokens[k]);
             if(foundCommand[k] < 0)
             {
                 fprintf(STDERR, "Hey! That's not a valid command!\n");
@@ -275,4 +276,36 @@ int8_t block(uint8_t argc, void* argv[])
     }
     printf("Process of PID %d has been blocked\n", pid);
     return 0;
+}
+
+//Se le pasa un string, un buffer donde dejara los tokens, el char separador de tokens, una cantidad maxima de tokens y la longitud maxima de cada token. 
+//La funcion parsea con el char provisto el string en tokens, si se llega a la longitud maxima en un token el mismo quedara con esa longitud y si se llega a la cantidad maxima de tokens se dejara de parsear, 
+//si esta ultima no se alcanza entonces parsea hasta el final del string. Devuelve por parametro la cantidad de tokens que llego a parsear.
+int parser(char *string, char buffer[][MAX_TOKEN_LENGTH], char separator, int maxTokenCount)
+{
+    if (maxTokenCount == 0)
+    {
+        return -1;
+    }
+    int count = 0;
+    int j = 0;
+    for (int i = 0; string[i] != '\0' && (count != maxTokenCount); i++)
+    {
+        if (string[i] == separator || j == MAX_TOKEN_LENGTH)
+        {
+            if (j != 0)
+            {
+                buffer[count++][j] = '\0';
+                j = 0;
+            }
+        } else
+        {
+            buffer[count][j++] = string[i];
+        }
+    }
+    if (j != 0)
+    {
+        buffer[count++][j] = '\0';
+    }
+    return count;
 }

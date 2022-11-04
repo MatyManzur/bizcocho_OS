@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "testing_utils.h"
 #include "syslib.h"
 
@@ -47,7 +49,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
           case 0:
             if (p_rqs[rq].state == RUNNING || p_rqs[rq].state == BLOCKED){
               printf("KILLS %d\n", p_rqs[rq].pid);
-              if (sys_kill_process(p_rqs[rq].pid) == -1){  
+              if (sys_kill_process(p_rqs[rq].pid) == 0){  
                 fprintf(STDERR,"test_processes: ERROR killing process\n");
                 sys_exit(-1);
               }
@@ -59,7 +61,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
           case 1:
             if (p_rqs[rq].state == RUNNING){
               printf("BLOCKS %d\n", p_rqs[rq].pid);
-              if(sys_block_process(p_rqs[rq].pid) == -1){
+              if(sys_block_process(p_rqs[rq].pid) == 0){
                 fprintf(STDERR,"test_processes: ERROR blocking process\n");
                 sys_exit(-1);
               }
@@ -74,7 +76,7 @@ int64_t test_processes(uint64_t argc, char *argv[]){
       for(rq = 0; rq < max_processes; rq++)
         if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2){
           printf("UNBLOCKS %d\n", p_rqs[rq].pid);
-          if(sys_block_process(p_rqs[rq].pid) == -1){
+          if(sys_block_process(p_rqs[rq].pid) == 0){
             fprintf(STDERR,"test_processes: ERROR unblocking process\n");
             sys_exit(-1);
           }

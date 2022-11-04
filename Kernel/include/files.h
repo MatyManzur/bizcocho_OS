@@ -20,7 +20,7 @@
     return -1;};
 
 typedef struct pipeFile_t {
-    uint16_t fileId;
+    int16_t fileId;
     char name[MAX_PIPE_NAME_SIZE];
     char buffer[MAX_PIPE_BUFFER_SIZE];
     size_t readingIndex;
@@ -44,11 +44,11 @@ typedef pipeInfo* pipeInfoPointer;
 
 void initializeFiles();
 
-int8_t modifyOpenCount(uint16_t fileID, int8_t units, uint8_t mode);
+int8_t modifyOpenCount(int16_t fileID, int8_t units, uint8_t mode);
 
 void fprintf(int fd, char *format, ...);
 
-int8_t closeForKilling(uint16_t fileId, uint8_t mode);
+int8_t closeForKilling(int16_t fileId, uint8_t mode);
 
 //SYSCALLS
 int write(int fd,char* s);

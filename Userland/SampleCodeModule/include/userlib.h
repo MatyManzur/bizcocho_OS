@@ -26,8 +26,6 @@ uint8_t ulongToStr(unsigned long num, char *ans);
 
 int sqrt(int x);
 
-int parser(char *string, char **buffer, char separator, int maxTokenCount, int maxTokenLenght);
-
 int xtou64(const char *str, uint64_t *ans);
 
 size_t strcpy(char *dest, const char *src);

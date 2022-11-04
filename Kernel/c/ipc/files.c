@@ -1,9 +1,11 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <files.h>
 #define PRINTF_BUFFER_MAX_LENGTH 255
 
 #define IS_DIGIT(x) ((x)>='0' && (x)<='9')
 
-static uint16_t fileIdToGive = 3;
+static int16_t fileIdToGive = 3;
 
 static ddlADT pipeFilesList;
 
@@ -68,7 +70,7 @@ int8_t open(char* name, uint8_t mode, uint8_t* fd)
 }
 
 //Para que la llame el scheduler cuando está matando un proceso
-int8_t closeForKilling(uint16_t fileId, uint8_t mode)
+int8_t closeForKilling(int16_t fileId, uint8_t mode)
 {
     pipeFile_t* file;
     toBegin(pipeFilesList);
@@ -103,7 +105,7 @@ int8_t closeForKilling(uint16_t fileId, uint8_t mode)
 int8_t close(uint8_t fd)
 {   
     uint8_t mode = 0;
-    uint16_t fileId = fdToFileId(fd, &mode);
+    int16_t fileId = fdToFileId(fd, &mode);
     if(fileId == -1)
     {
         return -1;
@@ -298,7 +300,7 @@ int cmpFileID(void* a,void* b)
     return *((uint16_t *)a)==*((uint16_t *) b);
 }
 
-int8_t modifyOpenCount(uint16_t fileID, int8_t units, uint8_t mode)
+int8_t modifyOpenCount(int16_t fileID, int8_t units, uint8_t mode)
 {
     pipeFile_t* file = find(pipeFilesList,cmpFileID,(void *) &fileID);
     if(file==NULL){

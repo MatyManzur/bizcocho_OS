@@ -1,6 +1,8 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <userlib.h>
-
+#
 #define PRINTF_BUFFER_MAX_LENGTH 255
 
 #define IS_DIGIT(x) ((x)>='0' && (x)<='9') 
@@ -174,7 +176,9 @@ size_t snprintf(char* buffer,size_t n, char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    return _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    size_t aux=_snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    va_end(args);
+    return aux;
 }
 
 void printf(char *format, ...)
@@ -183,6 +187,7 @@ void printf(char *format, ...)
     va_start(args, format);
     char buffer[PRINTF_BUFFER_MAX_LENGTH]={0};
     _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    va_end(args);
     sys_write(STDOUT,buffer);
 }
 
@@ -192,6 +197,7 @@ void fprintf(int fd, char *format, ...)
     va_start(args, format);
     char buffer[PRINTF_BUFFER_MAX_LENGTH]={0};
     _snprintf(buffer,PRINTF_BUFFER_MAX_LENGTH,format, &args);
+    va_end(args);
     sys_write(fd,buffer);
 }
 
@@ -264,42 +270,6 @@ int sqrt(int x)
     u.x = u.x * (1.5f - xhalf * u.x * u.x);
     return ((int) (u.x * x)) +
            2;//Esto es para conseguir la raiz ademas SSE esta deshabilitado entonces truncamos y sumamos uno
-}
-
-//Se le pasa un string, un buffer donde dejara los tokens, el char separador de tokens, una cantidad maxima de tokens y la longitud maxima de cada token. 
-//La funcion parsea con el char provisto el string en tokens, si se llega a la longitud maxima en un token el mismo quedara con esa longitud y si se llega a la cantidad maxima de tokens se dejara de parsear, 
-//si esta ultima no se alcanza entonces parsea hasta el final del string. Devuelve por parametro la cantidad de tokens que llego a parsear.
-int parser(char *string, char **buffer, char separator, int maxTokenCount, int maxTokenLenght)
-{
-    if (maxTokenLenght == 0 || maxTokenCount == 0)
-    {
-        return -1;
-    }
-    char *bufferpointer = (char *) buffer;
-    int count = 0;
-    int j = 0;
-    for (int i = 0; string[i] != '\0' && (count != maxTokenCount); i++)
-    {
-        if (string[i] == separator || j == maxTokenLenght)
-        {
-            if (j != 0)
-            {
-                *(bufferpointer + count * maxTokenLenght + j) = '\0';
-                count++;
-                j = 0;
-            }
-        } else
-        {
-            *(bufferpointer + count * maxTokenLenght + j) = string[i];
-            j++;
-        }
-    }
-    if (j != 0)
-    {
-        *(bufferpointer + count * maxTokenLenght + j) = '\0';
-        count++;
-    }
-    return count;
 }
 
 //Pasa de string en hexadecimal a numero entero
@@ -401,7 +371,7 @@ void printProcessesTable()
         processInfoPointer process = processesInfo[index];
         printf("| %11s | %3d |  %3d |   %c   |   %1d   |  0x%7x | 0x%7x |\n", 
             process->name, process->pid, process->ppid, process->status, process->priority, 
-            process->stackPointer, process->processMemStart);
+            (uint64_t) process->stackPointer, (uint64_t) process->processMemStart);
         sys_mem_free(processesInfo[index]);
         index++;
     }

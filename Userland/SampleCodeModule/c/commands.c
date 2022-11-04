@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <commands.h>
 #define IS_VOWEL(c) ((c)=='A' || (c)=='E' || (c)=='I' || (c)=='O' || (c)=='U' || (c)=='a' || (c)=='e' || (c)=='i' || (c)=='o' || (c)=='u')
 
@@ -66,7 +68,7 @@ int8_t help(uint8_t argc, void** argv)
             return 0;
         }
     }
-    if(argc == 0)
+    else if(argc == 0)
     {
         for(int i=0;i<40;i++)
         {

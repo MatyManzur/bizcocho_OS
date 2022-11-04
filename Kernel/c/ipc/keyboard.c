@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <keyboard.h>
 
 static char printableKeys[2][128] =    //mapa de caracteres printeables para cada tecla no especial de la distribucion US en su versión normal y shifteada

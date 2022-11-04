@@ -5,8 +5,7 @@
 #include <phylo.h>
 
 #define BUFFER_DIM 128
-#define MAX_PIPE_TOKEN_LENGTH 30
-#define MAX_TOKEN_LENGTH 15
+#define MAX_TOKEN_LENGTH 30
 #define MAX_TOKEN_COUNT 2
 #define MAX_ARG_COUNT 8
 #define MAX_PIPE_NAME_SIZE 32
@@ -21,4 +20,5 @@ typedef struct command_info{
 int8_t bizcocho(uint8_t argc, void** argv);
 int8_t kill(uint8_t argc, void* argv[]);
 int8_t block(uint8_t argc, void* argv[]);
+int parser(char *string, char buffer[][MAX_TOKEN_LENGTH], char separator, int maxTokenCount);
 #endif 

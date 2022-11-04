@@ -14,3 +14,9 @@
 .gdbinit
 .gdb_history
 .idea/
+
+PVS-Studio.log
+
+report.tasks
+
+strace_out
