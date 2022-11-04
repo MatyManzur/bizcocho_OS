@@ -1,3 +1,4 @@
+#ifndef BUDDY
 
 #include <memoryManager.h>
 #include <stringslib.h>
@@ -146,3 +147,4 @@ memInfoPointer getMemInfo(){
     meminfo->memSize=baseSize;
     return meminfo;
 }
+#endif

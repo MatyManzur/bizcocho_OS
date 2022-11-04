@@ -1,12 +1,15 @@
+#ifdef BUDDY
+
 #include <stddef.h>
 #include <stdint.h>
-
+#include <memoryManager.h>
 #define DIVISIONS 25
 #define MIN_SIZE 16
 
 
 // espacio mínimo 2^4, espacio total 2^25
-
+typedef struct buddyNode * buddyPointer;
+typedef struct base * basePointer;
 struct base
 {
     void * start;
@@ -20,10 +23,6 @@ struct buddyNode
     buddyPointer prev;
     buddyPointer next;
 } typedef buddyNode;
-
-typedef buddyNode * buddyPointer;
-
-typedef theBase * basePointer;
 
 static basePointer myBase;
 
@@ -187,4 +186,9 @@ void memfree(void * ap)
     restoreToList(division, (void *) pointerToStart); 
     memUsed -= (1<<(DIVISIONS-division));
 }
+memInfoPointer getMemInfo(){
+    return NULL;
+}
+
+#endif
 
