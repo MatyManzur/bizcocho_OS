@@ -12,6 +12,7 @@ static uint32_t semForSeat;
 static uint8_t secondToLastWaitingInLeft;
 static uint8_t mustSkip;
 static uint8_t lastOneWaitingInFirstSem;
+static uint8_t fatherWaiting;
 
 uint32_t eatingSemaphores[MAX_PHIL];
 
@@ -35,15 +36,14 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
         left = eatingSemaphores[seat];
         right = eatingSemaphores[(seat+1)%tableSize];
         switch (seat%2)
-        {
+        { // de impar a par
             // par, primero izq
             case 0:
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 1;
-
                 sys_wait_sem(left);
                 if(seat==tableSize-2)
-                    secondToLastWaitingInLeft = 1;
+                    secondToLastWaitingInLeft = 0;
 
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 1;
@@ -63,7 +63,7 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
                     secondToLastWaitingInLeft = 1;
                 sys_wait_sem(left);
                 if(seat==tableSize-2)
-                    secondToLastWaitingInLeft = 1;
+                    secondToLastWaitingInLeft = 0;
                 break;
             default:
                 break;
@@ -86,6 +86,8 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
                     // par, primero izq
                 case 0:
                     sys_post_sem(left);
+                    if(seat==0 && !fatherWaiting)
+                        lastOneWaitingInFirstSem = 0;
                     sys_post_sem(right);
                     break;
                     // impar, primero der
@@ -145,13 +147,14 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
     uint8_t index = 0;
     uint32_t pids[MAX_PHIL];
     mustSkip = 0;
+    fatherWaiting = 0;
     secondToLastWaitingInLeft = 0;
     lastOneWaitingInFirstSem = 0;
 
     while(index < initialAmount)
     {
         // para que aquel que se encuentra en el último asiento sea el de pids[tableSize-1]
-        pids[initialAmount-1-index] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
+        pids[initialAmount-1-index] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 0);
         if(pids[initialAmount-1-index]==0)
             sys_exit(1);
         index++;
@@ -161,7 +164,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
     char character;
     while(1)
     {
-        //sys_yield(); para que no puedan agregar más de 1 en un quantum porque se me hace mierda me parece
+        sys_yield(); //para que no puedan agregar más de 1 en un quantum porque se me hace mierda me parece
         character=0;
         while(character!='a' && character!='r' && character!='q')
         {
@@ -174,6 +177,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
                 fprintf(STDERR, "Reached philosopher limit. Max: %d\n", MAX_PHIL-1);
                 continue;
             }
+            fatherWaiting = 1;
             sys_print_to_stdout_color("Adding philosopher...\n", highlightColor);
             //estoy bloqueando el primer tenedor que va a agarrar el ultimo filosofo actual
             semToStop = (tableSize%2)?  eatingSemaphores[tableSize-1] : eatingSemaphores[0];
@@ -182,7 +186,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             eatingSemaphores[tableSize] = sys_initialize_semaphore(semNames[tableSize], 1);
             if(eatingSemaphores[tableSize]==0)
                 sys_exit(1);
-            pids[tableSize] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 1);
+            pids[tableSize] = sys_start_child_process("eatingPhylo", 0, NULL, (int8_t (*)(uint8_t,  void **)) eatingPhylo, 0);
             if(pids[tableSize]==0)
                 sys_exit(1);
             tableSize++;
@@ -196,14 +200,16 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
                 continue;
             }
             sys_print_to_stdout_color("Removing philosopher...\n", highlightColor);
+            fatherWaiting = 1;
             if(sys_wait_sem(eatingSemaphores[0])<0)
                 sys_exit(1);
             if(sys_wait_sem(eatingSemaphores[tableSize-2])<0)
                 sys_exit(1);
+            sys_kill_process(pids[tableSize-1]);
             sys_post_sem(eatingSemaphores[tableSize-1]);
             sys_post_sem(eatingSemaphores[tableSize-1]);
             sys_close_sem(eatingSemaphores[tableSize-1]);
-            sys_kill_process(pids[tableSize-1]); // quizás haya que matarlo antes de hacer los sem_post
+
             printf("Slaying: %d\n", pids[tableSize-1]);
             if(lastOneWaitingInFirstSem) // hay que considerar también que quizás le hicieron el free, pero no salió
             {
@@ -211,12 +217,12 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             } 
             sys_post_sem(eatingSemaphores[0]);
 
-            if(tableSize%2 == 0)
-            {
-                mustSkip += secondToLastWaitingInLeft;
-                if(mustSkip)
-                    sys_post_sem(eatingSemaphores[tableSize-2]);    
-            }
+
+
+            mustSkip += secondToLastWaitingInLeft;
+            if(mustSkip)
+                sys_post_sem(eatingSemaphores[tableSize-2]);    
+            
 
             sys_post_sem(eatingSemaphores[tableSize-2]);
             tableSize--;
@@ -228,7 +234,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             sys_print_to_stdout_color("Ending...\n", highlightColor);
             for(int i = 0; i < tableSize ; i++)
             {
-                printf("Killing: %d\n", pids[i]);
+                //printf("Killing: %d\n", pids[i]);
                 sys_post_sem(eatingSemaphores[i]);
                 sys_post_sem(eatingSemaphores[i]);
                 sys_kill_process(pids[i]);
@@ -237,6 +243,7 @@ uint8_t startPhylo(uint8_t argc, char * argv[])
             sys_close_sem(semForSeat);
             sys_exit(0);
         }
+        fatherWaiting = 0;
     }
 
     
