@@ -53,14 +53,15 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
                 break;
                 // impar, primero der
             case 1:
+                if(seat==tableSize-2)
+                    secondToLastWaitingInLeft = 1;
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 1;
                 sys_wait_sem(right);
                 if(seat==tableSize-1)
                     lastOneWaitingInFirstSem = 0;
 
-                if(seat==tableSize-2)
-                    secondToLastWaitingInLeft = 1;
+                
                 sys_wait_sem(left);
                 if(seat==tableSize-2)
                     secondToLastWaitingInLeft = 0;
@@ -103,6 +104,13 @@ uint8_t eatingPhylo(uint8_t argc, uint8_t * argv)
         {
             mustSkip = 0;
         }
+        printf("Seat number: %d released, pid: %d\n", seat, pidLocal);
+        int j = 0;
+        while(j<tableSize){
+            printf("%c ", table[j]);
+            j++;
+        }
+        printf("\n");
     }
 }
 
