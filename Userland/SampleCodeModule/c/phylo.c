@@ -161,6 +161,7 @@ uint8_t startPhylo(uint8_t argc, char *argv[])
     secondToLastWaitingInLeft = 0;
     lastOneWaitingInFirstSem = 0;
 
+    sys_wait_sem(semForSeat);
     while (index < initialAmount)
     {
         // para que aquel que se encuentra en el último asiento sea el de pids[tableSize-1]
@@ -169,6 +170,8 @@ uint8_t startPhylo(uint8_t argc, char *argv[])
             sys_exit(1);
         index++;
     }
+    sys_post_sem(semForSeat);
+
 
     uint32_t semToStop;
     char character;
@@ -176,6 +179,7 @@ uint8_t startPhylo(uint8_t argc, char *argv[])
     {
         sys_yield(); // para que no puedan agregar más de 1 en un quantum porque se me hace mierda me parece
         character = 0;
+        sys_clean_buffer();
         while (character != 'a' && character != 'r' && character != 'q')
         {
             sys_read(STDIN, &character, 1);
