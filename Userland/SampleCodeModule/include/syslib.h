@@ -199,4 +199,6 @@ void sys_post_sem(uint32_t id);
 
 int8_t sys_close_sem(uint32_t id);
 
+void *sys_open_shared_memory(char* name);
+
 #endif

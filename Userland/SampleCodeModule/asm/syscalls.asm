@@ -32,6 +32,7 @@ GLOBAL sys_wait_sem
 GLOBAL sys_post_sem
 GLOBAL sys_close_sem
 GLOBAL sys_get_sem_info
+GLOBAL sys_open_shared_memory
 
 SECTION .text
 
@@ -149,5 +150,7 @@ sys_close_sem:
 sys_get_sem_info:
 	make_syscall 44
 
+sys_open_shared_memory:
+	make_syscall 45
 
 	

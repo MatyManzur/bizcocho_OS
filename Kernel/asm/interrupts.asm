@@ -60,6 +60,7 @@ EXTERN waitSem
 EXTERN postSem
 EXTERN closeSem
 EXTERN getSemaphoreInfo
+EXTERN openSharedMem
 
 SECTION .text
 
@@ -249,6 +250,7 @@ _syscallHandler:
 	caseSyscall 42, .C42
 	caseSyscall 43, .C43
 	caseSyscall 44, .C44
+	caseSyscall 45, .C45
 	jmp .end	;default: it does nothing
 .C0:
 	call exit
@@ -351,6 +353,9 @@ _syscallHandler:
 	jmp .end
 .C44:
 	call getSemaphoreInfo
+	jmp .end
+.C45:
+	call openSharedMem
 	jmp .end
 	
 .end:

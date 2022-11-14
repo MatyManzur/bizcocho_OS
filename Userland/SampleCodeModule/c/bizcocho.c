@@ -233,6 +233,7 @@ int8_t bizcocho(uint8_t argc, void **argv)
         }
     }
 }
+
 int8_t kill(uint8_t argc, void *argv[])
 {
     CHECK_ARGC(argc, 1)
