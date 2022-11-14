@@ -3,7 +3,7 @@
 #include <bizcocho.h>
 #include "tests.h"
 
-#define COMMAND_COUNT 20
+#define COMMAND_COUNT 21
 
 #define NO_CHANGE_FD -2
 
@@ -13,6 +13,9 @@ char *promptMessage = "Bizcocho $>";
 
 format_t promptColor = {.backgroundColor = DEFAULT, .characterColor = L_RED};
 
+uint8_t tryMemorySharing();
+
+uint8_t readMemorySharing();
 static uint32_t bizcochoPid = 0;
 static uint32_t pipesCreated = 1;
 static commandInfo commands[COMMAND_COUNT] = {
@@ -36,6 +39,7 @@ static commandInfo commands[COMMAND_COUNT] = {
     {.name = "testprio", .builtin = 0, .programFunction = (int8_t(*)(uint8_t, void **))test_prio},
     {.name = "testproc", .builtin = 0, .programFunction = (int8_t(*)(uint8_t, void **))test_processes},
     {.name = "clear", .builtin = 1, .programFunction = (int8_t(*)(uint8_t, void **))sys_clear_screen},
+    {.name="testshm", .builtin = 0, .programFunction = tryMemorySharing}
 };
 
 void readUntilEnter(char buffer[])
