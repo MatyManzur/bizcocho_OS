@@ -5,9 +5,14 @@
 
 #define IS_DIGIT(x) ((x) >= '0' && (x) <= '9')
 
+#define SHM_MEM_COUNT 20
+#define SHM_MEM_SIZE 128
+
 static int16_t fileIdToGive = 3;
 
 static ddlADT pipeFilesList;
+
+static void* sharedMems[SHM_MEM_COUNT] = {NULL};
 
 int cmpFileName(void *a, void *b);
 
@@ -28,6 +33,19 @@ static void printToScreen(char *s, format_t *format)
 void initializeFiles()
 {
     pipeFilesList = newList();
+}
+
+void* openSharedMem(uint8_t sharedMemId) 
+{
+    if(sharedMemId >= SHM_MEM_COUNT)
+    {
+        return NULL;
+    }
+    if(sharedMems[sharedMemId] == NULL)
+    {
+        sharedMems[sharedMemId] = memalloc(SHM_MEM_SIZE);
+    }
+    return sharedMems[sharedMemId];
 }
 
 int8_t mkpipe(char *name)

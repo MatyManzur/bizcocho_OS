@@ -56,6 +56,8 @@ int8_t closeForKilling(int16_t fileId, uint8_t mode);
 // SYSCALLS
 int write(int fd, char *s);
 
+void* openSharedMem(uint8_t sharedMemId);
+
 uint8_t read(int fd, char *buf, uint8_t n);
 
 int printToStdoutFormat(char *s, format_t fmt);
